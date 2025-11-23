@@ -364,3 +364,71 @@ function validateCategoryForm() {
     
     return true;
 }
+// Adicione esta função no app.js
+function setupLogout() {
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        // Remover event listeners anteriores
+        const newLogoutBtn = logoutBtn.cloneNode(true);
+        logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
+        
+        document.getElementById('logoutBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            if (confirm('Tem certeza que deseja sair do sistema?')) {
+                // Parar todas as atualizações automáticas
+                stopAutoMessages();
+                
+                // Limpar dados da sessão
+                currentUser = null;
+                localStorage.removeItem('currentUser');
+                
+                // Esconder aplicação e mostrar login
+                const app = document.getElementById('app');
+                const loginScreen = document.getElementById('loginScreen');
+                
+                if (app) app.style.display = 'none';
+                if (loginScreen) {
+                    loginScreen.style.display = 'flex';
+                    // Resetar formulário de login
+                    const loginForm = document.getElementById('loginForm');
+                    if (loginForm) loginForm.reset();
+                }
+                
+                showNotification('Logout realizado com sucesso!', 'success');
+            }
+        });
+    }
+}
+
+// Chame esta função no showApp()
+function showApp() {
+    // ... código existente ...
+    
+    // Configurar logout
+    setupLogout();
+    
+    // ... resto do código ...
+}
+function setupModals() {
+    // Configurar botões de fechar em todos os modais
+    document.querySelectorAll('.modal').forEach(modal => {
+        const closeBtn = modal.querySelector('.modal-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                modal.classList.remove('active');
+            });
+        }
+        
+        // Adicionar botão de fechar extra
+        const extraCloseBtn = document.createElement('button');
+        extraCloseBtn.className = 'btn-close-modal';
+        extraCloseBtn.innerHTML = '&times;';
+        extraCloseBtn.addEventListener('click', () => {
+            modal.classList.remove('active');
+        });
+        modal.querySelector('.modal-header').appendChild(extraCloseBtn);
+    });
+    
+    // ... resto do código dos modais ...
+}

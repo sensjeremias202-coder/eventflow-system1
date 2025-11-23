@@ -2,7 +2,22 @@ function loadCategoriesTable() {
     if (currentUser.role !== 'admin') return;
     
     const categoriesTable = document.getElementById('categoriesTable');
+    if (!categoriesTable) return;
+    
     categoriesTable.innerHTML = '';
+    
+    if (categories.length === 0) {
+        categoriesTable.innerHTML = `
+            <tr>
+                <td colspan="5" style="text-align: center; color: var(--gray); padding: 40px;">
+                    <i class="fas fa-tags fa-3x" style="margin-bottom: 20px;"></i>
+                    <p>Nenhuma categoria cadastrada ainda.</p>
+                    <p>Clique em "Adicionar Categoria" para criar a primeira categoria!</p>
+                </td>
+            </tr>
+        `;
+        return;
+    }
     
     categories.forEach(category => {
         // Contar eventos nesta categoria
@@ -10,15 +25,24 @@ function loadCategoriesTable() {
         
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${category.name}</td>
+            <td>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="${category.icon}" style="color: ${category.color};"></i>
+                    <span>${category.name}</span>
+                </div>
+            </td>
             <td>
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <div style="width: 20px; height: 20px; background-color: ${category.color}; border-radius: 3px;"></div>
                     <span>${category.color}</span>
                 </div>
             </td>
-            <td><i class="${category.icon}"></i> ${category.icon}</td>
-            <td>${eventCount} evento(s)</td>
+            <td><code>${category.icon}</code></td>
+            <td>
+                <span class="category-badge" style="background-color: ${category.color};">
+                    ${eventCount} evento(s)
+                </span>
+            </td>
             <td>
                 <button class="btn btn-outline btn-sm edit-category" data-id="${category.id}">
                     <i class="far fa-edit"></i>
@@ -49,13 +73,21 @@ function loadCategoriesTable() {
 }
 
 function createCategory() {
-    const name = document.getElementById('categoryName').value;
+    if (!validateCategoryForm()) return;
+    
+    const name = document.getElementById('categoryName').value.trim();
     const color = document.getElementById('categoryColor').value;
-    const icon = document.getElementById('categoryIcon').value;
+    const icon = document.getElementById('categoryIcon').value.trim();
     
     // Verificar se a categoria já existe
     if (categories.find(c => c.name.toLowerCase() === name.toLowerCase())) {
-        alert('Já existe uma categoria com este nome!');
+        showNotification('Já existe uma categoria com este nome!', 'error');
+        return;
+    }
+    
+    // Validar ícone Font Awesome
+    if (!icon.startsWith('fas fa-') && !icon.startsWith('far fa-') && !icon.startsWith('fab fa-')) {
+        showNotification('Use um ícone válido do Font Awesome (ex: fas fa-music, far fa-star)', 'error');
         return;
     }
     
@@ -64,94 +96,15 @@ function createCategory() {
         id: categories.length > 0 ? Math.max(...categories.map(c => c.id)) + 1 : 1,
         name,
         color,
-        icon
+        icon,
+        createdAt: new Date().toISOString()
     };
     
     categories.push(newCategory);
     saveData();
     
-    alert('Categoria criada com sucesso!');
-    document.getElementById('addCategoryModal').classList.remove('active');
-    document.getElementById('addCategoryForm').reset();
+    showNotification('Categoria criada com sucesso!', 'success');
+    closeModal('addCategoryModal');
     loadCategoriesTable();
-}
-
-function editCategory(categoryId) {
-    const category = categories.find(c => c.id === categoryId);
-    if (!category) return;
-    
-    // Preencher o formulário com os dados da categoria
-    document.getElementById('categoryName').value = category.name;
-    document.getElementById('categoryColor').value = category.color;
-    document.getElementById('categoryIcon').value = category.icon;
-    
-    // Alterar o botão para "Atualizar Categoria"
-    const submitButton = document.querySelector('#addCategoryForm button[type="submit"]');
-    submitButton.textContent = 'Atualizar Categoria';
-    
-    // Alterar o evento de submit para atualização
-    const form = document.getElementById('addCategoryForm');
-    form.onsubmit = function(e) {
-        e.preventDefault();
-        updateCategory(categoryId);
-    };
-    
-    // Mostrar o modal
-    document.getElementById('addCategoryModal').classList.add('active');
-}
-
-function updateCategory(categoryId) {
-    const categoryIndex = categories.findIndex(c => c.id === categoryId);
-    if (categoryIndex === -1) return;
-    
-    const name = document.getElementById('categoryName').value;
-    const color = document.getElementById('categoryColor').value;
-    const icon = document.getElementById('categoryIcon').value;
-    
-    // Verificar se a categoria já existe (excluindo a atual)
-    const categoryExists = categories.find(c => c.name.toLowerCase() === name.toLowerCase() && c.id !== categoryId);
-    if (categoryExists) {
-        alert('Já existe uma categoria com este nome!');
-        return;
-    }
-    
-    // Atualizar categoria
-    categories[categoryIndex] = {
-        ...categories[categoryIndex],
-        name,
-        color,
-        icon
-    };
-    
-    saveData();
-    
-    alert('Categoria atualizada com sucesso!');
-    document.getElementById('addCategoryModal').classList.remove('active');
-    
-    // Restaurar o formulário para criação
-    const submitButton = document.querySelector('#addCategoryForm button[type="submit"]');
-    submitButton.textContent = 'Criar Categoria';
-    document.getElementById('addCategoryForm').reset();
-    document.getElementById('addCategoryForm').onsubmit = function(e) {
-        e.preventDefault();
-        createCategory();
-    };
-    
-    loadCategoriesTable();
-}
-
-function deleteCategory(categoryId) {
-    if (confirm('Tem certeza que deseja excluir esta categoria?')) {
-        // Verificar se existem eventos usando esta categoria
-        const eventsUsingCategory = events.filter(e => e.category === categoryId);
-        if (eventsUsingCategory.length > 0) {
-            alert('Não é possível excluir esta categoria pois existem eventos vinculados a ela!');
-            return;
-        }
-        
-        categories = categories.filter(c => c.id !== categoryId);
-        saveData();
-        loadCategoriesTable();
-        alert('Categoria excluída com sucesso!');
-    }
+    loadCategoryOptions(); // Atualizar opções no formulário de eventos
 }
