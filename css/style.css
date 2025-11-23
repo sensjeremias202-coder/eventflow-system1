@@ -632,6 +632,28 @@ header {
     .navbar {
         flex-wrap: wrap;
     }
+    
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .card-header > div {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .event-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .event-actions > div {
+        justify-content: space-between;
+        width: 100%;
+    }
 }
 
 .page {
@@ -658,4 +680,23 @@ header {
     font-weight: 500;
     margin-right: 5px;
     color: white;
+}
+
+/* Estilos para os botões de ação */
+.btn i {
+    margin-right: 5px;
+}
+
+.btn-sm i {
+    margin-right: 3px;
+}
+
+/* Estilos para os cards de evento */
+.event-card .btn {
+    margin-left: 5px;
+}
+
+/* Estilos para a tabela de usuários */
+.table .btn-sm {
+    margin: 0 2px;
 }

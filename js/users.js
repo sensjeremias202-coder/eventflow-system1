@@ -1,232 +1,157 @@
-function loadUsersTable() {
+function loadCategoriesTable() {
     if (currentUser.role !== 'admin') return;
     
-    const usersTable = document.getElementById('usersTable');
-    usersTable.innerHTML = '';
+    const categoriesTable = document.getElementById('categoriesTable');
+    categoriesTable.innerHTML = '';
     
-    users.forEach(user => {
+    categories.forEach(category => {
+        // Contar eventos nesta categoria
+        const eventCount = events.filter(e => e.category === category.id).length;
+        
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${user.name}</td>
-            <td>${user.email}</td>
-            <td>${user.role === 'admin' ? 'Administrador' : 'Usuário Comum'}</td>
-            <td>${formatDate(user.registered)}</td>
+            <td>${category.name}</td>
             <td>
-                <button class="btn btn-outline btn-sm edit-user" data-id="${user.id}">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 20px; height: 20px; background-color: ${category.color}; border-radius: 3px;"></div>
+                    <span>${category.color}</span>
+                </div>
+            </td>
+            <td><i class="${category.icon}"></i> ${category.icon}</td>
+            <td>${eventCount} evento(s)</td>
+            <td>
+                <button class="btn btn-outline btn-sm edit-category" data-id="${category.id}">
                     <i class="far fa-edit"></i>
                 </button>
-                ${user.id !== currentUser.id ? `
-                    <button class="btn btn-outline btn-sm delete-user" data-id="${user.id}">
-                        <i class="far fa-trash-alt"></i>
-                    </button>
-                ` : ''}
+                <button class="btn btn-outline btn-sm delete-category" data-id="${category.id}">
+                    <i class="far fa-trash-alt"></i>
+                </button>
             </td>
         `;
         
-        usersTable.appendChild(row);
+        categoriesTable.appendChild(row);
     });
     
     // Adicionar eventos aos botões
-    document.querySelectorAll('.edit-user').forEach(btn => {
+    document.querySelectorAll('.edit-category').forEach(btn => {
         btn.addEventListener('click', function() {
-            const userId = parseInt(this.getAttribute('data-id'));
-            editUser(userId);
+            const categoryId = parseInt(this.getAttribute('data-id'));
+            editCategory(categoryId);
         });
     });
     
-    document.querySelectorAll('.delete-user').forEach(btn => {
+    document.querySelectorAll('.delete-category').forEach(btn => {
         btn.addEventListener('click', function() {
-            const userId = parseInt(this.getAttribute('data-id'));
-            deleteUser(userId);
+            const categoryId = parseInt(this.getAttribute('data-id'));
+            deleteCategory(categoryId);
         });
     });
 }
 
-function createUser() {
-    const name = document.getElementById('newUserName').value;
-    const email = document.getElementById('newUserEmail').value;
-    const password = document.getElementById('newUserPassword').value;
-    const role = document.getElementById('newUserRole').value;
+function createCategory() {
+    const name = document.getElementById('categoryName').value;
+    const color = document.getElementById('categoryColor').value;
+    const icon = document.getElementById('categoryIcon').value;
     
-    // Verificar se o e-mail já existe
-    if (users.find(u => u.email === email)) {
-        alert('Este e-mail já está cadastrado!');
+    // Verificar se a categoria já existe
+    if (categories.find(c => c.name.toLowerCase() === name.toLowerCase())) {
+        alert('Já existe uma categoria com este nome!');
         return;
     }
     
-    // Criar novo usuário
-    const newUser = {
-        id: users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1,
+    // Criar nova categoria
+    const newCategory = {
+        id: categories.length > 0 ? Math.max(...categories.map(c => c.id)) + 1 : 1,
         name,
-        email,
-        password,
-        role,
-        registered: new Date().toISOString().split('T')[0]
+        color,
+        icon
     };
     
-    users.push(newUser);
+    categories.push(newCategory);
     saveData();
     
-    alert('Usuário criado com sucesso!');
-    document.getElementById('addUserModal').classList.remove('active');
-    document.getElementById('addUserForm').reset();
-    loadUsersTable();
+    alert('Categoria criada com sucesso!');
+    document.getElementById('addCategoryModal').classList.remove('active');
+    document.getElementById('addCategoryForm').reset();
+    loadCategoriesTable();
 }
 
-function editUser(userId) {
-    const user = users.find(u => u.id === userId);
-    if (!user) return;
+function editCategory(categoryId) {
+    const category = categories.find(c => c.id === categoryId);
+    if (!category) return;
     
-    // Preencher o formulário com os dados do usuário
-    document.getElementById('newUserName').value = user.name;
-    document.getElementById('newUserEmail').value = user.email;
-    document.getElementById('newUserPassword').value = user.password;
-    document.getElementById('newUserRole').value = user.role;
+    // Preencher o formulário com os dados da categoria
+    document.getElementById('categoryName').value = category.name;
+    document.getElementById('categoryColor').value = category.color;
+    document.getElementById('categoryIcon').value = category.icon;
     
-    // Alterar o botão para "Atualizar Usuário"
-    const submitButton = document.querySelector('#addUserForm button[type="submit"]');
-    submitButton.textContent = 'Atualizar Usuário';
+    // Alterar o botão para "Atualizar Categoria"
+    const submitButton = document.querySelector('#addCategoryForm button[type="submit"]');
+    submitButton.textContent = 'Atualizar Categoria';
     
     // Alterar o evento de submit para atualização
-    const form = document.getElementById('addUserForm');
+    const form = document.getElementById('addCategoryForm');
     form.onsubmit = function(e) {
         e.preventDefault();
-        updateUser(userId);
+        updateCategory(categoryId);
     };
     
     // Mostrar o modal
-    document.getElementById('addUserModal').classList.add('active');
+    document.getElementById('addCategoryModal').classList.add('active');
 }
 
-function updateUser(userId) {
-    const userIndex = users.findIndex(u => u.id === userId);
-    if (userIndex === -1) return;
+function updateCategory(categoryId) {
+    const categoryIndex = categories.findIndex(c => c.id === categoryId);
+    if (categoryIndex === -1) return;
     
-    const name = document.getElementById('newUserName').value;
-    const email = document.getElementById('newUserEmail').value;
-    const password = document.getElementById('newUserPassword').value;
-    const role = document.getElementById('newUserRole').value;
+    const name = document.getElementById('categoryName').value;
+    const color = document.getElementById('categoryColor').value;
+    const icon = document.getElementById('categoryIcon').value;
     
-    // Verificar se o e-mail já existe (excluindo o usuário atual)
-    const emailExists = users.find(u => u.email === email && u.id !== userId);
-    if (emailExists) {
-        alert('Este e-mail já está cadastrado!');
+    // Verificar se a categoria já existe (excluindo a atual)
+    const categoryExists = categories.find(c => c.name.toLowerCase() === name.toLowerCase() && c.id !== categoryId);
+    if (categoryExists) {
+        alert('Já existe uma categoria com este nome!');
         return;
     }
     
-    // Atualizar usuário
-    users[userIndex] = {
-        ...users[userIndex],
+    // Atualizar categoria
+    categories[categoryIndex] = {
+        ...categories[categoryIndex],
         name,
-        email,
-        password,
-        role
+        color,
+        icon
     };
     
     saveData();
     
-    alert('Usuário atualizado com sucesso!');
-    document.getElementById('addUserModal').classList.remove('active');
+    alert('Categoria atualizada com sucesso!');
+    document.getElementById('addCategoryModal').classList.remove('active');
     
     // Restaurar o formulário para criação
-    const submitButton = document.querySelector('#addUserForm button[type="submit"]');
-    submitButton.textContent = 'Criar Usuário';
-    document.getElementById('addUserForm').reset();
-    document.getElementById('addUserForm').onsubmit = function(e) {
+    const submitButton = document.querySelector('#addCategoryForm button[type="submit"]');
+    submitButton.textContent = 'Criar Categoria';
+    document.getElementById('addCategoryForm').reset();
+    document.getElementById('addCategoryForm').onsubmit = function(e) {
         e.preventDefault();
-        createUser();
+        createCategory();
     };
     
-    loadUsersTable();
+    loadCategoriesTable();
 }
 
-function deleteUser(userId) {
-    if (confirm('Tem certeza que deseja excluir este usuário?')) {
-        // Não permitir excluir a si mesmo
-        if (userId === currentUser.id) {
-            alert('Você não pode excluir sua própria conta!');
+function deleteCategory(categoryId) {
+    if (confirm('Tem certeza que deseja excluir esta categoria?')) {
+        // Verificar se existem eventos usando esta categoria
+        const eventsUsingCategory = events.filter(e => e.category === categoryId);
+        if (eventsUsingCategory.length > 0) {
+            alert('Não é possível excluir esta categoria pois existem eventos vinculados a ela!');
             return;
         }
         
-        users = users.filter(u => u.id !== userId);
+        categories = categories.filter(c => c.id !== categoryId);
         saveData();
-        loadUsersTable();
-        alert('Usuário excluído com sucesso!');
+        loadCategoriesTable();
+        alert('Categoria excluída com sucesso!');
     }
-}
-
-function loadUsersTable() {
-    if (currentUser.role !== 'admin') return;
-    
-    const usersTable = document.getElementById('usersTable');
-    usersTable.innerHTML = '';
-    
-    if (users.length === 0) {
-        usersTable.innerHTML = `
-            <tr>
-                <td colspan="5" style="text-align: center; color: var(--gray); padding: 40px;">
-                    <i class="fas fa-users fa-3x" style="margin-bottom: 20px;"></i>
-                    <p>Nenhum usuário cadastrado ainda.</p>
-                    <p>Clique em "Adicionar Usuário" para criar o primeiro usuário!</p>
-                </td>
-            </tr>
-        `;
-        return;
-    }
-    
-    users.forEach(user => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <div class="chat-user-avatar" style="width: 35px; height: 35px; font-size: 0.8rem;">
-                        ${user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                    </div>
-                    <div>
-                        <div>${user.name}</div>
-                        ${user.id === currentUser.id ? 
-                            '<small style="color: var(--primary);">(Você)</small>' : ''}
-                    </div>
-                </div>
-            </td>
-            <td>${user.email}</td>
-            <td>
-                <span class="category-badge" style="background-color: ${user.role === 'admin' ? '#4361ee' : '#4cc9f0'};">
-                    ${user.role === 'admin' ? 'Administrador' : 'Usuário Comum'}
-                </span>
-            </td>
-            <td>${formatDate(user.registered)}</td>
-            <td>
-                <button class="btn btn-outline btn-sm edit-user" data-id="${user.id}" title="Editar usuário">
-                    <i class="far fa-edit"></i>
-                </button>
-                ${user.id !== currentUser.id ? `
-                    <button class="btn btn-outline btn-sm delete-user" data-id="${user.id}" title="Excluir usuário">
-                        <i class="far fa-trash-alt"></i>
-                    </button>
-                ` : `
-                    <button class="btn btn-outline btn-sm" disabled title="Não é possível excluir sua própria conta">
-                        <i class="far fa-trash-alt"></i>
-                    </button>
-                `}
-            </td>
-        `;
-        
-        usersTable.appendChild(row);
-    });
-    
-    // Adicionar eventos aos botões
-    document.querySelectorAll('.edit-user').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const userId = parseInt(this.getAttribute('data-id'));
-            editUser(userId);
-        });
-    });
-    
-    document.querySelectorAll('.delete-user').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const userId = parseInt(this.getAttribute('data-id'));
-            deleteUser(userId);
-        });
-    });
 }

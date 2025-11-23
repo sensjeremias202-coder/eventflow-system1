@@ -2,7 +2,7 @@
 
 Sistema completo de agendamento e gerenciamento de eventos com funcionalidades para administradores e usuários comuns.
 
-## Funcionalidades
+## 🚀 Funcionalidades
 
 ### Para Administradores
 - **Dashboard** com estatísticas e gráficos de análise
@@ -16,8 +16,9 @@ Sistema completo de agendamento e gerenciamento de eventos com funcionalidades p
 - **Visualização de Eventos**
 - **Avaliação e Comentários** em eventos
 - **Chat** com administradores
+- **Meus Eventos** - visualização personalizada
 
-## Como Usar
+## 👥 Como Usar
 
 ### Login de Teste
 
@@ -33,16 +34,9 @@ Sistema completo de agendamento e gerenciamento de eventos com funcionalidades p
 
 1. **Dashboard**: Visualize estatísticas e análises dos comentários
 2. **Eventos**: Veja todos os eventos disponíveis
-3. **Chat**: Comunique-se com outros usuários
-4. **Usuários** (apenas admin): Gerencie usuários do sistema
-5. **Categorias** (apenas admin): Gerencie categorias de eventos
+3. **Meus Eventos**: Visualize eventos que você avaliou (apenas usuários comuns)
+4. **Chat**: Comunique-se com outros usuários
+5. **Usuários** (apenas admin): Gerencie usuários do sistema
+6. **Categorias** (apenas admin): Gerencie categorias de eventos
 
-## Como Publicar no GitHub Pages
-
-1. Faça upload de todos os arquivos para seu repositório GitHub
-2. Vá em Settings > Pages
-3. Selecione a branch main como fonte
-4. Clique em Save
-5. Seu site estará disponível em: `https://seuusuario.github.io/nome-do-repositorio`
-
-## Estrutura de Arquivos
+## 📁 Estrutura de Arquivos
