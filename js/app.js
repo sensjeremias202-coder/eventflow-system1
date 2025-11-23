@@ -59,6 +59,8 @@ function showPage(page) {
         loadChatUsers();
     } else if (page === 'users' && currentUser.role === 'admin') {
         loadUsersTable();
+    } else if (page === 'categories' && currentUser.role === 'admin') {
+        loadCategoriesTable();
     }
 }
 
@@ -70,6 +72,7 @@ function setupModals() {
     
     if (addEventBtn) {
         addEventBtn.addEventListener('click', () => {
+            loadCategoryOptions();
             addEventModal.classList.add('active');
         });
     }
@@ -93,6 +96,21 @@ function setupModals() {
         addUserModal.classList.remove('active');
     });
     
+    // Modal de categoria
+    const addCategoryBtn = document.getElementById('addCategoryBtn');
+    const addCategoryModal = document.getElementById('addCategoryModal');
+    const categoryModalClose = addCategoryModal.querySelector('.modal-close');
+    
+    if (addCategoryBtn) {
+        addCategoryBtn.addEventListener('click', () => {
+            addCategoryModal.classList.add('active');
+        });
+    }
+    
+    categoryModalClose.addEventListener('click', () => {
+        addCategoryModal.classList.remove('active');
+    });
+    
     // Modal de detalhes do evento
     const eventDetailsModal = document.getElementById('eventDetailsModal');
     const eventDetailsClose = eventDetailsModal.querySelector('.modal-close');
@@ -109,6 +127,9 @@ function setupModals() {
         if (e.target === addUserModal) {
             addUserModal.classList.remove('active');
         }
+        if (e.target === addCategoryModal) {
+            addCategoryModal.classList.remove('active');
+        }
         if (e.target === eventDetailsModal) {
             eventDetailsModal.classList.remove('active');
         }
@@ -124,5 +145,23 @@ function setupModals() {
     document.getElementById('addUserForm').addEventListener('submit', (e) => {
         e.preventDefault();
         createUser();
+    });
+    
+    // Formulário de categoria
+    document.getElementById('addCategoryForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        createCategory();
+    });
+}
+
+function loadCategoryOptions() {
+    const categorySelect = document.getElementById('eventCategory');
+    categorySelect.innerHTML = '<option value="">Selecione uma categoria</option>';
+    
+    categories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category.id;
+        option.textContent = category.name;
+        categorySelect.appendChild(option);
     });
 }
