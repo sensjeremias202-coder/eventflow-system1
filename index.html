@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventFlow - Sistema de Agendamento de Eventos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Login Screen -->
+    <div class="login-container" id="loginScreen">
+        <div class="login-card">
+            <div class="logo">
+                <i class="fas fa-calendar-alt"></i>
+                <span>EventFlow</span>
+            </div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label class="form-label" for="loginEmail">E-mail</label>
+                    <input type="email" class="form-control" id="loginEmail" placeholder="seu@email.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="loginPassword">Senha</label>
+                    <input type="password" class="form-control" id="loginPassword" placeholder="Sua senha" required>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Entrar</button>
+                </div>
+                
+                <div style="text-align: center; margin-top: 15px;">
+                    <a href="#" id="showRegister">Não tem uma conta? Cadastre-se</a>
+                </div>
+            </form>
+            
+            <!-- Formulário de Registro -->
+            <form id="registerForm" style="display: none;">
+                <div class="form-group">
+                    <label class="form-label" for="registerName">Nome Completo</label>
+                    <input type="text" class="form-control" id="registerName" placeholder="Seu nome completo" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="registerEmail">E-mail</label>
+                    <input type="email" class="form-control" id="registerEmail" placeholder="seu@email.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="registerPassword">Senha</label>
+                    <input type="password" class="form-control" id="registerPassword" placeholder="Sua senha" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="registerRole">Tipo de Usuário</label>
+                    <select class="form-control" id="registerRole" required>
+                        <option value="user">Usuário Comum</option>
+                        <option value="admin">Administrador</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Cadastrar</button>
+                </div>
+                
+                <div style="text-align: center; margin-top: 15px;">
+                    <a href="#" id="showLogin">Já tem uma conta? Faça login</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Main Application -->
+    <div id="app" style="display: none;">
+        <header>
+            <div class="container">
+                <div class="navbar">
+                    <div class="logo">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>EventFlow</span>
+                    </div>
+                    
+                    <div class="nav-links">
+                        <a href="#" class="nav-link active" data-page="dashboard">Dashboard</a>
+                        <a href="#" class="nav-link" data-page="events">Eventos</a>
+                        <a href="#" class="nav-link" data-page="chat">Chat</a>
+                        <a href="#" class="nav-link admin-only" data-page="users" style="display: none;">Usuários</a>
+                    </div>
+                    
+                    <div class="user-actions">
+                        <div class="user-info">
+                            <span>Olá, <strong id="userName">Usuário</strong></span>
+                        </div>
+                        <button class="btn btn-outline" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i> Sair
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <div class="container">
+            <div class="main-content">
+                <div class="sidebar">
+                    <h3>Menu</h3>
+                    <ul class="sidebar-menu">
+                        <li><a href="#" class="sidebar-link active" data-page="dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                        <li><a href="#" class="sidebar-link" data-page="events"><i class="fas fa-calendar-alt"></i> Eventos</a></li>
+                        <li><a href="#" class="sidebar-link" data-page="chat"><i class="fas fa-comments"></i> Chat</a></li>
+                        <li><a href="#" class="sidebar-link admin-only" data-page="users" style="display: none;"><i class="fas fa-users"></i> Gerenciar Usuários</a></li>
+                    </ul>
+                </div>
+                
+                <div class="content">
+                    <!-- Dashboard Page -->
+                    <div class="page active" id="dashboard-page">
+                        <div class="stats-grid" id="statsGrid">
+                            <!-- Stats will be loaded here -->
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-title">Análise de Comentários</div>
+                                <div class="tabs">
+                                    <div class="tab active" data-tab="sentiment">Análise de Sentimento</div>
+                                    <div class="tab" data-tab="topics">Tópicos Mais Comentados</div>
+                                </div>
+                            </div>
+                            
+                            <div class="tab-content active" id="sentiment">
+                                <canvas id="sentimentChart" height="300"></canvas>
+                            </div>
+                            
+                            <div class="tab-content" id="topics">
+                                <canvas id="topicsChart" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Events Page -->
+                    <div class="page" id="events-page">
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-title">Eventos</div>
+                                <button class="btn btn-primary admin-only" id="addEventBtn" style="display: none;">
+                                    <i class="fas fa-plus"></i> Adicionar Evento
+                                </button>
+                            </div>
+                            
+                            <div class="events-grid" id="eventsGrid">
+                                <!-- Events will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Chat Page -->
+                    <div class="page" id="chat-page">
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-title">Chat</div>
+                            </div>
+                            
+                            <div class="chat-container">
+                                <div class="chat-sidebar" id="chatUsers">
+                                    <!-- Chat users will be loaded here -->
+                                </div>
+                                
+                                <div class="chat-main">
+                                    <div class="chat-header">
+                                        <h4 id="currentChatUser">Selecione um usuário</h4>
+                                        <div class="user-status" id="currentChatStatus"></div>
+                                    </div>
+                                    
+                                    <div class="chat-messages" id="chatMessages">
+                                        <!-- Messages will be loaded here -->
+                                    </div>
+                                    
+                                    <div class="chat-input">
+                                        <input type="text" id="chatInput" placeholder="Digite sua mensagem...">
+                                        <button class="btn btn-primary" id="sendMessageBtn">
+                                            <i class="fas fa-paper-plane"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Users Page -->
+                    <div class="page" id="users-page">
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-title">Gerenciar Usuários</div>
+                                <button class="btn btn-primary" id="addUserBtn">
+                                    <i class="fas fa-plus"></i> Adicionar Usuário
+                                </button>
+                            </div>
+                            
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Nome</th>
+                                        <th>E-mail</th>
+                                        <th>Tipo</th>
+                                        <th>Data de Registro</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTable">
+                                    <!-- Users will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modals -->
+    <div class="modal" id="addEventModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Adicionar Novo Evento</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="addEventForm">
+                <div class="form-group">
+                    <label class="form-label" for="eventTitle">Título do Evento</label>
+                    <input type="text" class="form-control" id="eventTitle" placeholder="Digite o título do evento" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="eventDate">Data do Evento</label>
+                    <input type="date" class="form-control" id="eventDate" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="eventTime">Horário</label>
+                    <input type="time" class="form-control" id="eventTime" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="eventLocation">Local</label>
+                    <input type="text" class="form-control" id="eventLocation" placeholder="Digite o local do evento" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="eventDescription">Descrição</label>
+                    <textarea class="form-control" id="eventDescription" rows="4" placeholder="Descreva o evento" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="eventCategory">Categoria</label>
+                    <select class="form-control" id="eventCategory" required>
+                        <option value="">Selecione uma categoria</option>
+                        <option value="music">Música</option>
+                        <option value="workshop">Workshop</option>
+                        <option value="food">Gastronomia</option>
+                        <option value="sports">Esportes</option>
+                        <option value="business">Negócios</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Criar Evento</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="modal" id="addUserModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Adicionar Novo Usuário</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="addUserForm">
+                <div class="form-group">
+                    <label class="form-label" for="newUserName">Nome Completo</label>
+                    <input type="text" class="form-control" id="newUserName" placeholder="Nome completo do usuário" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="newUserEmail">E-mail</label>
+                    <input type="email" class="form-control" id="newUserEmail" placeholder="E-mail do usuário" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="newUserPassword">Senha</label>
+                    <input type="password" class="form-control" id="newUserPassword" placeholder="Senha do usuário" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="newUserRole">Tipo de Usuário</label>
+                    <select class="form-control" id="newUserRole" required>
+                        <option value="user">Usuário Comum</option>
+                        <option value="admin">Administrador</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Criar Usuário</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="modal" id="eventDetailsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="eventDetailsTitle">Detalhes do Evento</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div id="eventDetailsContent">
+                <!-- Event details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/events.js"></script>
+    <script src="js/users.js"></script>
+    <script src="js/chat.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
