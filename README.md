@@ -8,6 +8,7 @@ Sistema completo de agendamento e gerenciamento de eventos com funcionalidades p
 - **Dashboard** com estatísticas e gráficos de análise
 - **Gerenciamento de Eventos** (criar, editar, excluir)
 - **Gerenciamento de Usuários** (criar, editar, excluir)
+- **Gerenciamento de Categorias** (criar, editar, excluir)
 - **Chat** com usuários comuns
 - **Análise de Comentários** em forma de gráficos
 
@@ -34,13 +35,7 @@ Sistema completo de agendamento e gerenciamento de eventos com funcionalidades p
 2. **Eventos**: Veja todos os eventos disponíveis
 3. **Chat**: Comunique-se com outros usuários
 4. **Usuários** (apenas admin): Gerencie usuários do sistema
-
-## Tecnologias Utilizadas
-
-- HTML5, CSS3, JavaScript (ES6+)
-- Chart.js para gráficos
-- Font Awesome para ícones
-- LocalStorage para persistência de dados
+5. **Categorias** (apenas admin): Gerencie categorias de eventos
 
 ## Como Publicar no GitHub Pages
 
@@ -48,6 +43,6 @@ Sistema completo de agendamento e gerenciamento de eventos com funcionalidades p
 2. Vá em Settings > Pages
 3. Selecione a branch main como fonte
 4. Clique em Save
-5. Seu site estará disponível em: `https://sensjeremias202-coder.github.io/nome-do-repositorio`
+5. Seu site estará disponível em: `https://seuusuario.github.io/nome-do-repositorio`
 
 ## Estrutura de Arquivos
