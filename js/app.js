@@ -4,11 +4,13 @@ function setupNavigation() {
         link.addEventListener('click', function(e) {
             e.preventDefault();
             const page = this.getAttribute('data-page');
-            showPage(page);
-            
-            // Atualizar estado ativo
-            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-            this.classList.add('active');
+            if (page) {
+                showPage(page);
+                
+                // Atualizar estado ativo
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+            }
         });
     });
     
@@ -17,36 +19,48 @@ function setupNavigation() {
         link.addEventListener('click', function(e) {
             e.preventDefault();
             const page = this.getAttribute('data-page');
-            showPage(page);
-            
-            // Atualizar estado ativo
-            document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
-            this.classList.add('active');
-            
-            // Atualizar navegação principal
-            document.querySelectorAll('.nav-link').forEach(l => {
-                l.classList.remove('active');
-                if (l.getAttribute('data-page') === page) {
-                    l.classList.add('active');
-                }
-            });
+            if (page) {
+                showPage(page);
+                
+                // Atualizar estado ativo
+                document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Atualizar navegação principal
+                document.querySelectorAll('.nav-link').forEach(l => {
+                    l.classList.remove('active');
+                    if (l.getAttribute('data-page') === page) {
+                        l.classList.add('active');
+                    }
+                });
+            }
         });
     });
     
     // Botão de logout
-    document.getElementById('logoutBtn').addEventListener('click', function() {
-        currentUser = null;
-        localStorage.removeItem('currentUser');
-        document.getElementById('app').style.display = 'none';
-        document.getElementById('loginScreen').style.display = 'flex';
-        showLoginForm();
-    });
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function() {
+            if (confirm('Tem certeza que deseja sair?')) {
+                currentUser = null;
+                localStorage.removeItem('currentUser');
+                const app = document.getElementById('app');
+                const loginScreen = document.getElementById('loginScreen');
+                
+                if (app) app.style.display = 'none';
+                if (loginScreen) loginScreen.style.display = 'flex';
+                
+                showLoginForm();
+                showNotification('Logout realizado com sucesso!', 'success');
+            }
+        });
+    }
 }
 
 function setupButtons() {
     // Configurar botão "Meus Eventos" para usuários comuns
     const myEventsBtn = document.getElementById('myEventsBtn');
-    if (myEventsBtn && currentUser.role === 'user') {
+    if (myEventsBtn && currentUser && currentUser.role === 'user') {
         myEventsBtn.style.display = 'block';
         myEventsBtn.addEventListener('click', function() {
             loadMyEvents();
@@ -55,23 +69,42 @@ function setupButtons() {
 }
 
 function showPage(page) {
+    if (!page) return;
+    
     // Ocultar todas as páginas
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => {
+        if (p.classList.contains('active')) {
+            p.classList.remove('active');
+        }
+    });
     
     // Mostrar a página solicitada
-    document.getElementById(`${page}-page`).classList.add('active');
+    const pageElement = document.getElementById(`${page}-page`);
+    if (pageElement) {
+        pageElement.classList.add('active');
+    }
     
     // Recarregar dados específicos da página
-    if (page === 'dashboard') {
-        loadDashboard();
-    } else if (page === 'events') {
-        loadEvents();
-    } else if (page === 'chat') {
-        loadChatUsers();
-    } else if (page === 'users' && currentUser.role === 'admin') {
-        loadUsersTable();
-    } else if (page === 'categories' && currentUser.role === 'admin') {
-        loadCategoriesTable();
+    switch (page) {
+        case 'dashboard':
+            loadDashboard();
+            break;
+        case 'events':
+            loadEvents();
+            break;
+        case 'chat':
+            loadChatUsers();
+            break;
+        case 'users':
+            if (currentUser && currentUser.role === 'admin') {
+                loadUsersTable();
+            }
+            break;
+        case 'categories':
+            if (currentUser && currentUser.role === 'admin') {
+                loadCategoriesTable();
+            }
+            break;
     }
 }
 
@@ -79,94 +112,150 @@ function setupModals() {
     // Modal de evento
     const addEventBtn = document.getElementById('addEventBtn');
     const addEventModal = document.getElementById('addEventModal');
-    const eventModalClose = addEventModal.querySelector('.modal-close');
     
-    if (addEventBtn) {
+    if (addEventBtn && addEventModal) {
         addEventBtn.addEventListener('click', () => {
             loadCategoryOptions();
             addEventModal.classList.add('active');
         });
+        
+        const eventModalClose = addEventModal.querySelector('.modal-close');
+        if (eventModalClose) {
+            eventModalClose.addEventListener('click', () => {
+                addEventModal.classList.remove('active');
+                // Resetar formulário
+                const form = document.getElementById('addEventForm');
+                if (form) {
+                    form.reset();
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.textContent = 'Criar Evento';
+                    }
+                }
+            });
+        }
     }
-    
-    eventModalClose.addEventListener('click', () => {
-        addEventModal.classList.remove('active');
-    });
     
     // Modal de usuário
     const addUserBtn = document.getElementById('addUserBtn');
     const addUserModal = document.getElementById('addUserModal');
-    const userModalClose = addUserModal.querySelector('.modal-close');
     
-    if (addUserBtn) {
+    if (addUserBtn && addUserModal) {
         addUserBtn.addEventListener('click', () => {
             addUserModal.classList.add('active');
         });
+        
+        const userModalClose = addUserModal.querySelector('.modal-close');
+        if (userModalClose) {
+            userModalClose.addEventListener('click', () => {
+                addUserModal.classList.remove('active');
+                const form = document.getElementById('addUserForm');
+                if (form) form.reset();
+            });
+        }
     }
-    
-    userModalClose.addEventListener('click', () => {
-        addUserModal.classList.remove('active');
-    });
     
     // Modal de categoria
     const addCategoryBtn = document.getElementById('addCategoryBtn');
     const addCategoryModal = document.getElementById('addCategoryModal');
-    const categoryModalClose = addCategoryModal.querySelector('.modal-close');
     
-    if (addCategoryBtn) {
+    if (addCategoryBtn && addCategoryModal) {
         addCategoryBtn.addEventListener('click', () => {
             addCategoryModal.classList.add('active');
         });
+        
+        const categoryModalClose = addCategoryModal.querySelector('.modal-close');
+        if (categoryModalClose) {
+            categoryModalClose.addEventListener('click', () => {
+                addCategoryModal.classList.remove('active');
+                const form = document.getElementById('addCategoryForm');
+                if (form) form.reset();
+            });
+        }
     }
-    
-    categoryModalClose.addEventListener('click', () => {
-        addCategoryModal.classList.remove('active');
-    });
     
     // Modal de detalhes do evento
     const eventDetailsModal = document.getElementById('eventDetailsModal');
-    const eventDetailsClose = eventDetailsModal.querySelector('.modal-close');
-    
-    eventDetailsClose.addEventListener('click', () => {
-        eventDetailsModal.classList.remove('active');
-    });
+    if (eventDetailsModal) {
+        const eventDetailsClose = eventDetailsModal.querySelector('.modal-close');
+        if (eventDetailsClose) {
+            eventDetailsClose.addEventListener('click', () => {
+                eventDetailsModal.classList.remove('active');
+            });
+        }
+    }
     
     // Fechar modais ao clicar fora
     window.addEventListener('click', (e) => {
-        if (e.target === addEventModal) {
-            addEventModal.classList.remove('active');
-        }
-        if (e.target === addUserModal) {
-            addUserModal.classList.remove('active');
-        }
-        if (e.target === addCategoryModal) {
-            addCategoryModal.classList.remove('active');
-        }
-        if (e.target === eventDetailsModal) {
-            eventDetailsModal.classList.remove('active');
-        }
+        const modals = [
+            'addEventModal',
+            'addUserModal', 
+            'addCategoryModal',
+            'eventDetailsModal'
+        ];
+        
+        modals.forEach(modalId => {
+            const modal = document.getElementById(modalId);
+            if (modal && e.target === modal) {
+                modal.classList.remove('active');
+                
+                // Resetar formulários se necessário
+                if (modalId === 'addEventModal') {
+                    const form = document.getElementById('addEventForm');
+                    if (form) {
+                        form.reset();
+                        const submitBtn = form.querySelector('button[type="submit"]');
+                        if (submitBtn) {
+                            submitBtn.textContent = 'Criar Evento';
+                        }
+                    }
+                }
+            }
+        });
     });
     
     // Formulário de evento
-    document.getElementById('addEventForm').addEventListener('submit', (e) => {
-        e.preventDefault();
-        createEvent();
-    });
+    const eventForm = document.getElementById('addEventForm');
+    if (eventForm) {
+        // Remover event listeners anteriores
+        const newEventForm = eventForm.cloneNode(true);
+        eventForm.parentNode.replaceChild(newEventForm, eventForm);
+        
+        document.getElementById('addEventForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (validateEventForm()) {
+                createEvent();
+            }
+        });
+    }
     
     // Formulário de usuário
-    document.getElementById('addUserForm').addEventListener('submit', (e) => {
-        e.preventDefault();
-        createUser();
-    });
+    const userForm = document.getElementById('addUserForm');
+    if (userForm) {
+        userForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (validateUserForm()) {
+                createUser();
+            }
+        });
+    }
     
     // Formulário de categoria
-    document.getElementById('addCategoryForm').addEventListener('submit', (e) => {
-        e.preventDefault();
-        createCategory();
-    });
+    const categoryForm = document.getElementById('addCategoryForm');
+    if (categoryForm) {
+        categoryForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (validateCategoryForm()) {
+                createCategory();
+            }
+        });
+    }
 }
 
 function loadCategoryOptions() {
     const categorySelect = document.getElementById('eventCategory');
+    if (!categorySelect) return;
+    
     categorySelect.innerHTML = '<option value="">Selecione uma categoria</option>';
     
     categories.forEach(category => {
@@ -175,4 +264,103 @@ function loadCategoryOptions() {
         option.textContent = category.name;
         categorySelect.appendChild(option);
     });
+}
+
+// Validações de formulário
+function validateEventForm() {
+    const title = document.getElementById('eventTitle')?.value.trim();
+    const date = document.getElementById('eventDate')?.value;
+    const time = document.getElementById('eventTime')?.value;
+    const location = document.getElementById('eventLocation')?.value.trim();
+    const description = document.getElementById('eventDescription')?.value.trim();
+    const category = document.getElementById('eventCategory')?.value;
+    
+    if (!title) {
+        showNotification('Título do evento é obrigatório', 'error');
+        return false;
+    }
+    
+    if (!date) {
+        showNotification('Data do evento é obrigatória', 'error');
+        return false;
+    }
+    
+    if (new Date(date) < new Date().setHours(0,0,0,0)) {
+        showNotification('Data do evento não pode ser no passado', 'error');
+        return false;
+    }
+    
+    if (!time) {
+        showNotification('Horário do evento é obrigatório', 'error');
+        return false;
+    }
+    
+    if (!location) {
+        showNotification('Local do evento é obrigatório', 'error');
+        return false;
+    }
+    
+    if (!description) {
+        showNotification('Descrição do evento é obrigatória', 'error');
+        return false;
+    }
+    
+    if (!category) {
+        showNotification('Categoria do evento é obrigatória', 'error');
+        return false;
+    }
+    
+    return true;
+}
+
+function validateUserForm() {
+    const name = document.getElementById('newUserName')?.value.trim();
+    const email = document.getElementById('newUserEmail')?.value.trim();
+    const password = document.getElementById('newUserPassword')?.value;
+    
+    if (!name) {
+        showNotification('Nome do usuário é obrigatório', 'error');
+        return false;
+    }
+    
+    if (!email) {
+        showNotification('E-mail do usuário é obrigatório', 'error');
+        return false;
+    }
+    
+    // Validação simples de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showNotification('Por favor, insira um e-mail válido', 'error');
+        return false;
+    }
+    
+    if (!password) {
+        showNotification('Senha do usuário é obrigatória', 'error');
+        return false;
+    }
+    
+    if (password.length < 6) {
+        showNotification('A senha deve ter pelo menos 6 caracteres', 'error');
+        return false;
+    }
+    
+    return true;
+}
+
+function validateCategoryForm() {
+    const name = document.getElementById('categoryName')?.value.trim();
+    const icon = document.getElementById('categoryIcon')?.value.trim();
+    
+    if (!name) {
+        showNotification('Nome da categoria é obrigatório', 'error');
+        return false;
+    }
+    
+    if (!icon) {
+        showNotification('Ícone da categoria é obrigatório', 'error');
+        return false;
+    }
+    
+    return true;
 }
