@@ -649,3 +649,13 @@ header {
 .show-admin {
     display: flex !important;
 }
+
+.category-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-right: 5px;
+    color: white;
+}
