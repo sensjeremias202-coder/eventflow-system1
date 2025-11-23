@@ -6,14 +6,6 @@ let users = JSON.parse(localStorage.getItem('users')) || [
     { id: 3, name: 'Maria Andrade', email: 'maria@email.com', password: '123456', role: 'user', registered: '2023-03-10' }
 ];
 
-let categories = JSON.parse(localStorage.getItem('categories')) || [
-    { id: 1, name: 'Música', color: '#4361ee', icon: 'fas fa-music' },
-    { id: 2, name: 'Workshop', color: '#3f37c9', icon: 'fas fa-chalkboard-teacher' },
-    { id: 3, name: 'Gastronomia', color: '#4cc9f0', icon: 'fas fa-utensils' },
-    { id: 4, name: 'Esportes', color: '#f72585', icon: 'fas fa-running' },
-    { id: 5, name: 'Negócios', color: '#f8961e', icon: 'fas fa-briefcase' }
-];
-
 let events = JSON.parse(localStorage.getItem('events')) || [
     {
         id: 1,
@@ -22,7 +14,7 @@ let events = JSON.parse(localStorage.getItem('events')) || [
         time: '18:00',
         location: 'Parque Central',
         description: 'Um festival com as melhores bandas da região. Traga sua família e amigos!',
-        category: 1,
+        category: 'music',
         createdBy: 1,
         ratings: [
             { userId: 2, rating: 4, comment: 'Ótimo evento, adoramos a apresentação!', date: '2023-10-16' },
@@ -36,7 +28,7 @@ let events = JSON.parse(localStorage.getItem('events')) || [
         time: '14:00',
         location: 'Centro de Convenções',
         description: 'Aprenda as melhores estratégias de marketing digital com especialistas.',
-        category: 2,
+        category: 'workshop',
         createdBy: 1,
         ratings: [
             { userId: 2, rating: 4, comment: 'Conteúdo muito relevante para meu negócio.', date: '2023-10-21' }
@@ -164,7 +156,6 @@ function showApp() {
     loadChatUsers();
     if (currentUser.role === 'admin') {
         loadUsersTable();
-        loadCategoriesTable();
     }
     
     // Configurar modais
@@ -173,12 +164,33 @@ function showApp() {
 
 function saveData() {
     localStorage.setItem('users', JSON.stringify(users));
-    localStorage.setItem('categories', JSON.stringify(categories));
     localStorage.setItem('events', JSON.stringify(events));
     localStorage.setItem('messages', JSON.stringify(messages));
 }
 
 // Funções auxiliares
+function getCategoryColor(category) {
+    const colors = {
+        music: '#4361ee',
+        workshop: '#3f37c9',
+        food: '#4cc9f0',
+        sports: '#f72585',
+        business: '#f8961e'
+    };
+    return colors[category] || '#4361ee';
+}
+
+function getCategoryIcon(category) {
+    const icons = {
+        music: 'fas fa-music',
+        workshop: 'fas fa-chalkboard-teacher',
+        food: 'fas fa-utensils',
+        sports: 'fas fa-running',
+        business: 'fas fa-briefcase'
+    };
+    return icons[category] || 'fas fa-calendar-alt';
+}
+
 function formatDate(dateString) {
     const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
     return new Date(dateString).toLocaleDateString('pt-BR', options);
@@ -206,4 +218,36 @@ function generateStarRating(rating) {
     }
     
     return stars;
+}
+function showApp() {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    
+    // Atualizar interface com base no usuário atual
+    document.getElementById('userName').textContent = currentUser.name;
+    
+    // Mostrar/ocultar funcionalidades de administrador
+    if (currentUser.role === 'admin') {
+        document.querySelectorAll('.admin-only').forEach(el => {
+            el.style.display = 'flex';
+        });
+    }
+    
+    // Configurar navegação
+    setupNavigation();
+    
+    // Configurar botões
+    setupButtons();
+    
+    // Carregar dados iniciais
+    loadDashboard();
+    loadEvents();
+    loadChatUsers();
+    if (currentUser.role === 'admin') {
+        loadUsersTable();
+        loadCategoriesTable();
+    }
+    
+    // Configurar modais
+    setupModals();
 }

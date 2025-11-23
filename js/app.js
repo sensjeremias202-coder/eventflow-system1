@@ -43,6 +43,17 @@ function setupNavigation() {
     });
 }
 
+function setupButtons() {
+    // Configurar botão "Meus Eventos" para usuários comuns
+    const myEventsBtn = document.getElementById('myEventsBtn');
+    if (myEventsBtn && currentUser.role === 'user') {
+        myEventsBtn.style.display = 'block';
+        myEventsBtn.addEventListener('click', function() {
+            loadMyEvents();
+        });
+    }
+}
+
 function showPage(page) {
     // Ocultar todas as páginas
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));

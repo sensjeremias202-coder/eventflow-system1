@@ -5,26 +5,18 @@ function loadEvents() {
     // Ordenar eventos por data (mais recentes primeiro)
     const sortedEvents = [...events].sort((a, b) => new Date(a.date) - new Date(b.date));
     
-    if (sortedEvents.length === 0) {
-        eventsGrid.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 40px;">Nenhum evento cadastrado ainda.</p>';
-        return;
-    }
-    
     sortedEvents.forEach(event => {
         // Calcular avaliação média
         const avgRating = event.ratings.length > 0 
             ? (event.ratings.reduce((sum, r) => sum + r.rating, 0) / event.ratings.length).toFixed(1)
             : '0.0';
         
-        // Encontrar categoria
-        const category = categories.find(c => c.id === event.category);
-        
         // Criar card do evento
         const eventCard = document.createElement('div');
         eventCard.className = 'event-card';
         eventCard.innerHTML = `
-            <div class="event-image" style="background-color: ${category ? category.color : '#4361ee'};">
-                <i class="${category ? category.icon : 'fas fa-calendar-alt'}"></i>
+            <div class="event-image" style="background-color: ${getCategoryColor(event.category)};">
+                <i class="${getCategoryIcon(event.category)}"></i>
             </div>
             <div class="event-content">
                 <h3 class="event-title">${event.title}</h3>
@@ -34,11 +26,6 @@ function loadEvents() {
                 </div>
                 <div class="event-meta">
                     <div><i class="fas fa-map-marker-alt"></i> ${event.location}</div>
-                </div>
-                <div class="event-meta">
-                    <span class="category-badge" style="background-color: ${category ? category.color : '#4361ee'};">
-                        <i class="${category ? category.icon : 'fas fa-tag'}"></i> ${category ? category.name : 'Geral'}
-                    </span>
                 </div>
                 <p>${event.description.substring(0, 100)}${event.description.length > 100 ? '...' : ''}</p>
                 <div class="event-actions">
@@ -100,9 +87,6 @@ function showEventDetails(eventId) {
         ? (event.ratings.reduce((sum, r) => sum + r.rating, 0) / event.ratings.length).toFixed(1)
         : '0.0';
     
-    // Encontrar categoria
-    const category = categories.find(c => c.id === event.category);
-    
     // Criador do evento
     const creator = users.find(u => u.id === event.createdBy);
     
@@ -131,11 +115,7 @@ function showEventDetails(eventId) {
             <div><i class="far fa-calendar"></i> ${formatDate(event.date)}</div>
             <div><i class="far fa-clock"></i> ${event.time}</div>
             <div><i class="fas fa-map-marker-alt"></i> ${event.location}</div>
-            <div>
-                <span class="category-badge" style="background-color: ${category ? category.color : '#4361ee'};">
-                    <i class="${category ? category.icon : 'fas fa-tag'}"></i> ${category ? category.name : 'Geral'}
-                </span>
-            </div>
+            <div><i class="fas fa-tag"></i> ${getCategoryName(event.category)}</div>
         </div>
         <p>${event.description}</p>
         
@@ -274,7 +254,7 @@ function createEvent() {
     const time = document.getElementById('eventTime').value;
     const location = document.getElementById('eventLocation').value;
     const description = document.getElementById('eventDescription').value;
-    const category = parseInt(document.getElementById('eventCategory').value);
+    const category = document.getElementById('eventCategory').value;
     
     const newEvent = {
         id: events.length > 0 ? Math.max(...events.map(e => e.id)) + 1 : 1,
@@ -315,7 +295,6 @@ function editEvent(eventId) {
     
     // Alterar o evento de submit para atualização
     const form = document.getElementById('addEventForm');
-    const originalSubmit = form.onsubmit;
     form.onsubmit = function(e) {
         e.preventDefault();
         updateEvent(eventId);
@@ -334,7 +313,7 @@ function updateEvent(eventId) {
     const time = document.getElementById('eventTime').value;
     const location = document.getElementById('eventLocation').value;
     const description = document.getElementById('eventDescription').value;
-    const category = parseInt(document.getElementById('eventCategory').value);
+    const category = document.getElementById('eventCategory').value;
     
     // Atualizar evento
     events[eventIndex] = {
@@ -371,4 +350,279 @@ function deleteEvent(eventId) {
         loadEvents();
         alert('Evento excluído com sucesso!');
     }
+}
+
+function getCategoryName(category) {
+    const names = {
+        music: 'Música',
+        workshop: 'Workshop',
+        food: 'Gastronomia',
+        sports: 'Esportes',
+        business: 'Negócios'
+    };
+    return names[category] || 'Outro';
+}
+
+// Função para carregar apenas os eventos do usuário atual
+function loadMyEvents() {
+    const eventsGrid = document.getElementById('eventsGrid');
+    eventsGrid.innerHTML = '';
+    
+    // Filtrar eventos que o usuário avaliou ou criou
+    const userEvents = events.filter(event => 
+        event.ratings.some(rating => rating.userId === currentUser.id) ||
+        event.createdBy === currentUser.id
+    );
+    
+    // Ordenar por data
+    const sortedEvents = [...userEvents].sort((a, b) => new Date(a.date) - new Date(b.date));
+    
+    if (sortedEvents.length === 0) {
+        eventsGrid.innerHTML = `
+            <div style="text-align: center; color: var(--gray); padding: 40px; grid-column: 1 / -1;">
+                <i class="fas fa-calendar-times fa-3x" style="margin-bottom: 20px;"></i>
+                <p>Você ainda não participou de nenhum evento.</p>
+                <p>Explore os eventos disponíveis e faça sua primeira avaliação!</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Adicionar botão "Voltar para Todos os Eventos"
+    const eventsHeader = document.querySelector('#events-page .card-header');
+    if (!document.getElementById('allEventsBtn')) {
+        const allEventsBtn = document.createElement('button');
+        allEventsBtn.id = 'allEventsBtn';
+        allEventsBtn.className = 'btn btn-outline';
+        allEventsBtn.innerHTML = '<i class="fas fa-list"></i> Todos os Eventos';
+        allEventsBtn.style.marginRight = '10px';
+        eventsHeader.querySelector('div').prepend(allEventsBtn);
+        
+        allEventsBtn.addEventListener('click', function() {
+            loadEvents();
+            this.style.display = 'none';
+            document.getElementById('myEventsBtn').style.display = 'block';
+        });
+    }
+    
+    document.getElementById('myEventsBtn').style.display = 'none';
+    document.getElementById('allEventsBtn').style.display = 'block';
+    
+    // Carregar eventos do usuário
+    sortedEvents.forEach(event => {
+        // Calcular avaliação média
+        const avgRating = event.ratings.length > 0 
+            ? (event.ratings.reduce((sum, r) => sum + r.rating, 0) / event.ratings.length).toFixed(1)
+            : '0.0';
+        
+        // Encontrar categoria
+        const category = categories.find(c => c.id === event.category);
+        
+        // Encontrar avaliação do usuário atual
+        const userRating = event.ratings.find(r => r.userId === currentUser.id);
+        
+        // Criar card do evento
+        const eventCard = document.createElement('div');
+        eventCard.className = 'event-card';
+        eventCard.innerHTML = `
+            <div class="event-image" style="background-color: ${category ? category.color : '#4361ee'};">
+                <i class="${category ? category.icon : 'fas fa-calendar-alt'}"></i>
+            </div>
+            <div class="event-content">
+                <h3 class="event-title">${event.title}</h3>
+                <div class="event-meta">
+                    <div><i class="far fa-calendar"></i> ${formatDate(event.date)}</div>
+                    <div><i class="far fa-clock"></i> ${event.time}</div>
+                </div>
+                <div class="event-meta">
+                    <div><i class="fas fa-map-marker-alt"></i> ${event.location}</div>
+                </div>
+                <div class="event-meta">
+                    <span class="category-badge" style="background-color: ${category ? category.color : '#4361ee'};">
+                        <i class="${category ? category.icon : 'fas fa-tag'}"></i> ${category ? category.name : 'Geral'}
+                    </span>
+                </div>
+                <p>${event.description.substring(0, 100)}${event.description.length > 100 ? '...' : ''}</p>
+                
+                ${userRating ? `
+                    <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 10px 0;">
+                        <strong>Sua avaliação:</strong>
+                        <div class="event-rating">
+                            ${generateStarRating(userRating.rating)}
+                            <span>${userRating.rating}/5</span>
+                        </div>
+                        <p style="margin-top: 5px; font-size: 0.9em;">"${userRating.comment}"</p>
+                    </div>
+                ` : ''}
+                
+                <div class="event-actions">
+                    <div class="event-rating">
+                        ${generateStarRating(avgRating)}
+                        <span>${avgRating} (${event.ratings.length})</span>
+                    </div>
+                    <div>
+                        <button class="btn btn-outline btn-sm view-event" data-id="${event.id}">
+                            <i class="far fa-eye"></i> Ver
+                        </button>
+                        ${!userRating ? `
+                            <button class="btn btn-primary btn-sm rate-event" data-id="${event.id}">
+                                <i class="fas fa-star"></i> Avaliar
+                            </button>
+                        ` : `
+                            <button class="btn btn-outline btn-sm edit-rating" data-id="${event.id}">
+                                <i class="fas fa-edit"></i> Editar Avaliação
+                            </button>
+                        `}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        eventsGrid.appendChild(eventCard);
+    });
+    
+    // Adicionar eventos aos botões
+    setupEventButtons();
+}
+
+// Configurar botões dos eventos
+function setupEventButtons() {
+    document.querySelectorAll('.view-event').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const eventId = parseInt(this.getAttribute('data-id'));
+            showEventDetails(eventId);
+        });
+    });
+    
+    document.querySelectorAll('.rate-event').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const eventId = parseInt(this.getAttribute('data-id'));
+            showEventDetails(eventId);
+        });
+    });
+    
+    document.querySelectorAll('.edit-rating').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const eventId = parseInt(this.getAttribute('data-id'));
+            showEventDetails(eventId);
+        });
+    });
+    
+    if (currentUser.role === 'admin') {
+        document.querySelectorAll('.edit-event').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const eventId = parseInt(this.getAttribute('data-id'));
+                editEvent(eventId);
+            });
+        });
+        
+        document.querySelectorAll('.delete-event').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const eventId = parseInt(this.getAttribute('data-id'));
+                deleteEvent(eventId);
+            });
+        });
+    }
+}
+
+// Modificar a função loadEvents existente para incluir o setup
+function loadEvents() {
+    const eventsGrid = document.getElementById('eventsGrid');
+    eventsGrid.innerHTML = '';
+    
+    // Ordenar eventos por data (mais recentes primeiro)
+    const sortedEvents = [...events].sort((a, b) => new Date(a.date) - new Date(b.date));
+    
+    if (sortedEvents.length === 0) {
+        eventsGrid.innerHTML = `
+            <div style="text-align: center; color: var(--gray); padding: 40px; grid-column: 1 / -1;">
+                <i class="fas fa-calendar-plus fa-3x" style="margin-bottom: 20px;"></i>
+                <p>Nenhum evento cadastrado ainda.</p>
+                ${currentUser.role === 'admin' ? 
+                    '<p>Clique em "Adicionar Evento" para criar o primeiro evento!</p>' : 
+                    '<p>Aguarde enquanto os administradores cadastram novos eventos.</p>'
+                }
+            </div>
+        `;
+        return;
+    }
+    
+    // Esconder botão "Todos os Eventos" se existir
+    const allEventsBtn = document.getElementById('allEventsBtn');
+    if (allEventsBtn) {
+        allEventsBtn.style.display = 'none';
+    }
+    
+    // Mostrar botão "Meus Eventos" para usuários comuns
+    const myEventsBtn = document.getElementById('myEventsBtn');
+    if (myEventsBtn && currentUser.role === 'user') {
+        myEventsBtn.style.display = 'block';
+    }
+    
+    sortedEvents.forEach(event => {
+        // Calcular avaliação média
+        const avgRating = event.ratings.length > 0 
+            ? (event.ratings.reduce((sum, r) => sum + r.rating, 0) / event.ratings.length).toFixed(1)
+            : '0.0';
+        
+        // Encontrar categoria
+        const category = categories.find(c => c.id === event.category);
+        
+        // Verificar se o usuário já avaliou este evento
+        const userRating = event.ratings.find(r => r.userId === currentUser.id);
+        
+        // Criar card do evento
+        const eventCard = document.createElement('div');
+        eventCard.className = 'event-card';
+        eventCard.innerHTML = `
+            <div class="event-image" style="background-color: ${category ? category.color : '#4361ee'};">
+                <i class="${category ? category.icon : 'fas fa-calendar-alt'}"></i>
+            </div>
+            <div class="event-content">
+                <h3 class="event-title">${event.title}</h3>
+                <div class="event-meta">
+                    <div><i class="far fa-calendar"></i> ${formatDate(event.date)}</div>
+                    <div><i class="far fa-clock"></i> ${event.time}</div>
+                </div>
+                <div class="event-meta">
+                    <div><i class="fas fa-map-marker-alt"></i> ${event.location}</div>
+                </div>
+                <div class="event-meta">
+                    <span class="category-badge" style="background-color: ${category ? category.color : '#4361ee'};">
+                        <i class="${category ? category.icon : 'fas fa-tag'}"></i> ${category ? category.name : 'Geral'}
+                    </span>
+                </div>
+                <p>${event.description.substring(0, 100)}${event.description.length > 100 ? '...' : ''}</p>
+                <div class="event-actions">
+                    <div class="event-rating">
+                        ${generateStarRating(avgRating)}
+                        <span>${avgRating} (${event.ratings.length})</span>
+                    </div>
+                    <div>
+                        <button class="btn btn-outline btn-sm view-event" data-id="${event.id}">
+                            <i class="far fa-eye"></i> Ver
+                        </button>
+                        ${currentUser.role === 'admin' ? `
+                            <button class="btn btn-outline btn-sm edit-event" data-id="${event.id}">
+                                <i class="far fa-edit"></i>
+                            </button>
+                            <button class="btn btn-outline btn-sm delete-event" data-id="${event.id}">
+                                <i class="far fa-trash-alt"></i>
+                            </button>
+                        ` : ''}
+                        ${currentUser.role === 'user' && !userRating ? `
+                            <button class="btn btn-primary btn-sm rate-event" data-id="${event.id}">
+                                <i class="fas fa-star"></i> Avaliar
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        eventsGrid.appendChild(eventCard);
+    });
+    
+    // Configurar os botões
+    setupEventButtons();
 }
