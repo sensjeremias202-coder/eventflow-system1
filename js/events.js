@@ -5,18 +5,26 @@ function loadEvents() {
     // Ordenar eventos por data (mais recentes primeiro)
     const sortedEvents = [...events].sort((a, b) => new Date(a.date) - new Date(b.date));
     
+    if (sortedEvents.length === 0) {
+        eventsGrid.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 40px;">Nenhum evento cadastrado ainda.</p>';
+        return;
+    }
+    
     sortedEvents.forEach(event => {
         // Calcular avaliação média
         const avgRating = event.ratings.length > 0 
             ? (event.ratings.reduce((sum, r) => sum + r.rating, 0) / event.ratings.length).toFixed(1)
             : '0.0';
         
+        // Encontrar categoria
+        const category = categories.find(c => c.id === event.category);
+        
         // Criar card do evento
         const eventCard = document.createElement('div');
         eventCard.className = 'event-card';
         eventCard.innerHTML = `
-            <div class="event-image" style="background-color: ${getCategoryColor(event.category)};">
-                <i class="${getCategoryIcon(event.category)}"></i>
+            <div class="event-image" style="background-color: ${category ? category.color : '#4361ee'};">
+                <i class="${category ? category.icon : 'fas fa-calendar-alt'}"></i>
             </div>
             <div class="event-content">
                 <h3 class="event-title">${event.title}</h3>
@@ -26,6 +34,11 @@ function loadEvents() {
                 </div>
                 <div class="event-meta">
                     <div><i class="fas fa-map-marker-alt"></i> ${event.location}</div>
+                </div>
+                <div class="event-meta">
+                    <span class="category-badge" style="background-color: ${category ? category.color : '#4361ee'};">
+                        <i class="${category ? category.icon : 'fas fa-tag'}"></i> ${category ? category.name : 'Geral'}
+                    </span>
                 </div>
                 <p>${event.description.substring(0, 100)}${event.description.length > 100 ? '...' : ''}</p>
                 <div class="event-actions">
@@ -87,6 +100,9 @@ function showEventDetails(eventId) {
         ? (event.ratings.reduce((sum, r) => sum + r.rating, 0) / event.ratings.length).toFixed(1)
         : '0.0';
     
+    // Encontrar categoria
+    const category = categories.find(c => c.id === event.category);
+    
     // Criador do evento
     const creator = users.find(u => u.id === event.createdBy);
     
@@ -115,7 +131,11 @@ function showEventDetails(eventId) {
             <div><i class="far fa-calendar"></i> ${formatDate(event.date)}</div>
             <div><i class="far fa-clock"></i> ${event.time}</div>
             <div><i class="fas fa-map-marker-alt"></i> ${event.location}</div>
-            <div><i class="fas fa-tag"></i> ${getCategoryName(event.category)}</div>
+            <div>
+                <span class="category-badge" style="background-color: ${category ? category.color : '#4361ee'};">
+                    <i class="${category ? category.icon : 'fas fa-tag'}"></i> ${category ? category.name : 'Geral'}
+                </span>
+            </div>
         </div>
         <p>${event.description}</p>
         
@@ -254,7 +274,7 @@ function createEvent() {
     const time = document.getElementById('eventTime').value;
     const location = document.getElementById('eventLocation').value;
     const description = document.getElementById('eventDescription').value;
-    const category = document.getElementById('eventCategory').value;
+    const category = parseInt(document.getElementById('eventCategory').value);
     
     const newEvent = {
         id: events.length > 0 ? Math.max(...events.map(e => e.id)) + 1 : 1,
@@ -295,6 +315,7 @@ function editEvent(eventId) {
     
     // Alterar o evento de submit para atualização
     const form = document.getElementById('addEventForm');
+    const originalSubmit = form.onsubmit;
     form.onsubmit = function(e) {
         e.preventDefault();
         updateEvent(eventId);
@@ -313,7 +334,7 @@ function updateEvent(eventId) {
     const time = document.getElementById('eventTime').value;
     const location = document.getElementById('eventLocation').value;
     const description = document.getElementById('eventDescription').value;
-    const category = document.getElementById('eventCategory').value;
+    const category = parseInt(document.getElementById('eventCategory').value);
     
     // Atualizar evento
     events[eventIndex] = {
@@ -350,15 +371,4 @@ function deleteEvent(eventId) {
         loadEvents();
         alert('Evento excluído com sucesso!');
     }
-}
-
-function getCategoryName(category) {
-    const names = {
-        music: 'Música',
-        workshop: 'Workshop',
-        food: 'Gastronomia',
-        sports: 'Esportes',
-        business: 'Negócios'
-    };
-    return names[category] || 'Outro';
 }
