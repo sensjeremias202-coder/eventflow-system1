@@ -402,33 +402,4 @@ function setupLogout() {
 }
 
 // Chame esta função no showApp()
-function showApp() {
-    // ... código existente ...
-    
-    // Configurar logout
-    setupLogout();
-    
-    // ... resto do código ...
-}
-function setupModals() {
-    // Configurar botões de fechar em todos os modais
-    document.querySelectorAll('.modal').forEach(modal => {
-        const closeBtn = modal.querySelector('.modal-close');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => {
-                modal.classList.remove('active');
-            });
-        }
-        
-        // Adicionar botão de fechar extra
-        const extraCloseBtn = document.createElement('button');
-        extraCloseBtn.className = 'btn-close-modal';
-        extraCloseBtn.innerHTML = '&times;';
-        extraCloseBtn.addEventListener('click', () => {
-            modal.classList.remove('active');
-        });
-        modal.querySelector('.modal-header').appendChild(extraCloseBtn);
-    });
-    
-    // ... resto do código dos modais ...
-}
+// (Função showApp já é definida em `js/auth.js`. Aqui mantemos apenas `setupLogout`.)

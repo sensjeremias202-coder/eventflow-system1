@@ -238,6 +238,9 @@ function showApp() {
     // Configurar botões
     setupButtons();
     
+    // Configurar logout (definido em app.js)
+    if (typeof setupLogout === 'function') setupLogout();
+    
     // Carregar dados iniciais
     loadDashboard();
     loadEvents();
