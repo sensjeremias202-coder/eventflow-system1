@@ -112,16 +112,34 @@ function deleteEvent(eventId) {
     if (typeof showConfirm === 'function') {
         showConfirm(message, 'Excluir evento').then(confirmed => {
             if (!confirmed) return;
+            const removed = events.find(e => e.id === eventId);
             events = events.filter(e => e.id !== eventId);
             saveData();
-            showNotification('Evento excluído com sucesso!', 'success');
+            showNotification('Evento excluído com sucesso!', 'success', {
+                actionLabel: 'Desfazer',
+                actionCallback: function() {
+                    events.push(removed);
+                    saveData();
+                    loadEvents();
+                    showNotification('Exclusão desfeita', 'success');
+                }
+            });
             loadEvents();
         });
     } else {
         if (!confirm(message)) return;
+        const removed = events.find(e => e.id === eventId);
         events = events.filter(e => e.id !== eventId);
         saveData();
-        showNotification('Evento excluído com sucesso!', 'success');
+        showNotification('Evento excluído com sucesso!', 'success', {
+            actionLabel: 'Desfazer',
+            actionCallback: function() {
+                events.push(removed);
+                saveData();
+                loadEvents();
+                showNotification('Exclusão desfeita', 'success');
+            }
+        });
         loadEvents();
     }
 }

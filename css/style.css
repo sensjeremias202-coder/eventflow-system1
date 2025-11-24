@@ -579,6 +579,29 @@ header {
 }
 #confirmModal .modal-footer .btn { min-width: 100px; }
 
+/* Confirm modal animation and improved visuals */
+#confirmModal .modal-content {
+    transform: translateY(-6px) scale(0.98);
+    opacity: 0;
+    transition: all 200ms cubic-bezier(.22,1,.36,1);
+    border: 1px solid rgba(0,0,0,0.04);
+}
+
+.modal.active #confirmModal .modal-content,
+#confirmModal.active .modal-content {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+}
+
+/* Notification action style */
+.notification-action {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.15);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+}
+
 /* New classes to replace inline modal styles */
 .event-edit-badge {
     display: none; /* shown by JS */

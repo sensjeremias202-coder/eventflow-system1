@@ -55,7 +55,7 @@ function createCategory() {
     
     // Verificar se a categoria já existe
     if (categories.find(c => c.name.toLowerCase() === name.toLowerCase())) {
-        alert('Já existe uma categoria com este nome!');
+        showNotification('Já existe uma categoria com este nome!', 'error');
         return;
     }
     
@@ -70,7 +70,7 @@ function createCategory() {
     categories.push(newCategory);
     saveData();
     
-    alert('Categoria criada com sucesso!');
+    showNotification('Categoria criada com sucesso!', 'success');
     document.getElementById('addCategoryModal').classList.remove('active');
     document.getElementById('addCategoryForm').reset();
     loadCategoriesTable();
@@ -111,7 +111,7 @@ function updateCategory(categoryId) {
     // Verificar se a categoria já existe (excluindo a atual)
     const categoryExists = categories.find(c => c.name.toLowerCase() === name.toLowerCase() && c.id !== categoryId);
     if (categoryExists) {
-        alert('Já existe uma categoria com este nome!');
+        showNotification('Já existe uma categoria com este nome!', 'error');
         return;
     }
     
@@ -125,7 +125,7 @@ function updateCategory(categoryId) {
     
     saveData();
     
-    alert('Categoria atualizada com sucesso!');
+    showNotification('Categoria atualizada com sucesso!', 'success');
     document.getElementById('addCategoryModal').classList.remove('active');
     
     // Restaurar o formulário para criação
@@ -161,13 +161,22 @@ function deleteCategory(categoryId) {
         if (!confirm(message)) return;
         const eventsUsingCategory = events.filter(e => e.category === categoryId);
         if (eventsUsingCategory.length > 0) {
-            alert('Não é possível excluir esta categoria pois existem eventos vinculados a ela!');
+            showNotification('Não é possível excluir esta categoria pois existem eventos vinculados a ela!', 'error');
             return;
         }
+        const removed = categories.find(c => c.id === categoryId);
         categories = categories.filter(c => c.id !== categoryId);
         saveData();
         loadCategoriesTable();
-        alert('Categoria excluída com sucesso!');
+        showNotification('Categoria excluída com sucesso!', 'success', {
+            actionLabel: 'Desfazer',
+            actionCallback: function() {
+                categories.push(removed);
+                saveData();
+                loadCategoriesTable();
+                showNotification('Exclusão desfeita', 'success');
+            }
+        });
     }
 }
 
@@ -385,16 +394,34 @@ function deleteUser(userId) {
     if (typeof showConfirm === 'function') {
         showConfirm('Tem certeza que deseja excluir este usuário?', 'Excluir usuário').then(confirmed => {
             if (!confirmed) return;
+            const removed = users.find(u => u.id === userId);
             users = users.filter(u => u.id !== userId);
             saveData();
             loadUsersTable();
-            showNotification('Usuário excluído com sucesso', 'success');
+            showNotification('Usuário excluído com sucesso', 'success', {
+                actionLabel: 'Desfazer',
+                actionCallback: function() {
+                    users.push(removed);
+                    saveData();
+                    loadUsersTable();
+                    showNotification('Exclusão desfeita', 'success');
+                }
+            });
         });
     } else {
         if (!confirm('Tem certeza que deseja excluir este usuário?')) return;
+        const removed = users.find(u => u.id === userId);
         users = users.filter(u => u.id !== userId);
         saveData();
         loadUsersTable();
-        showNotification('Usuário excluído com sucesso', 'success');
+        showNotification('Usuário excluído com sucesso', 'success', {
+            actionLabel: 'Desfazer',
+            actionCallback: function() {
+                users.push(removed);
+                saveData();
+                loadUsersTable();
+                showNotification('Exclusão desfeita', 'success');
+            }
+        });
     }
 }

@@ -269,47 +269,102 @@ function saveData() {
 
 // Sistema de notificações
 function showNotification(message, type = 'info') {
+    // backward-compatible signature: showNotification(message, type, options)
+}
+
+function showNotification(message, type = 'info', options = {}) {
+    // options: duration (ms), actionLabel, actionCallback
+    const duration = options.duration || 5000;
+    const actionLabel = options.actionLabel;
+    const actionCallback = typeof options.actionCallback === 'function' ? options.actionCallback : null;
+
     // Criar elemento de notificação
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
-    notification.innerHTML = `
-        <span>${message}</span>
-        <button class="notification-close">&times;</button>
-    `;
-    
-    // Estilos da notificação
+
+    const content = document.createElement('div');
+    content.innerText = message;
+    content.style.flex = '1';
+
+    const actions = document.createElement('div');
+    actions.style.display = 'flex';
+    actions.style.alignItems = 'center';
+    actions.style.gap = '8px';
+
+    // Close button
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'notification-close';
+    closeBtn.innerHTML = '&times;';
+    closeBtn.style.background = 'transparent';
+    closeBtn.style.border = 'none';
+    closeBtn.style.color = 'white';
+    closeBtn.style.cursor = 'pointer';
+
+    // Optional action button (e.g., Desfazer)
+    let actionBtn = null;
+    if (actionLabel) {
+        actionBtn = document.createElement('button');
+        actionBtn.className = 'notification-action';
+        actionBtn.innerText = actionLabel;
+        actionBtn.style.cursor = 'pointer';
+        actionBtn.style.border = '1px solid rgba(255,255,255,0.2)';
+        actionBtn.style.background = 'transparent';
+        actionBtn.style.color = 'white';
+        actionBtn.style.padding = '6px 10px';
+        actionBtn.style.borderRadius = '6px';
+    }
+
+    notification.appendChild(content);
+    if (actionBtn) actions.appendChild(actionBtn);
+    actions.appendChild(closeBtn);
+    notification.appendChild(actions);
+
+    // Estilos da notificação (inline para simplicidade)
     notification.style.cssText = `
         position: fixed;
         top: 20px;
         right: 20px;
-        background: ${type === 'success' ? '#4cc9f0' : type === 'error' ? '#f72585' : '#4361ee'};
+        background: ${type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--danger)' : 'var(--primary)'};
         color: white;
-        padding: 15px 20px;
-        border-radius: 5px;
-        box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        padding: 12px 14px;
+        border-radius: 8px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.12);
         z-index: 10000;
         display: flex;
         align-items: center;
-        gap: 10px;
-        max-width: 400px;
+        gap: 12px;
+        max-width: 420px;
+        animation: toastIn 260ms ease;
     `;
-    
+
+    // Append and auto-remove
     document.body.appendChild(notification);
-    
-    // Auto-remove após 5 segundos
-    setTimeout(() => {
-        if (notification.parentNode) {
-            notification.remove();
-        }
-    }, 5000);
-    
-    // Close button
-    const closeBtn = notification.querySelector('.notification-close');
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-            notification.remove();
+
+    const timer = setTimeout(() => {
+        if (notification.parentNode) notification.remove();
+    }, duration);
+
+    function closeNotification() {
+        clearTimeout(timer);
+        if (notification.parentNode) notification.remove();
+    }
+
+    closeBtn.addEventListener('click', closeNotification);
+
+    if (actionBtn && actionCallback) {
+        actionBtn.addEventListener('click', () => {
+            try { actionCallback(); } catch (e) { console.error(e); }
+            closeNotification();
         });
     }
+}
+
+// small animation for toasts
+const styleEl = document.createElement('style');
+styleEl.innerHTML = `
+@keyframes toastIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+`;
+document.head.appendChild(styleEl);
 }
 
 // Funções auxiliares
