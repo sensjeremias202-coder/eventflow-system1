@@ -406,6 +406,23 @@
         </div>
     </div>
 
+    <!-- Generic confirmation modal -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="confirmModalTitle">Confirmação</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body" id="confirmModalBody" style="padding:16px;">
+                <p id="confirmModalMessage">Tem certeza?</p>
+            </div>
+            <div class="modal-footer" style="display:flex; gap:8px; justify-content:flex-end; padding:12px;">
+                <button class="btn btn-outline" id="confirmCancelBtn">Cancelar</button>
+                <button class="btn btn-primary" id="confirmOkBtn">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/app.js"></script>

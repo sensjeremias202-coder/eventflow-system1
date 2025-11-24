@@ -569,6 +569,16 @@ header {
     .inline-category-form .form-row { flex-direction: column; }
 }
 
+/* Confirmation modal styles */
+#confirmModal .modal-content {
+    max-width: 420px;
+}
+#confirmModal .modal-body p {
+    margin: 0;
+    color: var(--dark);
+}
+#confirmModal .modal-footer .btn { min-width: 100px; }
+
 /* New classes to replace inline modal styles */
 .event-edit-badge {
     display: none; /* shown by JS */

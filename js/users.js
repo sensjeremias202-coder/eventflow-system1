@@ -141,14 +141,29 @@ function updateCategory(categoryId) {
 }
 
 function deleteCategory(categoryId) {
-    if (confirm('Tem certeza que deseja excluir esta categoria?')) {
-        // Verificar se existem eventos usando esta categoria
+    const message = 'Tem certeza que deseja excluir esta categoria?';
+    if (typeof showConfirm === 'function') {
+        showConfirm(message, 'Excluir categoria').then(confirmed => {
+            if (!confirmed) return;
+            // Verificar se existem eventos usando esta categoria
+            const eventsUsingCategory = events.filter(e => e.category === categoryId);
+            if (eventsUsingCategory.length > 0) {
+                showNotification('Não é possível excluir esta categoria pois existem eventos vinculados a ela!', 'error');
+                return;
+            }
+
+            categories = categories.filter(c => c.id !== categoryId);
+            saveData();
+            loadCategoriesTable();
+            showNotification('Categoria excluída com sucesso!', 'success');
+        });
+    } else {
+        if (!confirm(message)) return;
         const eventsUsingCategory = events.filter(e => e.category === categoryId);
         if (eventsUsingCategory.length > 0) {
             alert('Não é possível excluir esta categoria pois existem eventos vinculados a ela!');
             return;
         }
-        
         categories = categories.filter(c => c.id !== categoryId);
         saveData();
         loadCategoriesTable();
@@ -366,10 +381,20 @@ function deleteUser(userId) {
         return;
     }
 
-    if (!confirm('Tem certeza que deseja excluir este usuário?')) return;
-
-    users = users.filter(u => u.id !== userId);
-    saveData();
-    loadUsersTable();
-    showNotification('Usuário excluído com sucesso', 'success');
+    // Use modal de confirmação se disponível
+    if (typeof showConfirm === 'function') {
+        showConfirm('Tem certeza que deseja excluir este usuário?', 'Excluir usuário').then(confirmed => {
+            if (!confirmed) return;
+            users = users.filter(u => u.id !== userId);
+            saveData();
+            loadUsersTable();
+            showNotification('Usuário excluído com sucesso', 'success');
+        });
+    } else {
+        if (!confirm('Tem certeza que deseja excluir este usuário?')) return;
+        users = users.filter(u => u.id !== userId);
+        saveData();
+        loadUsersTable();
+        showNotification('Usuário excluído com sucesso', 'success');
+    }
 }

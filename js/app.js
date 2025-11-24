@@ -437,3 +437,48 @@ function setupLogout() {
 
 // Chame esta função no showApp()
 // (Função showApp já é definida em `js/auth.js`. Aqui mantemos apenas `setupLogout`.)
+
+// Modal de confirmação genérico que retorna uma Promise
+function showConfirm(message, title = 'Confirmação') {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('confirmModal');
+        const msgEl = document.getElementById('confirmModalMessage');
+        const titleEl = document.getElementById('confirmModalTitle');
+        const okBtn = document.getElementById('confirmOkBtn');
+        const cancelBtn = document.getElementById('confirmCancelBtn');
+        const closeBtns = modal ? modal.querySelectorAll('.modal-close') : [];
+
+        if (!modal || !okBtn || !cancelBtn || !msgEl || !titleEl) {
+            // fallback para confirm() se modal não existir
+            const result = window.confirm(message);
+            resolve(result);
+            return;
+        }
+
+        titleEl.textContent = title;
+        msgEl.textContent = message;
+        modal.classList.add('active');
+
+        // Handlers
+        function cleanup() {
+            modal.classList.remove('active');
+            okBtn.removeEventListener('click', onOk);
+            cancelBtn.removeEventListener('click', onCancel);
+            closeBtns.forEach(b => b.removeEventListener('click', onCancel));
+        }
+
+        function onOk() {
+            cleanup();
+            resolve(true);
+        }
+
+        function onCancel() {
+            cleanup();
+            resolve(false);
+        }
+
+        okBtn.addEventListener('click', onOk);
+        cancelBtn.addEventListener('click', onCancel);
+        closeBtns.forEach(b => b.addEventListener('click', onCancel));
+    });
+}

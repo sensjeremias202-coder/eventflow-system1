@@ -108,12 +108,22 @@ function updateEvent(eventId) {
 }
 
 function deleteEvent(eventId) {
-    if (!confirm('Deseja realmente excluir este evento?')) return;
-
-    events = events.filter(e => e.id !== eventId);
-    saveData();
-    showNotification('Evento excluído com sucesso!', 'success');
-    loadEvents();
+    const message = 'Deseja realmente excluir este evento?';
+    if (typeof showConfirm === 'function') {
+        showConfirm(message, 'Excluir evento').then(confirmed => {
+            if (!confirmed) return;
+            events = events.filter(e => e.id !== eventId);
+            saveData();
+            showNotification('Evento excluído com sucesso!', 'success');
+            loadEvents();
+        });
+    } else {
+        if (!confirm(message)) return;
+        events = events.filter(e => e.id !== eventId);
+        saveData();
+        showNotification('Evento excluído com sucesso!', 'success');
+        loadEvents();
+    }
 }
 
 function closeModal(modalId) {
