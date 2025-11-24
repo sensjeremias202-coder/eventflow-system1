@@ -168,6 +168,105 @@ function showPage(page) {
     }
 }
 
+// Validações de formulário (definidas antes de setupModals para estarem disponíveis)
+function validateEventForm() {
+    const title = document.getElementById('eventTitle')?.value.trim();
+    const date = document.getElementById('eventDate')?.value;
+    const time = document.getElementById('eventTime')?.value;
+    const location = document.getElementById('eventLocation')?.value.trim();
+    const description = document.getElementById('eventDescription')?.value.trim();
+    const category = document.getElementById('eventCategory')?.value;
+    
+    if (!title) {
+        showNotification('Título do evento é obrigatório', 'error');
+        return false;
+    }
+    
+    if (!date) {
+        showNotification('Data do evento é obrigatória', 'error');
+        return false;
+    }
+    
+    if (new Date(date) < new Date().setHours(0,0,0,0)) {
+        showNotification('Data do evento não pode ser no passado', 'error');
+        return false;
+    }
+    
+    if (!time) {
+        showNotification('Horário do evento é obrigatório', 'error');
+        return false;
+    }
+    
+    if (!location) {
+        showNotification('Local do evento é obrigatório', 'error');
+        return false;
+    }
+    
+    if (!description) {
+        showNotification('Descrição do evento é obrigatória', 'error');
+        return false;
+    }
+    
+    if (!category) {
+        showNotification('Categoria do evento é obrigatória', 'error');
+        return false;
+    }
+    
+    return true;
+}
+
+function validateUserForm() {
+    const name = document.getElementById('newUserName')?.value.trim();
+    const email = document.getElementById('newUserEmail')?.value.trim();
+    const password = document.getElementById('newUserPassword')?.value;
+    
+    if (!name) {
+        showNotification('Nome do usuário é obrigatório', 'error');
+        return false;
+    }
+    
+    if (!email) {
+        showNotification('E-mail do usuário é obrigatório', 'error');
+        return false;
+    }
+    
+    // Validação simples de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showNotification('Por favor, insira um e-mail válido', 'error');
+        return false;
+    }
+    
+    if (!password) {
+        showNotification('Senha do usuário é obrigatória', 'error');
+        return false;
+    }
+    
+    if (password.length < 6) {
+        showNotification('A senha deve ter pelo menos 6 caracteres', 'error');
+        return false;
+    }
+    
+    return true;
+}
+
+function validateCategoryForm() {
+    const name = document.getElementById('categoryName')?.value.trim();
+    const icon = document.getElementById('categoryIcon')?.value.trim();
+    
+    if (!name) {
+        showNotification('Nome da categoria é obrigatório', 'error');
+        return false;
+    }
+    
+    if (!icon) {
+        showNotification('Ícone da categoria é obrigatório', 'error');
+        return false;
+    }
+    
+    return true;
+}
+
 function setupModals() {
     // Modal de evento
     const addEventBtn = document.getElementById('addEventBtn');
@@ -337,104 +436,6 @@ function loadCategoryOptions() {
         }
 }
 
-// Validações de formulário
-function validateEventForm() {
-    const title = document.getElementById('eventTitle')?.value.trim();
-    const date = document.getElementById('eventDate')?.value;
-    const time = document.getElementById('eventTime')?.value;
-    const location = document.getElementById('eventLocation')?.value.trim();
-    const description = document.getElementById('eventDescription')?.value.trim();
-    const category = document.getElementById('eventCategory')?.value;
-    
-    if (!title) {
-        showNotification('Título do evento é obrigatório', 'error');
-        return false;
-    }
-    
-    if (!date) {
-        showNotification('Data do evento é obrigatória', 'error');
-        return false;
-    }
-    
-    if (new Date(date) < new Date().setHours(0,0,0,0)) {
-        showNotification('Data do evento não pode ser no passado', 'error');
-        return false;
-    }
-    
-    if (!time) {
-        showNotification('Horário do evento é obrigatório', 'error');
-        return false;
-    }
-    
-    if (!location) {
-        showNotification('Local do evento é obrigatório', 'error');
-        return false;
-    }
-    
-    if (!description) {
-        showNotification('Descrição do evento é obrigatória', 'error');
-        return false;
-    }
-    
-    if (!category) {
-        showNotification('Categoria do evento é obrigatória', 'error');
-        return false;
-    }
-    
-    return true;
-}
-
-function validateUserForm() {
-    const name = document.getElementById('newUserName')?.value.trim();
-    const email = document.getElementById('newUserEmail')?.value.trim();
-    const password = document.getElementById('newUserPassword')?.value;
-    
-    if (!name) {
-        showNotification('Nome do usuário é obrigatório', 'error');
-        return false;
-    }
-    
-    if (!email) {
-        showNotification('E-mail do usuário é obrigatório', 'error');
-        return false;
-    }
-    
-    // Validação simples de email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        showNotification('Por favor, insira um e-mail válido', 'error');
-        return false;
-    }
-    
-    if (!password) {
-        showNotification('Senha do usuário é obrigatória', 'error');
-        return false;
-    }
-    
-    if (password.length < 6) {
-        showNotification('A senha deve ter pelo menos 6 caracteres', 'error');
-        return false;
-    }
-    
-    return true;
-}
-
-function validateCategoryForm() {
-    const name = document.getElementById('categoryName')?.value.trim();
-    const icon = document.getElementById('categoryIcon')?.value.trim();
-    
-    if (!name) {
-        showNotification('Nome da categoria é obrigatório', 'error');
-        return false;
-    }
-    
-    if (!icon) {
-        showNotification('Ícone da categoria é obrigatório', 'error');
-        return false;
-    }
-    
-    return true;
-}
 // Adicione esta função no app.js
 function setupLogout() {
     const logoutBtn = document.getElementById('logoutBtn');
