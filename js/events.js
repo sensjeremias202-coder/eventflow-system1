@@ -110,15 +110,17 @@ function updateEvent(eventId) {
 function deleteEvent(eventId) {
     const message = 'Deseja realmente excluir este evento?';
     if (typeof showConfirm === 'function') {
-        showConfirm(message, 'Excluir evento').then(confirmed => {
+        showConfirm(message, 'Excluir evento', { type: 'danger' }).then(confirmed => {
             if (!confirmed) return;
-            const removed = events.find(e => e.id === eventId);
-            events = events.filter(e => e.id !== eventId);
+            const idx = events.findIndex(e => e.id === eventId);
+            if (idx === -1) return;
+            const removed = events[idx];
+            events.splice(idx, 1);
             saveData();
             showNotification('Evento excluído com sucesso!', 'success', {
                 actionLabel: 'Desfazer',
                 actionCallback: function() {
-                    events.push(removed);
+                    events.splice(idx, 0, removed);
                     saveData();
                     loadEvents();
                     showNotification('Exclusão desfeita', 'success');
@@ -128,13 +130,15 @@ function deleteEvent(eventId) {
         });
     } else {
         if (!confirm(message)) return;
-        const removed = events.find(e => e.id === eventId);
-        events = events.filter(e => e.id !== eventId);
+        const idx = events.findIndex(e => e.id === eventId);
+        if (idx === -1) return;
+        const removed = events[idx];
+        events.splice(idx, 1);
         saveData();
         showNotification('Evento excluído com sucesso!', 'success', {
             actionLabel: 'Desfazer',
             actionCallback: function() {
-                events.push(removed);
+                events.splice(idx, 0, removed);
                 saveData();
                 loadEvents();
                 showNotification('Exclusão desfeita', 'success');

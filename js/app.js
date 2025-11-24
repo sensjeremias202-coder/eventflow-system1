@@ -439,7 +439,8 @@ function setupLogout() {
 // (Função showApp já é definida em `js/auth.js`. Aqui mantemos apenas `setupLogout`.)
 
 // Modal de confirmação genérico que retorna uma Promise
-function showConfirm(message, title = 'Confirmação') {
+function showConfirm(message, title = 'Confirmação', options = {}) {
+    // options: { type: 'primary'|'danger'|'warning' }
     return new Promise((resolve) => {
         const modal = document.getElementById('confirmModal');
         const msgEl = document.getElementById('confirmModalMessage');
@@ -455,16 +456,27 @@ function showConfirm(message, title = 'Confirmação') {
             return;
         }
 
+        const type = options.type || 'primary';
+        // set data-type to allow CSS theming
+        modal.setAttribute('data-type', type);
+
         titleEl.textContent = title;
         msgEl.textContent = message;
         modal.classList.add('active');
 
+        // backdrop click handler (fechar ao clicar fora do conteúdo)
+        function onBackdropClick(e) {
+            if (e.target === modal) onCancel();
+        }
+
         // Handlers
         function cleanup() {
             modal.classList.remove('active');
+            modal.removeEventListener('click', onBackdropClick);
             okBtn.removeEventListener('click', onOk);
             cancelBtn.removeEventListener('click', onCancel);
             closeBtns.forEach(b => b.removeEventListener('click', onCancel));
+            modal.removeAttribute('data-type');
         }
 
         function onOk() {
@@ -477,6 +489,7 @@ function showConfirm(message, title = 'Confirmação') {
             resolve(false);
         }
 
+        modal.addEventListener('click', onBackdropClick);
         okBtn.addEventListener('click', onOk);
         cancelBtn.addEventListener('click', onCancel);
         closeBtns.forEach(b => b.addEventListener('click', onCancel));

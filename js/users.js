@@ -143,7 +143,7 @@ function updateCategory(categoryId) {
 function deleteCategory(categoryId) {
     const message = 'Tem certeza que deseja excluir esta categoria?';
     if (typeof showConfirm === 'function') {
-        showConfirm(message, 'Excluir categoria').then(confirmed => {
+        showConfirm(message, 'Excluir categoria', { type: 'danger' }).then(confirmed => {
             if (!confirmed) return;
             // Verificar se existem eventos usando esta categoria
             const eventsUsingCategory = events.filter(e => e.category === categoryId);
@@ -152,10 +152,21 @@ function deleteCategory(categoryId) {
                 return;
             }
 
-            categories = categories.filter(c => c.id !== categoryId);
+            const idx = categories.findIndex(c => c.id === categoryId);
+            if (idx === -1) return;
+            const removed = categories[idx];
+            categories.splice(idx, 1);
             saveData();
             loadCategoriesTable();
-            showNotification('Categoria excluída com sucesso!', 'success');
+            showNotification('Categoria excluída com sucesso!', 'success', {
+                actionLabel: 'Desfazer',
+                actionCallback: function() {
+                    categories.splice(idx, 0, removed);
+                    saveData();
+                    loadCategoriesTable();
+                    showNotification('Exclusão desfeita', 'success');
+                }
+            });
         });
     } else {
         if (!confirm(message)) return;
@@ -392,16 +403,19 @@ function deleteUser(userId) {
 
     // Use modal de confirmação se disponível
     if (typeof showConfirm === 'function') {
-        showConfirm('Tem certeza que deseja excluir este usuário?', 'Excluir usuário').then(confirmed => {
+        showConfirm('Tem certeza que deseja excluir este usuário?', 'Excluir usuário', { type: 'danger' }).then(confirmed => {
             if (!confirmed) return;
-            const removed = users.find(u => u.id === userId);
-            users = users.filter(u => u.id !== userId);
+            const idx = users.findIndex(u => u.id === userId);
+            if (idx === -1) return;
+            const removed = users[idx];
+            // remove in-place to preserve ordering
+            users.splice(idx, 1);
             saveData();
             loadUsersTable();
             showNotification('Usuário excluído com sucesso', 'success', {
                 actionLabel: 'Desfazer',
                 actionCallback: function() {
-                    users.push(removed);
+                    users.splice(idx, 0, removed);
                     saveData();
                     loadUsersTable();
                     showNotification('Exclusão desfeita', 'success');
@@ -410,14 +424,16 @@ function deleteUser(userId) {
         });
     } else {
         if (!confirm('Tem certeza que deseja excluir este usuário?')) return;
-        const removed = users.find(u => u.id === userId);
-        users = users.filter(u => u.id !== userId);
+        const idx = users.findIndex(u => u.id === userId);
+        if (idx === -1) return;
+        const removed = users[idx];
+        users.splice(idx, 1);
         saveData();
         loadUsersTable();
         showNotification('Usuário excluído com sucesso', 'success', {
             actionLabel: 'Desfazer',
             actionCallback: function() {
-                users.push(removed);
+                users.splice(idx, 0, removed);
                 saveData();
                 loadUsersTable();
                 showNotification('Exclusão desfeita', 'success');

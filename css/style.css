@@ -602,6 +602,44 @@ header {
     border-radius: 6px;
 }
 
+/* Themed confirm modal */
+#confirmModal[data-type="danger"] .modal-content {
+    border-top: 6px solid var(--danger);
+}
+
+#confirmModal[data-type="warning"] .modal-content {
+    border-top: 6px solid var(--warning);
+}
+
+#confirmModal[data-type="primary"] .modal-content {
+    border-top: 6px solid var(--primary);
+}
+
+/* Confirm modal header styling */
+#confirmModal .modal-header {
+    padding-bottom: 8px;
+}
+
+#confirmModal .modal-header h3 {
+    font-size: 1.05rem;
+}
+
+#confirmModal .modal-footer {
+    background: transparent;
+    border-top: none;
+}
+
+/* nicer enter animation */
+@keyframes confirmIn {
+    0% { transform: translateY(-10px) scale(.98); opacity: 0; }
+    60% { transform: translateY(4px) scale(1.02); opacity: 1; }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+#confirmModal .modal-content {
+    animation: confirmIn 260ms cubic-bezier(.22,1,.36,1);
+}
+
 /* New classes to replace inline modal styles */
 .event-edit-badge {
     display: none; /* shown by JS */
