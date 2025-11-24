@@ -79,6 +79,21 @@ function setupButtons() {
             if (addEventModal) addEventModal.classList.add('active');
         });
     }
+
+    // Botão para gerenciamento de usuários (apenas admins)
+    const manageUsersBtn = document.getElementById('manageUsersBtn');
+    if (manageUsersBtn && currentUser && currentUser.role === 'admin') {
+        manageUsersBtn.style.display = 'inline-block';
+        manageUsersBtn.addEventListener('click', function() {
+            // Mostrar a página de usuários e carregar a tabela
+            showPage('users');
+            if (typeof loadUsersTable === 'function') loadUsersTable();
+            // atualizar estado ativo nos links
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            const nav = document.querySelector('[data-page="users"]');
+            if (nav) nav.classList.add('active');
+        });
+    }
 }
 
 function showPage(page) {
