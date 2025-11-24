@@ -59,13 +59,8 @@ function editEvent(eventId) {
 
     // Marcar modo de edição
     window.eventEditId = eventId;
-
-    // Atualizar texto do botão para indicar atualização
-    const form = document.getElementById('addEventForm');
-    if (form) {
-        const submitBtn = form.querySelector('button[type="submit"]');
-        if (submitBtn) submitBtn.textContent = 'Atualizar Evento';
-    }
+    // Atualizar UI para modo edição
+    setEventEditMode(true);
 }
 
 function updateEvent(eventId) {
@@ -105,6 +100,9 @@ function updateEvent(eventId) {
         if (submitBtn) submitBtn.textContent = 'Criar Evento';
     }
 
+    // Atualizar UI para sair do modo edição
+    setEventEditMode(false);
+
     closeModal('addEventModal');
     loadEvents();
 }
@@ -136,6 +134,8 @@ function closeModal(modalId) {
             }
             // garantir que o modo de edição seja limpo
             if (window.eventEditId) window.eventEditId = null;
+                // garantir que a UI volte ao estado de criação
+                setEventEditMode(false);
         }
     }
 }
@@ -260,4 +260,34 @@ function loadMyEvents() {
             deleteEvent(id);
         });
     });
+}
+
+// Cancelar edição via botão no modal
+document.addEventListener('DOMContentLoaded', function() {
+    const cancelBtn = document.getElementById('cancelEditBtn');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function() {
+            // Limpar modo de edição
+            window.eventEditId = null;
+            // Resetar formulário
+            const form = document.getElementById('addEventForm');
+            if (form) form.reset();
+            // Atualizar UI
+            setEventEditMode(false);
+        });
+    }
+});
+
+// Helper para mostrar/ocultar UI de edição (badge e botão cancelar)
+function setEventEditMode(isEditing) {
+    const badge = document.getElementById('eventEditBadge');
+    const cancelBtn = document.getElementById('cancelEditBtn');
+    const form = document.getElementById('addEventForm');
+
+    if (badge) badge.style.display = isEditing ? 'inline-block' : 'none';
+    if (cancelBtn) cancelBtn.style.display = isEditing ? 'inline-block' : 'none';
+    if (form) {
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) submitBtn.textContent = isEditing ? 'Atualizar Evento' : 'Criar Evento';
+    }
 }

@@ -260,6 +260,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Adicionar Novo Evento</h3>
+                <span id="eventEditBadge" style="display:none; margin-left:12px; padding:4px 8px; background:#f0ad4e; color:#fff; border-radius:4px; font-size:12px;">Editando Evento</span>
                 <button class="modal-close">&times;</button>
             </div>
             <form id="addEventForm">
@@ -298,6 +299,7 @@
                 
                 <div class="form-group">
                     <button type="submit" class="btn btn-primary" style="width: 100%;">Criar Evento</button>
+                    <button type="button" id="cancelEditBtn" class="btn btn-outline" style="display:none; margin-left:8px;">Cancelar Edição</button>
                 </div>
             </form>
         </div>
