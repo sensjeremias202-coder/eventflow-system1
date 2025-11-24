@@ -277,6 +277,27 @@ function loadCategoryOptions() {
         option.textContent = category.name;
         categorySelect.appendChild(option);
     });
+    
+    // opção rápida para criar nova categoria
+    const newOpt = document.createElement('option');
+    newOpt.value = 'new';
+    newOpt.textContent = '➕ Criar nova categoria...';
+    categorySelect.appendChild(newOpt);
+
+    // evitar múltiplos listeners: atribuir onchange diretamente
+    categorySelect.onchange = function() {
+        if (this.value === 'new') {
+            const addCategoryModal = document.getElementById('addCategoryModal');
+            if (addCategoryModal) addCategoryModal.classList.add('active');
+            // reset selection to placeholder
+            this.value = '';
+            // foco no nome da categoria
+            setTimeout(() => {
+                const nameInput = document.getElementById('categoryName');
+                if (nameInput) nameInput.focus();
+            }, 50);
+        }
+    };
 }
 
 // Validações de formulário

@@ -107,4 +107,11 @@ function createCategory() {
     closeModal('addCategoryModal');
     loadCategoriesTable();
     loadCategoryOptions(); // Atualizar opções no formulário de eventos
+    // selecionar automaticamente a categoria recém-criada no select de eventos, se presente
+    try {
+        const categorySelect = document.getElementById('eventCategory');
+        if (categorySelect) categorySelect.value = newCategory.id;
+    } catch (e) {
+        // ignore
+    }
 }
