@@ -374,3 +374,31 @@ function setupChartTabs() {
 document.addEventListener('DOMContentLoaded', function() {
     setupChartTabs();
 });
+
+// Checagem diagnóstica automática para Chart.js e elementos (executa uma vez)
+function runChartDiagnostics() {
+    try {
+        console.group('Chart Diagnostics');
+        console.log('typeof Chart =', typeof Chart);
+        try { console.log('Chart.version =', Chart && Chart.version); } catch(e) { console.log('Chart.version -> error', e); }
+        const sentimentEl = document.getElementById('sentimentChart');
+        console.log('sentiment element =', sentimentEl);
+        console.log('is sentiment canvas =', sentimentEl instanceof HTMLCanvasElement);
+        console.log('Chart.getChart available =', typeof Chart !== 'undefined' && typeof Chart.getChart === 'function');
+        try {
+            const existing = (typeof Chart !== 'undefined' && typeof Chart.getChart === 'function' && sentimentEl) ? Chart.getChart(sentimentEl) : null;
+            console.log('Chart.getChart(sentimentEl) =', existing);
+        } catch(e) {
+            console.log('Chart.getChart(...) threw', e);
+        }
+        console.log('window.sentimentChart =', window.sentimentChart);
+        console.log('window.topicsChart =', window.topicsChart);
+        console.log('window.categoryChart =', window.categoryChart);
+        console.groupEnd();
+    } catch (e) {
+        console.warn('runChartDiagnostics error', e);
+    }
+}
+
+// Executa a checagem automática após um pequeno delay para garantir elementos carregados
+setTimeout(runChartDiagnostics, 300);
