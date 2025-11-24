@@ -134,19 +134,12 @@ function setupSentimentChart(sentimentData) {
     const sentimentCtx = document.getElementById('sentimentChart');
     if (!sentimentCtx) return;
     
-    // Destruir gráfico anterior se existir (verificações robustas)
+    // Destruir gráfico anterior se existir (compatível com Chart.js v2/v3+)
     try {
-        let existing = null;
-        if (typeof Chart !== 'undefined' && typeof Chart.getChart === 'function') {
-            existing = Chart.getChart(sentimentCtx);
-        }
-        // Fallback para variável global antiga
-        if (!existing && window.sentimentChart) existing = window.sentimentChart;
-
+        const existing = getChartInstance(sentimentCtx, 'sentimentChart');
         if (existing) {
-            if (typeof existing.destroy === 'function') {
-                existing.destroy();
-            } else {
+            if (typeof existing.destroy === 'function') existing.destroy();
+            else {
                 console.warn('Existing sentiment chart has no destroy() method, clearing reference.');
                 try { window.sentimentChart = null; } catch (_) {}
             }
@@ -200,11 +193,7 @@ function setupTopicsChart(topicsData) {
     if (!topicsCtx) return;
     
     try {
-        let existing = null;
-        if (typeof Chart !== 'undefined' && typeof Chart.getChart === 'function') {
-            existing = Chart.getChart(topicsCtx);
-        }
-        if (!existing && window.topicsChart) existing = window.topicsChart;
+        const existing = getChartInstance(topicsCtx, 'topicsChart');
         if (existing) {
             if (typeof existing.destroy === 'function') existing.destroy();
             else {
@@ -282,11 +271,7 @@ function setupCategoryChart(categoryData) {
     if (!categoryCtx) return;
     
     try {
-        let existing = null;
-        if (typeof Chart !== 'undefined' && typeof Chart.getChart === 'function') {
-            existing = Chart.getChart(categoryCtx);
-        }
-        if (!existing && window.categoryChart) existing = window.categoryChart;
+        const existing = getChartInstance(categoryCtx, 'categoryChart');
         if (existing) {
             if (typeof existing.destroy === 'function') existing.destroy();
             else {
@@ -402,3 +387,42 @@ function runChartDiagnostics() {
 
 // Executa a checagem automática após um pequeno delay para garantir elementos carregados
 setTimeout(runChartDiagnostics, 300);
+
+// Helper para obter instância de Chart compatível com v2/v3+
+function getChartInstance(canvas, globalName) {
+    try {
+        // 1) Chart.js v3+: Chart.getChart
+        if (typeof Chart !== 'undefined' && typeof Chart.getChart === 'function' && canvas) {
+            try {
+                const inst = Chart.getChart(canvas);
+                if (inst) return inst;
+            } catch (e) {
+                // ignorar
+            }
+        }
+
+        // 2) global name fallback (window.sentimentChart etc.)
+        if (globalName && window[globalName]) {
+            const candidate = window[globalName];
+            if (candidate && typeof candidate === 'object') return candidate;
+        }
+
+        // 3) Chart.js v2: Chart.instances
+        if (typeof Chart !== 'undefined' && Chart.instances) {
+            for (const k in Chart.instances) {
+                if (!Object.prototype.hasOwnProperty.call(Chart.instances, k)) continue;
+                const inst = Chart.instances[k];
+                try {
+                    if (inst && inst.canvas && canvas && (inst.canvas === canvas || inst.canvas.id === canvas.id)) return inst;
+                } catch (e) {
+                    // ignore
+                }
+            }
+        }
+
+        return null;
+    } catch (e) {
+        console.warn('getChartInstance error', e);
+        return null;
+    }
+}
