@@ -100,3 +100,42 @@ function escapeHtml(str) {
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
 }
+
+// Carregar apenas os eventos criados pelo usuário atual
+function loadMyEvents() {
+    if (!currentUser) return;
+
+    const grid = document.getElementById('eventsGrid');
+    if (!grid) return;
+
+    grid.innerHTML = '';
+
+    const myEvents = events.filter(ev => ev.createdBy === currentUser.id)
+        .slice()
+        .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    if (myEvents.length === 0) {
+        grid.innerHTML = '<p style="color:var(--gray);">Você ainda não criou nenhum evento.</p>';
+        return;
+    }
+
+    myEvents.forEach(ev => {
+        const category = categories.find(c => c.id === ev.category) || { name: 'Sem categoria', color: '#ccc' };
+        const card = document.createElement('div');
+        card.className = 'event-card card';
+        card.innerHTML = `
+            <div class="card-header">
+                <div class="card-title">${escapeHtml(ev.title)}</div>
+                <div class="event-meta">${formatDate(ev.date)} • ${ev.time} • ${escapeHtml(ev.location)}</div>
+            </div>
+            <div class="card-body">
+                <p>${escapeHtml(ev.description)}</p>
+            </div>
+            <div class="card-footer">
+                <span class="category-badge" style="background:${category.color};">${escapeHtml(category.name)}</span>
+            </div>
+        `;
+
+        grid.appendChild(card);
+    });
+}
