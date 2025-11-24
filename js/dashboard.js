@@ -134,9 +134,12 @@ function setupSentimentChart(sentimentData) {
     const sentimentCtx = document.getElementById('sentimentChart');
     if (!sentimentCtx) return;
     
-    // Destruir gráfico anterior se existir
-    if (window.sentimentChart) {
-        window.sentimentChart.destroy();
+    // Destruir gráfico anterior se existir (mais robusto usando Chart.getChart)
+    try {
+        const existing = Chart.getChart(sentimentCtx);
+        if (existing && typeof existing.destroy === 'function') existing.destroy();
+    } catch (e) {
+        console.warn('Erro ao destruir sentimentChart existente:', e);
     }
     
     const total = sentimentData.positive + sentimentData.neutral + sentimentData.negative;
@@ -183,8 +186,11 @@ function setupTopicsChart(topicsData) {
     const topicsCtx = document.getElementById('topicsChart');
     if (!topicsCtx) return;
     
-    if (window.topicsChart) {
-        window.topicsChart.destroy();
+    try {
+        const existing = Chart.getChart(topicsCtx);
+        if (existing && typeof existing.destroy === 'function') existing.destroy();
+    } catch (e) {
+        console.warn('Erro ao destruir topicsChart existente:', e);
     }
     
     // Ordenar tópicos por frequência
@@ -252,8 +258,11 @@ function setupCategoryChart(categoryData) {
     
     if (!categoryCtx) return;
     
-    if (window.categoryChart) {
-        window.categoryChart.destroy();
+    try {
+        const existing = Chart.getChart(categoryCtx);
+        if (existing && typeof existing.destroy === 'function') existing.destroy();
+    } catch (e) {
+        console.warn('Erro ao destruir categoryChart existente:', e);
     }
     
     const sortedCategories = Object.entries(categoryData)
