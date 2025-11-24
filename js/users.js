@@ -155,3 +155,193 @@ function deleteCategory(categoryId) {
         alert('Categoria excluída com sucesso!');
     }
 }
+
+// -----------------------
+// User management (admin)
+// -----------------------
+
+function loadUsersTable() {
+    if (!currentUser || currentUser.role !== 'admin') return;
+
+    const usersTable = document.getElementById('usersTable');
+    if (!usersTable) return;
+
+    usersTable.innerHTML = '';
+
+    users.forEach(user => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${user.name}</td>
+            <td>${user.email}</td>
+            <td>${user.role}</td>
+            <td>${formatDate(user.registered || new Date().toISOString())}</td>
+            <td>
+                <button class="btn btn-outline btn-sm edit-user" data-id="${user.id}">
+                    <i class="far fa-edit"></i>
+                </button>
+                <button class="btn btn-outline btn-sm delete-user" data-id="${user.id}">
+                    <i class="far fa-trash-alt"></i>
+                </button>
+            </td>
+        `;
+
+        usersTable.appendChild(row);
+    });
+
+    // bind actions
+    document.querySelectorAll('.edit-user').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const userId = parseInt(this.getAttribute('data-id'));
+            editUser(userId);
+        });
+    });
+
+    document.querySelectorAll('.delete-user').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const userId = parseInt(this.getAttribute('data-id'));
+            deleteUser(userId);
+        });
+    });
+
+    // add user button
+    const addUserBtn = document.getElementById('addUserBtn');
+    if (addUserBtn) {
+        addUserBtn.addEventListener('click', function() {
+            const modal = document.getElementById('addUserModal');
+            if (modal) modal.classList.add('active');
+
+            // reset form to create mode
+            const form = document.getElementById('addUserForm');
+            if (form) {
+                form.reset();
+                const submitBtn = form.querySelector('button[type="submit"]');
+                if (submitBtn) submitBtn.textContent = 'Criar Usuário';
+                form.onsubmit = function(e) {
+                    e.preventDefault();
+                    createUser();
+                };
+            }
+        });
+    }
+}
+
+function createUser() {
+    const name = document.getElementById('newUserName').value.trim();
+    const email = document.getElementById('newUserEmail').value.trim();
+    const password = document.getElementById('newUserPassword').value;
+    const role = document.getElementById('newUserRole').value;
+
+    if (!name || !email || !password) {
+        showNotification('Por favor preencha todos os campos do usuário', 'error');
+        return;
+    }
+
+    if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
+        showNotification('Já existe um usuário com este e-mail', 'error');
+        return;
+    }
+
+    const newUser = {
+        id: users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1,
+        name,
+        email,
+        password,
+        role,
+        registered: new Date().toISOString().split('T')[0]
+    };
+
+    users.push(newUser);
+    saveData();
+    loadUsersTable();
+    showNotification('Usuário criado com sucesso', 'success');
+
+    const modal = document.getElementById('addUserModal');
+    if (modal) modal.classList.remove('active');
+}
+
+function editUser(userId) {
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+
+    const modal = document.getElementById('addUserModal');
+    if (modal) modal.classList.add('active');
+
+    document.getElementById('newUserName').value = user.name;
+    document.getElementById('newUserEmail').value = user.email;
+    document.getElementById('newUserPassword').value = user.password;
+    document.getElementById('newUserRole').value = user.role;
+
+    const form = document.getElementById('addUserForm');
+    if (form) {
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) submitBtn.textContent = 'Atualizar Usuário';
+
+        form.onsubmit = function(e) {
+            e.preventDefault();
+            updateUser(userId);
+        };
+    }
+}
+
+function updateUser(userId) {
+    const idx = users.findIndex(u => u.id === userId);
+    if (idx === -1) return;
+
+    const name = document.getElementById('newUserName').value.trim();
+    const email = document.getElementById('newUserEmail').value.trim();
+    const password = document.getElementById('newUserPassword').value;
+    const role = document.getElementById('newUserRole').value;
+
+    if (!name || !email) {
+        showNotification('Nome e e-mail são obrigatórios', 'error');
+        return;
+    }
+
+    // verificar e-mail duplicado (exceto o próprio)
+    const exists = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.id !== userId);
+    if (exists) {
+        showNotification('Outro usuário já utiliza este e-mail', 'error');
+        return;
+    }
+
+    users[idx] = {
+        ...users[idx],
+        name,
+        email,
+        password,
+        role
+    };
+
+    saveData();
+    loadUsersTable();
+    showNotification('Usuário atualizado com sucesso', 'success');
+
+    const modal = document.getElementById('addUserModal');
+    if (modal) modal.classList.remove('active');
+
+    // restaurar comportamento padrão do formulário
+    const form = document.getElementById('addUserForm');
+    if (form) {
+        form.reset();
+        form.onsubmit = function(e) {
+            e.preventDefault();
+            createUser();
+        };
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) submitBtn.textContent = 'Criar Usuário';
+    }
+}
+
+function deleteUser(userId) {
+    if (userId === currentUser.id) {
+        showNotification('Você não pode excluir o usuário atualmente logado', 'error');
+        return;
+    }
+
+    if (!confirm('Tem certeza que deseja excluir este usuário?')) return;
+
+    users = users.filter(u => u.id !== userId);
+    saveData();
+    loadUsersTable();
+    showNotification('Usuário excluído com sucesso', 'success');
+}
