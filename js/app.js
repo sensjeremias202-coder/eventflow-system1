@@ -67,17 +67,19 @@ function setupButtons() {
         });
     }
 
-    // Botão visível para criar evento (todos os usuários logados)
+    // Botão para criar evento (somente admins)
     const createEventBtn = document.getElementById('createEventBtn');
     const addEventModal = document.getElementById('addEventModal');
-    if (createEventBtn && currentUser) {
-        // Mostrar botão para usuários logados; administradores já têm botão admin-only
-        createEventBtn.style.display = 'inline-block';
-        createEventBtn.addEventListener('click', function() {
-            // Carregar opções de categoria antes de abrir
-            if (typeof loadCategoryOptions === 'function') loadCategoryOptions();
-            if (addEventModal) addEventModal.classList.add('active');
-        });
+    if (createEventBtn) {
+        if (currentUser && currentUser.role === 'admin') {
+            createEventBtn.style.display = 'inline-block';
+            createEventBtn.addEventListener('click', function() {
+                if (typeof loadCategoryOptions === 'function') loadCategoryOptions();
+                if (addEventModal) addEventModal.classList.add('active');
+            });
+        } else {
+            createEventBtn.style.display = 'none';
+        }
     }
 }
 
