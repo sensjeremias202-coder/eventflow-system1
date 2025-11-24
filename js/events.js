@@ -1,5 +1,10 @@
 function createEvent() {
     if (!validateEventForm()) return;
+    // Se estivermos em modo de edição (definido por editEvent), delegar para updateEvent
+    if (window.eventEditId) {
+        updateEvent(window.eventEditId);
+        return;
+    }
     
     const title = document.getElementById('eventTitle').value;
     const date = document.getElementById('eventDate').value;
@@ -36,6 +41,83 @@ function createEvent() {
     loadEvents();
 }
 
+// Editar evento: preenche o modal e coloca o sistema em modo edição
+function editEvent(eventId) {
+    const ev = events.find(e => e.id === eventId);
+    if (!ev) return;
+
+    // Preencher formulário
+    const modal = document.getElementById('addEventModal');
+    if (modal) modal.classList.add('active');
+
+    document.getElementById('eventTitle').value = ev.title;
+    document.getElementById('eventDate').value = ev.date;
+    document.getElementById('eventTime').value = ev.time;
+    document.getElementById('eventLocation').value = ev.location;
+    document.getElementById('eventDescription').value = ev.description;
+    document.getElementById('eventCategory').value = ev.category;
+
+    // Marcar modo de edição
+    window.eventEditId = eventId;
+
+    // Atualizar texto do botão para indicar atualização
+    const form = document.getElementById('addEventForm');
+    if (form) {
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) submitBtn.textContent = 'Atualizar Evento';
+    }
+}
+
+function updateEvent(eventId) {
+    const idx = events.findIndex(e => e.id === eventId);
+    if (idx === -1) return;
+
+    // Revalidar formulário
+    if (!validateEventForm()) return;
+
+    const title = document.getElementById('eventTitle').value.trim();
+    const date = document.getElementById('eventDate').value;
+    const time = document.getElementById('eventTime').value;
+    const location = document.getElementById('eventLocation').value.trim();
+    const description = document.getElementById('eventDescription').value.trim();
+    const category = parseInt(document.getElementById('eventCategory').value);
+
+    events[idx] = {
+        ...events[idx],
+        title,
+        date,
+        time,
+        location,
+        description,
+        category,
+        updatedAt: new Date().toISOString()
+    };
+
+    saveData();
+    showNotification('Evento atualizado com sucesso!', 'success');
+
+    // Limpar modo de edição e resetar formulário
+    window.eventEditId = null;
+    const form = document.getElementById('addEventForm');
+    if (form) form.reset();
+    if (form) {
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) submitBtn.textContent = 'Criar Evento';
+    }
+
+    closeModal('addEventModal');
+    loadEvents();
+}
+
+function deleteEvent(eventId) {
+    if (!confirm('Deseja realmente excluir este evento?')) return;
+
+    events = events.filter(e => e.id !== eventId);
+    saveData();
+    showNotification('Evento excluído com sucesso!', 'success');
+    loadEvents();
+}
+
 function closeModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
@@ -52,6 +134,8 @@ function closeModal(modalId) {
                 submitBtn.textContent = 'Criar Evento';
                 submitBtn.onclick = null;
             }
+            // garantir que o modo de edição seja limpo
+            if (window.eventEditId) window.eventEditId = null;
         }
     }
 }
@@ -84,10 +168,30 @@ function loadEvents() {
             </div>
             <div class="card-footer">
                 <span class="category-badge" style="background:${category.color};">${escapeHtml(category.name)}</span>
+                ${ev.createdBy === currentUser?.id ? `
+                <div style="margin-left: auto; display:flex; gap:8px; align-items:center;">
+                    <button class="btn btn-outline btn-sm edit-event" data-id="${ev.id}"><i class="far fa-edit"></i></button>
+                    <button class="btn btn-outline btn-sm delete-event" data-id="${ev.id}"><i class="far fa-trash-alt"></i></button>
+                </div>` : ''}
             </div>
         `;
 
         grid.appendChild(card);
+    });
+
+    // Bind edit/delete buttons for events owned by current user
+    document.querySelectorAll('.edit-event').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = parseInt(this.getAttribute('data-id'));
+            editEvent(id);
+        });
+    });
+
+    document.querySelectorAll('.delete-event').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = parseInt(this.getAttribute('data-id'));
+            deleteEvent(id);
+        });
     });
 }
 
@@ -133,9 +237,27 @@ function loadMyEvents() {
             </div>
             <div class="card-footer">
                 <span class="category-badge" style="background:${category.color};">${escapeHtml(category.name)}</span>
+                <div style="margin-left: auto; display:flex; gap:8px; align-items:center;">
+                    <button class="btn btn-outline btn-sm edit-event" data-id="${ev.id}"><i class="far fa-edit"></i></button>
+                    <button class="btn btn-outline btn-sm delete-event" data-id="${ev.id}"><i class="far fa-trash-alt"></i></button>
+                </div>
             </div>
         `;
 
         grid.appendChild(card);
+    });
+
+    document.querySelectorAll('.edit-event').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = parseInt(this.getAttribute('data-id'));
+            editEvent(id);
+        });
+    });
+
+    document.querySelectorAll('.delete-event').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = parseInt(this.getAttribute('data-id'));
+            deleteEvent(id);
+        });
     });
 }
