@@ -508,6 +508,44 @@ header {
     color: var(--gray);
 }
 
+/* Edit mode badge and cancel button in event modal */
+#eventEditBadge {
+    display: none;
+    margin-left: 12px;
+    padding: 4px 8px;
+    background-color: var(--warning);
+    color: white;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    align-self: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+#cancelEditBtn {
+    display: none; /* controlled by JS */
+    margin-left: 8px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(0,0,0,0.08);
+    background: transparent;
+    color: var(--dark);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s, transform 0.12s;
+}
+
+#cancelEditBtn:hover {
+    background: rgba(0,0,0,0.04);
+    transform: translateY(-1px);
+}
+
+/* Make badge and cancel button fit smaller screens */
+@media (max-width: 480px) {
+    #eventEditBadge { font-size: 0.7rem; padding: 3px 6px; }
+    #cancelEditBtn { padding: 6px 10px; font-size: 0.9rem; }
+}
+
 /* Tables */
 .table {
     width: 100%;
