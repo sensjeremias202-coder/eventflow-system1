@@ -283,6 +283,64 @@ document.addEventListener('DOMContentLoaded', function() {
             if (modal) modal.classList.remove('active');
         });
     });
+
+    // Inline category creation handlers (dentro do modal de evento)
+    const inlineCreateBtn = document.getElementById('inlineCreateCategoryBtn');
+    const inlineCancelBtn = document.getElementById('inlineCancelCategoryBtn');
+    if (inlineCreateBtn) {
+        inlineCreateBtn.addEventListener('click', function() {
+            const nameEl = document.getElementById('inlineCategoryName');
+            const colorEl = document.getElementById('inlineCategoryColor');
+            const iconEl = document.getElementById('inlineCategoryIcon');
+            const name = nameEl ? nameEl.value.trim() : '';
+            const color = colorEl ? colorEl.value : '#4361ee';
+            const icon = iconEl ? iconEl.value.trim() : '';
+
+            if (!name) { showNotification('Informe o nome da categoria', 'error'); return; }
+            if (!icon.startsWith('fas') && !icon.startsWith('far') && !icon.startsWith('fab')) {
+                showNotification('Use um ícone válido do Font Awesome (ex: fas fa-music)', 'error');
+                return;
+            }
+            // verificar duplicidade
+            if (categories.find(c => c.name.toLowerCase() === name.toLowerCase())) {
+                showNotification('Já existe uma categoria com este nome', 'error');
+                return;
+            }
+
+            const newCategory = {
+                id: categories.length > 0 ? Math.max(...categories.map(c => c.id)) + 1 : 1,
+                name,
+                color,
+                icon,
+                createdAt: new Date().toISOString()
+            };
+
+            categories.push(newCategory);
+            try { saveData(); } catch (e) { /* ignore */ }
+
+            showNotification('Categoria criada com sucesso!', 'success');
+            // Atualizar selects e selecionar nova categoria
+            try { loadCategoryOptions(); } catch (e) { /* ignore */ }
+            const categorySelect = document.getElementById('eventCategory');
+            if (categorySelect) categorySelect.value = newCategory.id;
+
+            // esconder e resetar inline form
+            const inlineForm = document.getElementById('inlineCategoryForm');
+            if (inlineForm) inlineForm.style.display = 'none';
+            if (nameEl) nameEl.value = '';
+            if (iconEl) iconEl.value = '';
+        });
+    }
+
+    if (inlineCancelBtn) {
+        inlineCancelBtn.addEventListener('click', function() {
+            const inlineForm = document.getElementById('inlineCategoryForm');
+            if (inlineForm) inlineForm.style.display = 'none';
+            // reset select to placeholder
+            const categorySelect = document.getElementById('eventCategory');
+            if (categorySelect) categorySelect.value = '';
+        });
+    }
 });
 
 // Helper para mostrar/ocultar UI de edição (badge e botão cancelar)

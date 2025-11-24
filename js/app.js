@@ -197,38 +197,6 @@ function setupModals() {
             });
         }
     }
-    
-    // Fechar modais ao clicar fora
-    window.addEventListener('click', (e) => {
-        const modals = [
-            'addEventModal',
-            'addUserModal', 
-            'addCategoryModal',
-            'eventDetailsModal'
-        ];
-        
-        modals.forEach(modalId => {
-            const modal = document.getElementById(modalId);
-            if (modal && e.target === modal) {
-                modal.classList.remove('active');
-                
-                // Resetar formulários se necessário
-                if (modalId === 'addEventModal') {
-                    const form = document.getElementById('addEventForm');
-                    if (form) {
-                        form.reset();
-                        const submitBtn = form.querySelector('button[type="submit"]');
-                        if (submitBtn) {
-                            submitBtn.textContent = 'Criar Evento';
-                        }
-                    }
-                }
-            }
-        });
-    });
-    
-    // Formulário de evento
-    const eventForm = document.getElementById('addEventForm');
     if (eventForm) {
         // Remover event listeners anteriores
         const newEventForm = eventForm.cloneNode(true);
@@ -285,6 +253,12 @@ function loadCategoryOptions() {
     categorySelect.appendChild(newOpt);
 
     // evitar múltiplos listeners: atribuir onchange diretamente
+    const createOpt = document.createElement('option');
+    createOpt.value = 'create-inline';
+    createOpt.textContent = '➕ Criar nova categoria (rápido)...';
+    categorySelect.appendChild(createOpt);
+
+    // evitar múltiplos listeners: atribuir onchange diretamente e tratar ambos os casos
     categorySelect.onchange = function() {
         if (this.value === 'new') {
             const addCategoryModal = document.getElementById('addCategoryModal');
@@ -296,8 +270,19 @@ function loadCategoryOptions() {
                 const nameInput = document.getElementById('categoryName');
                 if (nameInput) nameInput.focus();
             }, 50);
+        } else if (this.value === 'create-inline') {
+            const inlineForm = document.getElementById('inlineCategoryForm');
+            if (inlineForm) {
+                inlineForm.style.display = 'block';
+                const nameInput = inlineForm.querySelector('#inlineCategoryName');
+                if (nameInput) nameInput.focus();
+            } else {
+                const catModal = document.getElementById('addCategoryModal');
+                if (catModal) catModal.classList.add('active');
+            }
+            // reset selection so user can re-open if needed
+            this.value = '';
         }
-    };
 }
 
 // Validações de formulário

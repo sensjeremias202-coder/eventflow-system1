@@ -302,6 +302,19 @@
                         <option value="">Selecione uma categoria</option>
                         <!-- Categories will be loaded here -->
                     </select>
+                    <!-- Inline category creation (hidden by default) -->
+                    <div id="inlineCategoryForm" class="inline-category-form" style="display:none; margin-top:12px;">
+                        <div class="form-row" style="display:flex; gap:8px;">
+                            <input type="text" id="inlineCategoryName" class="form-control" placeholder="Nome da nova categoria" />
+                            <input type="color" id="inlineCategoryColor" class="form-control" value="#4361ee" style="width:56px; padding:0;" />
+                        </div>
+                        <div style="display:flex; gap:8px; margin-top:8px; align-items:center;">
+                            <input type="text" id="inlineCategoryIcon" class="form-control" placeholder="Ícone (ex: fas fa-music)" />
+                            <button type="button" id="inlineCreateCategoryBtn" class="btn btn-primary">Criar categoria</button>
+                            <button type="button" id="inlineCancelCategoryBtn" class="btn btn-outline">Cancelar</button>
+                        </div>
+                        <small style="color:var(--gray); display:block; margin-top:6px;">Use classes do Font Awesome (ex: <code>fas fa-music</code>).</small>
+                    </div>
                 </div>
                 
                 <div class="form-group">

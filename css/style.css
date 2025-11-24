@@ -552,6 +552,23 @@ header {
     #cancelEditBtn { padding: 6px 10px; font-size: 0.9rem; }
 }
 
+/* Inline category form inside addEventModal */
+.inline-category-form {
+    background: #fbfbff;
+    border: 1px solid #eee;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.inline-category-form .form-control {
+    padding: 8px 10px;
+}
+
+@media (max-width: 480px) {
+    .inline-category-form { padding: 8px; }
+    .inline-category-form .form-row { flex-direction: column; }
+}
+
 /* New classes to replace inline modal styles */
 .event-edit-badge {
     display: none; /* shown by JS */
