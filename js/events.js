@@ -1,5 +1,14 @@
 function createEvent() {
-    if (!validateEventForm()) return;
+    console.log('[events] createEvent() iniciado');
+    try {
+        if (!validateEventForm()) {
+            console.log('[events] validateEventForm() retornou false');
+            return;
+        }
+    } catch (err) {
+        console.error('[events] Erro durante validação do formulário:', err);
+        return;
+    }
     // Se estivermos em modo de edição (definido por editEvent), delegar para updateEvent
     if (window.eventEditId) {
         updateEvent(window.eventEditId);
@@ -12,10 +21,13 @@ function createEvent() {
     const location = document.getElementById('eventLocation').value;
     const description = document.getElementById('eventDescription').value;
     const category = parseInt(document.getElementById('eventCategory').value);
+
+    console.log('[events] Dados do formulário:', { title, date, time, location, description, category });
     
     // Verificar se a categoria existe
     const categoryExists = categories.find(c => c.id === category);
     if (!categoryExists) {
+        console.warn('[events] Categoria selecionada não existe:', category);
         showNotification('Categoria selecionada não existe!', 'error');
         return;
     }
@@ -33,12 +45,19 @@ function createEvent() {
         createdAt: new Date().toISOString()
     };
     
-    events.push(newEvent);
-    saveData();
-    
-    showNotification('Evento criado com sucesso!', 'success');
-    closeModal('addEventModal');
-    loadEvents();
+    try {
+        console.log('[events] Criando novo evento:', newEvent);
+        events.push(newEvent);
+        saveData();
+        console.log('[events] Evento salvo com sucesso. total eventos =', events.length);
+
+        showNotification('Evento criado com sucesso!', 'success');
+        closeModal('addEventModal');
+        loadEvents();
+    } catch (err) {
+        console.error('[events] Erro ao criar evento:', err);
+        showNotification('Erro ao criar evento. Veja o console.', 'error');
+    }
 }
 
 // Editar evento: preenche o modal e coloca o sistema em modo edição
