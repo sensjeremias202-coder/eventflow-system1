@@ -89,6 +89,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function initializeData() {
     try {
+        console.log('[auth] Inicializando dados da aplicação...');
         users = getSafeLocalStorage('users', defaultUsers);
         categories = getSafeLocalStorage('categories', defaultCategories);
         events = getSafeLocalStorage('events', defaultEvents);
@@ -105,6 +106,7 @@ function initializeData() {
 }
 
 function resetToDefaultData() {
+    console.log('[auth] resetToDefaultData chamado — restaurando defaults');
     users = [...defaultUsers];
     categories = [...defaultCategories];
     events = [...defaultEvents];
@@ -128,6 +130,13 @@ function setupAuth() {
         e.preventDefault();
         const email = document.getElementById('loginEmail').value;
         const password = document.getElementById('loginPassword').value;
+
+        console.log('[auth] Tentativa de login para:', email);
+        try {
+            console.log('[auth] Usuários carregados:', Array.isArray(users) ? users.length : typeof users, users && users.slice ? users.slice(0,5) : users);
+        } catch (e) {
+            console.error('[auth] Erro ao logar estado users:', e);
+        }
         
         if (!email || !password) {
             showNotification('Por favor, preencha todos os campos', 'error');
@@ -213,6 +222,7 @@ function showRegisterForm() {
 }
 
 function showApp() {
+    console.log('[auth] showApp() — currentUser:', currentUser);
     const loginScreen = document.getElementById('loginScreen');
     const app = document.getElementById('app');
     

@@ -94,6 +94,38 @@ function setupButtons() {
             if (nav) nav.classList.add('active');
         });
     }
+
+    // Botão de restaurar dados de demonstração
+    const resetBtn = document.getElementById('resetDataBtn');
+    if (resetBtn) {
+        // Mostrar apenas para administradores
+        if (currentUser && currentUser.role === 'admin') {
+            resetBtn.style.display = 'inline-block';
+        }
+
+        resetBtn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            const confirmed = await showConfirm('Isto irá restaurar os dados para o estado padrão e recarregar a aplicação. Deseja continuar?', 'Restaurar Dados', { type: 'warning' });
+            if (!confirmed) return;
+
+            try {
+                if (typeof resetToDefaultData === 'function') {
+                    resetToDefaultData();
+                } else {
+                    localStorage.removeItem('users');
+                    localStorage.removeItem('categories');
+                    localStorage.removeItem('events');
+                    localStorage.removeItem('messages');
+                    localStorage.removeItem('currentUser');
+                }
+                showNotification('Dados restaurados. Recarregando...', 'success');
+                setTimeout(() => location.reload(), 900);
+            } catch (err) {
+                console.error('Erro ao restaurar dados:', err);
+                showNotification('Falha ao restaurar dados. Veja o console.', 'error');
+            }
+        });
+    }
 }
 
 function showPage(page) {
