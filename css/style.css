@@ -500,6 +500,12 @@ header {
     margin-bottom: 20px;
 }
 
+.modal-header-left, .modal-header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .modal-close {
     background: none;
     border: none;
@@ -544,6 +550,47 @@ header {
 @media (max-width: 480px) {
     #eventEditBadge { font-size: 0.7rem; padding: 3px 6px; }
     #cancelEditBtn { padding: 6px 10px; font-size: 0.9rem; }
+}
+
+/* New classes to replace inline modal styles */
+.event-edit-badge {
+    display: none; /* shown by JS */
+    margin-left: 12px;
+    padding: 4px 8px;
+    background-color: var(--warning);
+    color: white;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    align-self: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.btn-cancel-edit {
+    display: none; /* controlled by JS */
+    margin-left: 8px;
+}
+
+.btn-cancel-header {
+    display: none; /* shown by JS in edit mode */
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--danger);
+    border: 1px solid rgba(0,0,0,0.06);
+}
+
+.btn-cancel-header i { font-size: 1.1rem; }
+
+/* Animation when opening modal in edit mode */
+.modal.editing .modal-content {
+    animation: modalEditOpen 180ms cubic-bezier(.22,1,.36,1);
+    transform-origin: top center;
+}
+
+@keyframes modalEditOpen {
+    0% { opacity: 0; transform: translateY(-8px) scale(0.98); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 /* Tables */

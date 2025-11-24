@@ -265,8 +265,10 @@ function loadMyEvents() {
 // Cancelar edição via botão no modal
 document.addEventListener('DOMContentLoaded', function() {
     const cancelBtn = document.getElementById('cancelEditBtn');
-    if (cancelBtn) {
-        cancelBtn.addEventListener('click', function() {
+    const cancelHeaderBtn = document.getElementById('cancelEditHeaderBtn');
+    [cancelBtn, cancelHeaderBtn].forEach(btn => {
+        if (!btn) return;
+        btn.addEventListener('click', function() {
             // Limpar modo de edição
             window.eventEditId = null;
             // Resetar formulário
@@ -274,18 +276,28 @@ document.addEventListener('DOMContentLoaded', function() {
             if (form) form.reset();
             // Atualizar UI
             setEventEditMode(false);
+            // Fechar modal
+            const modal = document.getElementById('addEventModal');
+            if (modal) modal.classList.remove('active');
         });
-    }
+    });
 });
 
 // Helper para mostrar/ocultar UI de edição (badge e botão cancelar)
 function setEventEditMode(isEditing) {
     const badge = document.getElementById('eventEditBadge');
     const cancelBtn = document.getElementById('cancelEditBtn');
+    const cancelHeader = document.getElementById('cancelEditHeaderBtn');
     const form = document.getElementById('addEventForm');
+    const modal = document.getElementById('addEventModal');
 
     if (badge) badge.style.display = isEditing ? 'inline-block' : 'none';
     if (cancelBtn) cancelBtn.style.display = isEditing ? 'inline-block' : 'none';
+    if (cancelHeader) cancelHeader.style.display = isEditing ? 'inline-block' : 'none';
+    if (modal) {
+        if (isEditing) modal.classList.add('editing');
+        else modal.classList.remove('editing');
+    }
     if (form) {
         const submitBtn = form.querySelector('button[type="submit"]');
         if (submitBtn) submitBtn.textContent = isEditing ? 'Atualizar Evento' : 'Criar Evento';
