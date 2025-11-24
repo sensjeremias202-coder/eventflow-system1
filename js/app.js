@@ -244,17 +244,22 @@ function setupModals() {
             });
         }
     }
+    // Garantir que o formulário de evento tenha apenas um listener
+    const eventForm = document.getElementById('addEventForm');
     if (eventForm) {
-        // Remover event listeners anteriores
+        // Remover event listeners anteriores substituindo o nó
         const newEventForm = eventForm.cloneNode(true);
         eventForm.parentNode.replaceChild(newEventForm, eventForm);
-        
-        document.getElementById('addEventForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            if (validateEventForm()) {
-                createEvent();
-            }
-        });
+
+        const currentEventForm = document.getElementById('addEventForm');
+        if (currentEventForm) {
+            currentEventForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                if (validateEventForm()) {
+                    createEvent();
+                }
+            });
+        }
     }
     
     // Formulário de usuário
