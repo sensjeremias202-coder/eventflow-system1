@@ -276,6 +276,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (form) form.reset();
             // Atualizar UI
             setEventEditMode(false);
+            // Micro-feedback
+            try { showNotification('Edição cancelada', 'info'); } catch (e) { /* ignore */ }
             // Fechar modal
             const modal = document.getElementById('addEventModal');
             if (modal) modal.classList.remove('active');
