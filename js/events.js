@@ -55,3 +55,51 @@ function closeModal(modalId) {
         }
     }
 }
+
+// Renderiza a lista de eventos na tela
+function loadEvents() {
+    const grid = document.getElementById('eventsGrid');
+    if (!grid) return;
+
+    // Limpar grade
+    grid.innerHTML = '';
+
+    // Ordenar por data (mais próximas primeiro)
+    const sorted = events.slice().sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    if (sorted.length === 0) {
+        grid.innerHTML = '<p style="color:var(--gray);">Nenhum evento cadastrado.</p>';
+        return;
+    }
+
+    sorted.forEach(ev => {
+        const category = categories.find(c => c.id === ev.category) || { name: 'Sem categoria', color: '#ccc' };
+        const card = document.createElement('div');
+        card.className = 'event-card card';
+        card.innerHTML = `
+            <div class="card-header">
+                <div class="card-title">${escapeHtml(ev.title)}</div>
+                <div class="event-meta">${formatDate(ev.date)} • ${ev.time} • ${ev.location}</div>
+            </div>
+            <div class="card-body">
+                <p>${escapeHtml(ev.description)}</p>
+            </div>
+            <div class="card-footer">
+                <span class="category-badge" style="background:${category.color};">${escapeHtml(category.name)}</span>
+            </div>
+        `;
+
+        grid.appendChild(card);
+    });
+}
+
+// Pequena função utilitária para escapar HTML
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
