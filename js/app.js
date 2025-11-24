@@ -66,6 +66,19 @@ function setupButtons() {
             loadMyEvents();
         });
     }
+
+    // Botão visível para criar evento (todos os usuários logados)
+    const createEventBtn = document.getElementById('createEventBtn');
+    const addEventModal = document.getElementById('addEventModal');
+    if (createEventBtn && currentUser) {
+        // Mostrar botão para usuários logados; administradores já têm botão admin-only
+        createEventBtn.style.display = 'inline-block';
+        createEventBtn.addEventListener('click', function() {
+            // Carregar opções de categoria antes de abrir
+            if (typeof loadCategoryOptions === 'function') loadCategoryOptions();
+            if (addEventModal) addEventModal.classList.add('active');
+        });
+    }
 }
 
 function showPage(page) {
