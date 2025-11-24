@@ -160,6 +160,10 @@ function deleteCategory(categoryId) {
 // User management (admin)
 // -----------------------
 
+function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 function loadUsersTable() {
     if (!currentUser || currentUser.role !== 'admin') return;
 
@@ -203,10 +207,12 @@ function loadUsersTable() {
         });
     });
 
-    // add user button
+    // add user button (replace node to avoid duplicate listeners)
     const addUserBtn = document.getElementById('addUserBtn');
-    if (addUserBtn) {
-        addUserBtn.addEventListener('click', function() {
+    if (addUserBtn && addUserBtn.parentNode) {
+        const btn = addUserBtn.cloneNode(true);
+        addUserBtn.parentNode.replaceChild(btn, addUserBtn);
+        btn.addEventListener('click', function() {
             const modal = document.getElementById('addUserModal');
             if (modal) modal.classList.add('active');
 
@@ -236,6 +242,16 @@ function createUser() {
         return;
     }
 
+    if (!isValidEmail(email)) {
+        showNotification('E-mail inválido', 'error');
+        return;
+    }
+
+    if (password.length < 6) {
+        showNotification('Senha deve ter pelo menos 6 caracteres', 'error');
+        return;
+    }
+
     if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
         showNotification('Já existe um usuário com este e-mail', 'error');
         return;
@@ -257,6 +273,8 @@ function createUser() {
 
     const modal = document.getElementById('addUserModal');
     if (modal) modal.classList.remove('active');
+    const form = document.getElementById('addUserForm');
+    if (form) form.reset();
 }
 
 function editUser(userId) {
@@ -294,6 +312,16 @@ function updateUser(userId) {
 
     if (!name || !email) {
         showNotification('Nome e e-mail são obrigatórios', 'error');
+        return;
+    }
+
+    if (!isValidEmail(email)) {
+        showNotification('E-mail inválido', 'error');
+        return;
+    }
+
+    if (password && password.length < 6) {
+        showNotification('Senha deve ter pelo menos 6 caracteres', 'error');
         return;
     }
 
