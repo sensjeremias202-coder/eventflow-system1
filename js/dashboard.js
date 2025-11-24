@@ -134,10 +134,23 @@ function setupSentimentChart(sentimentData) {
     const sentimentCtx = document.getElementById('sentimentChart');
     if (!sentimentCtx) return;
     
-    // Destruir gráfico anterior se existir (mais robusto usando Chart.getChart)
+    // Destruir gráfico anterior se existir (verificações robustas)
     try {
-        const existing = Chart.getChart(sentimentCtx);
-        if (existing && typeof existing.destroy === 'function') existing.destroy();
+        let existing = null;
+        if (typeof Chart !== 'undefined' && typeof Chart.getChart === 'function') {
+            existing = Chart.getChart(sentimentCtx);
+        }
+        // Fallback para variável global antiga
+        if (!existing && window.sentimentChart) existing = window.sentimentChart;
+
+        if (existing) {
+            if (typeof existing.destroy === 'function') {
+                existing.destroy();
+            } else {
+                console.warn('Existing sentiment chart has no destroy() method, clearing reference.');
+                try { window.sentimentChart = null; } catch (_) {}
+            }
+        }
     } catch (e) {
         console.warn('Erro ao destruir sentimentChart existente:', e);
     }
@@ -187,8 +200,18 @@ function setupTopicsChart(topicsData) {
     if (!topicsCtx) return;
     
     try {
-        const existing = Chart.getChart(topicsCtx);
-        if (existing && typeof existing.destroy === 'function') existing.destroy();
+        let existing = null;
+        if (typeof Chart !== 'undefined' && typeof Chart.getChart === 'function') {
+            existing = Chart.getChart(topicsCtx);
+        }
+        if (!existing && window.topicsChart) existing = window.topicsChart;
+        if (existing) {
+            if (typeof existing.destroy === 'function') existing.destroy();
+            else {
+                console.warn('Existing topics chart has no destroy() method, clearing reference.');
+                try { window.topicsChart = null; } catch(_) {}
+            }
+        }
     } catch (e) {
         console.warn('Erro ao destruir topicsChart existente:', e);
     }
@@ -259,8 +282,18 @@ function setupCategoryChart(categoryData) {
     if (!categoryCtx) return;
     
     try {
-        const existing = Chart.getChart(categoryCtx);
-        if (existing && typeof existing.destroy === 'function') existing.destroy();
+        let existing = null;
+        if (typeof Chart !== 'undefined' && typeof Chart.getChart === 'function') {
+            existing = Chart.getChart(categoryCtx);
+        }
+        if (!existing && window.categoryChart) existing = window.categoryChart;
+        if (existing) {
+            if (typeof existing.destroy === 'function') existing.destroy();
+            else {
+                console.warn('Existing category chart has no destroy() method, clearing reference.');
+                try { window.categoryChart = null; } catch(_) {}
+            }
+        }
     } catch (e) {
         console.warn('Erro ao destruir categoryChart existente:', e);
     }
