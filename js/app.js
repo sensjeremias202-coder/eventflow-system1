@@ -494,4 +494,4 @@ function showConfirm(message, title = 'Confirmação', options = {}) {
         cancelBtn.addEventListener('click', onCancel);
         closeBtns.forEach(b => b.addEventListener('click', onCancel));
     });
-}
+}}
