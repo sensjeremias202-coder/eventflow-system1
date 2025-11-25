@@ -139,6 +139,24 @@ function validateCategoryForm() {
     return true;
 }
 
+// Funções auxiliares para modais
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.add('active');
+    }
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('active');
+        // Limpar formulário ao fechar
+        const form = modal.querySelector('form');
+        if (form) form.reset();
+    }
+}
+
 // Função de inicialização da página de categorias
 function initCategoriesPage() {
     console.log('[categories] Inicializando página de categorias...');
@@ -150,7 +168,30 @@ function initCategoriesPage() {
         addBtn.parentNode.replaceChild(newAddBtn, addBtn);
         
         newAddBtn.addEventListener('click', function() {
+            console.log('[categories] Abrindo modal de adicionar categoria');
             openModal('addCategoryModal');
+        });
+    }
+    
+    // Configurar botão de fechar modal
+    const modal = document.getElementById('addCategoryModal');
+    if (modal) {
+        const closeBtn = modal.querySelector('.modal-close');
+        if (closeBtn) {
+            const newCloseBtn = closeBtn.cloneNode(true);
+            closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+            
+            newCloseBtn.addEventListener('click', function() {
+                console.log('[categories] Fechando modal');
+                closeModal('addCategoryModal');
+            });
+        }
+        
+        // Fechar ao clicar fora do modal
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModal('addCategoryModal');
+            }
         });
     }
     
@@ -162,6 +203,7 @@ function initCategoriesPage() {
         
         newForm.addEventListener('submit', function(e) {
             e.preventDefault();
+            console.log('[categories] Submetendo formulário de categoria');
             createCategory();
         });
     }
