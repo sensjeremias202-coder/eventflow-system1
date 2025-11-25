@@ -13,7 +13,8 @@ const firebaseConfig = {
 };
 
 // Ativar Firebase (true = sincronização entre dispositivos, false = apenas local)
-const USE_FIREBASE = true;
+// IMPORTANTE: Defina como false se você não tiver configurado o Firebase Realtime Database
+const USE_FIREBASE = false; // Mude para true após criar o Realtime Database no Firebase Console
 
 let firebaseApp = null;
 let database = null;
@@ -21,14 +22,19 @@ let database = null;
 // Inicializar Firebase
 function initFirebase() {
     if (!USE_FIREBASE) {
-        console.log('[firebase] Modo demonstração - usando apenas localStorage');
+        console.log('[firebase] ⚠️ Firebase desabilitado - usando apenas localStorage');
+        console.log('[firebase] 💡 Para habilitar sincronização entre dispositivos:');
+        console.log('[firebase] 1. Acesse: https://console.firebase.google.com/');
+        console.log('[firebase] 2. Vá em "Realtime Database" e clique em "Criar banco de dados"');
+        console.log('[firebase] 3. Escolha um local e inicie em "modo de teste"');
+        console.log('[firebase] 4. Mude USE_FIREBASE para true no arquivo firebase-config.js');
         return false;
     }
 
     try {
         // Verificar se Firebase está disponível
         if (typeof firebase === 'undefined') {
-            console.error('[firebase] Firebase SDK não carregado');
+            console.error('[firebase] ❌ Firebase SDK não carregado');
             return false;
         }
 
@@ -36,12 +42,17 @@ function initFirebase() {
         firebaseApp = firebase.initializeApp(firebaseConfig);
         database = firebase.database();
 
-        console.log('[firebase] Firebase inicializado com sucesso');
+        console.log('[firebase] ✅ Firebase inicializado com sucesso');
         console.log('[firebase] Projeto:', firebaseConfig.projectId);
+        console.log('[firebase] Database URL:', firebaseConfig.databaseURL);
         return true;
     } catch (error) {
-        console.error('[firebase] Erro ao inicializar Firebase:', error);
-        console.warn('[firebase] Usando modo local como fallback');
+        console.error('[firebase] ❌ Erro ao inicializar Firebase:', error.message);
+        console.warn('[firebase] ⚠️ Usando modo local como fallback');
+        console.log('[firebase] 💡 Possíveis causas:');
+        console.log('[firebase] - Realtime Database não foi criado no Firebase Console');
+        console.log('[firebase] - URL do database incorreta');
+        console.log('[firebase] - Regras de segurança muito restritivas');
         return false;
     }
 }
