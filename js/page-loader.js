@@ -153,13 +153,18 @@ async function initializePage(pageName) {
     
     switch (pageName) {
         case 'events':
-            // Carregar lista de eventos
-            if (typeof loadEvents === 'function') {
-                loadEvents();
-            }
-            // Carregar opções de categoria no select
-            if (typeof loadCategoryOptions === 'function') {
-                loadCategoryOptions();
+            // Inicializar página de eventos
+            if (typeof initEventsPage === 'function') {
+                initEventsPage();
+            } else {
+                // Fallback para carregamento normal
+                if (typeof loadEvents === 'function') {
+                    loadEvents();
+                }
+                // Carregar opções de categoria no select
+                if (typeof loadCategoryOptions === 'function') {
+                    loadCategoryOptions();
+                }
             }
             break;
             

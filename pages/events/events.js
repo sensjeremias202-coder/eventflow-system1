@@ -626,3 +626,108 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+
+
+// Setup do modal de avaliação
+function initEventsPage() {
+    console.log('[events] Inicializando página de eventos...');
+    
+    // Star rating interativo
+    const starRatingContainer = document.getElementById('starRating');
+    if (starRatingContainer) {
+        const stars = starRatingContainer.querySelectorAll('i');
+        
+        stars.forEach((star, index) => {
+            const newStar = star.cloneNode(true);
+            star.parentNode.replaceChild(newStar, star);
+        });
+        
+        // Re-selecionar após clonar
+        const newStars = starRatingContainer.querySelectorAll('i');
+        newStars.forEach((star, index) => {
+            star.addEventListener('click', function() {
+                const rating = parseInt(this.getAttribute('data-rating'));
+                const ratingInput = document.getElementById('ratingValue');
+                if (ratingInput) ratingInput.value = rating;
+                
+                newStars.forEach((s, i) => {
+                    if (i < rating) {
+                        s.classList.remove('far');
+                        s.classList.add('fas', 'active');
+                    } else {
+                        s.classList.remove('fas', 'active');
+                        s.classList.add('far');
+                    }
+                });
+            });
+            
+            star.addEventListener('mouseenter', function() {
+                const rating = parseInt(this.getAttribute('data-rating'));
+                newStars.forEach((s, i) => {
+                    if (i < rating) {
+                        s.classList.add('active');
+                    } else {
+                        s.classList.remove('active');
+                    }
+                });
+            });
+        });
+        
+        starRatingContainer.addEventListener('mouseleave', function() {
+            const ratingInput = document.getElementById('ratingValue');
+            const currentRating = ratingInput ? parseInt(ratingInput.value) || 0 : 0;
+            const stars = starRatingContainer.querySelectorAll('i');
+            stars.forEach((s, i) => {
+                if (i < currentRating) {
+                    s.classList.add('active');
+                } else {
+                    s.classList.remove('active');
+                }
+            });
+        });
+    }
+    
+    // Submit do formulário de avaliação
+    const ratingForm = document.getElementById('ratingForm');
+    if (ratingForm) {
+        const newForm = ratingForm.cloneNode(true);
+        ratingForm.parentNode.replaceChild(newForm, ratingForm);
+        
+        newForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            submitRating();
+        });
+    }
+    
+    // Fechar modal de avaliação
+    const ratingModal = document.getElementById('ratingModal');
+    if (ratingModal) {
+        const closeBtn = ratingModal.querySelector('.modal-close');
+        if (closeBtn) {
+            const newCloseBtn = closeBtn.cloneNode(true);
+            closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+            
+            newCloseBtn.addEventListener('click', () => {
+                ratingModal.classList.remove('active');
+                currentRatingEventId = null;
+            });
+        }
+        
+        ratingModal.addEventListener('click', function(e) {
+            if (e.target === ratingModal) {
+                ratingModal.classList.remove('active');
+                currentRatingEventId = null;
+            }
+        });
+    }
+    
+    // Carregar eventos
+    loadEvents();
+    
+    // Carregar opções de categorias
+    if (typeof loadCategoryOptions === 'function') {
+        loadCategoryOptions();
+    }
+    
+    console.log('[events] Página de eventos inicializada com sucesso!');
+}
