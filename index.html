@@ -37,8 +37,8 @@
             <!-- Login Form -->
             <form id="loginForm">
                 <div class="form-group">
-                    <label class="form-label" for="loginEmail">E-mail</label>
-                    <input type="email" class="form-control" id="loginEmail" placeholder="seu@email.com" required>
+                    <label class="form-label" for="loginEmail">ID de Usuário ou E-mail</label>
+                    <input type="text" class="form-control" id="loginEmail" placeholder="Seu ID (ex: EVT123456) ou email" required>
                 </div>
                 
                 <div class="form-group">
@@ -82,6 +82,16 @@
                 
                 <div class="form-group">
                     <button type="submit" class="btn btn-primary" style="width: 100%;">Cadastrar</button>
+                </div>
+                
+                <div id="registrationSuccess" style="display: none; background: #10b981; color: white; padding: 15px; border-radius: 8px; margin-top: 15px; text-align: center;">
+                    <strong>✓ Cadastro realizado com sucesso!</strong>
+                    <div style="margin-top: 10px; font-size: 18px;">
+                        <strong>Seu ID:</strong> <span id="generatedUserId" style="font-family: monospace; font-size: 20px;"></span>
+                    </div>
+                    <div style="margin-top: 8px; font-size: 13px;">
+                        ⚠️ Anote este ID! Você precisará dele para fazer login.
+                    </div>
                 </div>
                 
                 <div style="text-align: center; margin-top: 15px;">

@@ -12,12 +12,36 @@ function getSafeLocalStorage(key, defaultValue) {
     }
 }
 
+// Função para gerar ID único
+function generateUniqueID() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let id = 'EVT';
+    for (let i = 0; i < 6; i++) {
+        id += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return id;
+}
+
+// Função para verificar se ID já existe
+function isIDUnique(id, users) {
+    return !users.find(u => u.identificationNumber === id);
+}
+
+// Função para gerar ID único garantido
+function generateGuaranteedUniqueID(users) {
+    let id;
+    do {
+        id = generateUniqueID();
+    } while (!isIDUnique(id, users));
+    return id;
+}
+
 // Dados padrão
 const defaultUsers = [
-    { id: 1, name: 'Administrador', email: 'admin@eventflow.com', password: 'admin123', role: 'admin', registered: '2023-01-01' },
-    { id: 2, name: 'João Silva', email: 'joao@email.com', password: '123456', role: 'user', registered: '2023-02-15' },
-    { id: 3, name: 'Maria Andrade', email: 'maria@email.com', password: '123456', role: 'user', registered: '2023-03-10' },
-    { id: 4, name: 'Carlos Tesoureiro', email: 'tesoureiro@eventflow.com', password: 'tesoureiro123', role: 'treasurer', registered: '2023-01-15', identificationNumber: '12345' }
+    { id: 1, name: 'Administrador', email: 'admin@eventflow.com', password: 'admin123', role: 'admin', registered: '2023-01-01', identificationNumber: 'EVTADM001' },
+    { id: 2, name: 'João Silva', email: 'joao@email.com', password: '123456', role: 'user', registered: '2023-02-15', identificationNumber: 'EVTJOA002' },
+    { id: 3, name: 'Maria Andrade', email: 'maria@email.com', password: '123456', role: 'user', registered: '2023-03-10', identificationNumber: 'EVTMAR003' },
+    { id: 4, name: 'Carlos Tesoureiro', email: 'tesoureiro@eventflow.com', password: 'tesoureiro123', role: 'treasurer', registered: '2023-01-15', identificationNumber: 'EVTTES004' }
 ];
 
 const defaultCategories = [
@@ -57,6 +81,47 @@ const defaultEvents = [
         ]
     }
 ];
+
+// Função para gerar ID único
+function generateUniqueID() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let id = 'EVT';
+    for (let i = 0; i < 6; i++) {
+        id += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return id;
+}
+
+// Função para verificar se ID já existe
+function isIDUnique(id, users) {
+    return !users.find(u => u.identificationNumber === id);
+}
+
+// Função para gerar ID único garantido
+function generateGuaranteedUniqueID(users) {
+    let id;
+    do {
+        id = generateUniqueID();
+    } while (!isIDUnique(id, users));
+    return id;
+}
+
+// Função para migrar IDs para usuários existentes sem ID
+function migrateUserIDs() {
+    let modified = false;
+    users.forEach(user => {
+        if (!user.identificationNumber) {
+            user.identificationNumber = generateGuaranteedUniqueID(users);
+            modified = true;
+            console.log(`[auth] ID gerado para usuário ${user.name}: ${user.identificationNumber}`);
+        }
+    });
+    
+    if (modified) {
+        saveData();
+        console.log('[auth] Migração de IDs concluída');
+    }
+}
 
 const defaultMessages = [
     { id: 1, from: 2, to: 1, content: 'Olá, gostaria de saber mais informações sobre o Workshop de Marketing Digital.', timestamp: '2023-10-05T10:25:00' },
@@ -110,10 +175,16 @@ function initializeData() {
             events = getSafeLocalStorage('events', defaultEvents);
             messages = getSafeLocalStorage('messages', defaultMessages);
             
+            // Migrar IDs para usuários existentes
+            migrateUserIDs();
+            
             // Os listeners do Firebase atualizarão os dados em breve
         } else {
             console.log('[auth] 💾 Modo local - usando localStorage');
             users = getSafeLocalStorage('users', defaultUsers);
+            
+            // Migrar IDs para usuários existentes
+            migrateUserIDs();
             categories = getSafeLocalStorage('categories', defaultCategories);
             events = getSafeLocalStorage('events', defaultEvents);
             messages = getSafeLocalStorage('messages', defaultMessages);
@@ -152,22 +223,26 @@ function setupAuth() {
     
     loginForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        const email = document.getElementById('loginEmail').value;
+        const identifier = document.getElementById('loginEmail').value.trim(); // Pode ser email ou ID
         const password = document.getElementById('loginPassword').value;
 
-        console.log('[auth] Tentativa de login para:', email);
+        console.log('[auth] Tentativa de login para:', identifier);
         try {
             console.log('[auth] Usuários carregados:', Array.isArray(users) ? users.length : typeof users, users && users.slice ? users.slice(0,5) : users);
         } catch (e) {
             console.error('[auth] Erro ao logar estado users:', e);
         }
         
-        if (!email || !password) {
+        if (!identifier || !password) {
             showNotification('Por favor, preencha todos os campos', 'error');
             return;
         }
         
-        const user = users.find(u => u.email === email && u.password === password);
+        // Procurar usuário por email OU por identificationNumber
+        const user = users.find(u => 
+            (u.email === identifier || u.identificationNumber === identifier) && 
+            u.password === password
+        );
         
         if (user) {
             currentUser = user;
@@ -176,7 +251,7 @@ function setupAuth() {
             // Registrar login no Analytics
             if (window.logAnalyticsEvent) {
                 logAnalyticsEvent('login', {
-                    method: 'email',
+                    method: identifier.includes('@') ? 'email' : 'id',
                     user_role: user.role
                 });
             }
@@ -184,7 +259,7 @@ function setupAuth() {
             showApp();
             showNotification('Login realizado com sucesso!', 'success');
         } else {
-            showNotification('E-mail ou senha incorretos!', 'error');
+            showNotification('ID/E-mail ou senha incorretos!', 'error');
         }
     });
     
@@ -206,6 +281,9 @@ function setupAuth() {
             return;
         }
         
+        // Gerar ID único para o novo usuário
+        const identificationNumber = generateGuaranteedUniqueID(users);
+        
         // Criar novo usuário
         const newUser = {
             id: users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1,
@@ -213,11 +291,17 @@ function setupAuth() {
             email,
             password,
             role,
+            identificationNumber,
             registered: new Date().toISOString().split('T')[0]
         };
         
         users.push(newUser);
         saveData();
+        
+        // Exibir ID gerado para o usuário
+        document.getElementById('generatedUserId').textContent = identificationNumber;
+        document.getElementById('registrationSuccess').style.display = 'block';
+        registerForm.reset();
         
         // Registrar cadastro no Analytics
         if (window.logAnalyticsEvent) {
@@ -227,8 +311,13 @@ function setupAuth() {
             });
         }
         
-        showNotification('Usuário cadastrado com sucesso! Faça login para continuar.', 'success');
-        showRegisterForm();
+        showNotification('Usuário cadastrado com sucesso! Anote seu ID exibido na tela.', 'success');
+        
+        // Esconder mensagem de sucesso e voltar ao login após 8 segundos
+        setTimeout(() => {
+            document.getElementById('registrationSuccess').style.display = 'none';
+            showLoginForm();
+        }, 8000);
     });
     
     if (showRegister) {

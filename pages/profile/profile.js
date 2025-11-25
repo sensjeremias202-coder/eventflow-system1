@@ -5,9 +5,29 @@ function loadProfile() {
     
     // Preencher dados do perfil
     document.getElementById('profileName').value = currentUser.name || '';
+    document.getElementById('profileId').value = currentUser.identificationNumber || 'Não disponível';
     document.getElementById('profileEmail').value = currentUser.email || '';
-    document.getElementById('profileRole').value = currentUser.role === 'admin' ? 'Administrador' : 'Usuário';
+    document.getElementById('profileRole').value = currentUser.role === 'admin' ? 'Administrador' : (currentUser.role === 'treasurer' ? 'Tesoureiro' : 'Usuário');
     document.getElementById('profileRegistered').value = currentUser.registered || 'Não disponível';
+    
+    // Adicionar funcionalidade ao botão de copiar ID
+    const copyBtn = document.getElementById('copyIdBtn');
+    if (copyBtn) {
+        copyBtn.addEventListener('click', function() {
+            const idField = document.getElementById('profileId');
+            idField.select();
+            document.execCommand('copy');
+            
+            // Feedback visual
+            copyBtn.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+            copyBtn.style.background = '#10b981';
+            
+            setTimeout(() => {
+                copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copiar';
+                copyBtn.style.background = '';
+            }, 2000);
+        });
+    }
     
     // Carregar eventos do usuário
     loadMyEventsProfile();
