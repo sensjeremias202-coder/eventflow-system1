@@ -7,19 +7,23 @@ let firebaseListeners = {};
 // Configurações
 const SYNC_INTERVAL_MS = 2000; // Verifica atualizações a cada 2 segundos
 const STORAGE_KEY_TIMESTAMP = 'lastUpdateTimestamp';
-const FIREBASE_ENABLED = window.firebaseInitialized || false;
 
 // Inicializar sistema de sincronização
 function initSync() {
     console.log('[sync] Iniciando sistema de sincronização em tempo real...');
     
-    if (FIREBASE_ENABLED && window.firebaseDatabase) {
-        console.log('[sync] Modo Firebase - Sincronização entre dispositivos ATIVADA');
-        initFirebaseSync();
-    } else {
-        console.log('[sync] Modo localStorage - Sincronização apenas entre abas do mesmo navegador');
-        initLocalSync();
-    }
+    // Aguardar um momento para Firebase ser inicializado
+    setTimeout(() => {
+        const FIREBASE_ENABLED = window.firebaseInitialized || false;
+        
+        if (FIREBASE_ENABLED && window.firebaseDatabase) {
+            console.log('[sync] Modo Firebase - Sincronização entre dispositivos ATIVADA');
+            initFirebaseSync();
+        } else {
+            console.log('[sync] Modo localStorage - Sincronização apenas entre abas do mesmo navegador');
+            initLocalSync();
+        }
+    }, 100);
     
     // Listener para visibilidade da página
     document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -189,6 +193,9 @@ function saveDataWithSync() {
         localStorage.setItem('categories', JSON.stringify(categories));
         localStorage.setItem('events', JSON.stringify(events));
         localStorage.setItem('messages', JSON.stringify(messages));
+        
+        // Verificar se Firebase está habilitado
+        const FIREBASE_ENABLED = window.firebaseInitialized || false;
         
         // Se Firebase habilitado, salvar remotamente
         if (FIREBASE_ENABLED && window.firebaseDatabase) {
@@ -371,6 +378,7 @@ window.addEventListener('beforeunload', () => {
     window.removeEventListener('storage', handleStorageChange);
     
     // Remover listeners do Firebase
+    const FIREBASE_ENABLED = window.firebaseInitialized || false;
     if (FIREBASE_ENABLED && window.firebaseDatabase) {
         Object.keys(firebaseListeners).forEach(key => {
             window.firebaseDatabase.ref(key).off('value', firebaseListeners[key]);
@@ -379,6 +387,7 @@ window.addEventListener('beforeunload', () => {
 });
 
 // Status de conexão Firebase
+const FIREBASE_ENABLED = window.firebaseInitialized || false;
 if (FIREBASE_ENABLED && window.firebaseDatabase) {
     window.firebaseDatabase.ref('.info/connected').on('value', (snapshot) => {
         const statusEl = document.getElementById('syncStatus');
