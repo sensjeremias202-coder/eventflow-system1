@@ -7,7 +7,7 @@ function loadProfile() {
     document.getElementById('profileName').value = currentUser.name || '';
     document.getElementById('profileId').value = currentUser.identificationNumber || 'Não disponível';
     document.getElementById('profileEmail').value = currentUser.email || '';
-    document.getElementById('profileRole').value = currentUser.role === 'admin' ? 'Administrador' : (currentUser.role === 'treasurer' ? 'Tesoureiro' : 'Usuário');
+    document.getElementById('profileRole').value = currentUser.role === 'admin' ? 'Administrador' : (currentUser.role === 'treasurer' ? 'Tesoureiro' : 'Jovens');
     document.getElementById('profileRegistered').value = currentUser.registered || 'Não disponível';
     
     // Adicionar funcionalidade ao botão de copiar ID

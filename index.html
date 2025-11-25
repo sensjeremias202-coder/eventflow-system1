@@ -135,10 +135,10 @@
                         <button class="btn btn-info" id="forceSyncBtn" title="Forçar sincronização com Firebase" style="display:none; margin-right:10px;">
                             <i class="fas fa-sync"></i> Sincronizar
                         </button>
-                        <button class="btn btn-danger" id="clearCacheBtn" title="Limpar cache local e recarregar do Firebase" style="display:none; margin-right:10px;">
+                        <button class="btn btn-danger admin-only" id="clearCacheBtn" title="Limpar cache local e recarregar do Firebase" style="display:none; margin-right:10px;">
                             <i class="fas fa-trash-alt"></i> Limpar Cache
                         </button>
-                        <button class="btn btn-warning" id="resetDataBtn" title="Restaurar dados de demonstração" style="display:none; margin-right:10px;">
+                        <button class="btn btn-warning admin-only" id="resetDataBtn" title="Restaurar dados de demonstração" style="display:none; margin-right:10px;">
                             <i class="fas fa-undo"></i> Restaurar Dados
                         </button>
                         <button class="btn btn-primary" id="createEventBtn" style="display: none; margin-right:10px;">
@@ -161,11 +161,11 @@
                 <div class="sidebar">
                     <h3>Menu</h3>
                     <ul class="sidebar-menu">
-                        <li><a href="#" class="sidebar-link active" data-page="dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                        <li class="admin-treasurer-only" style="display: none;"><a href="#" class="sidebar-link active" data-page="dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
                         <li><a href="#" class="sidebar-link" data-page="events"><i class="fas fa-calendar-alt"></i> Eventos</a></li>
-                        <li><a href="#" class="sidebar-link" data-page="profile"><i class="fas fa-user"></i> Meu Perfil</a></li>
+                        <li class="admin-treasurer-only" style="display: none;"><a href="#" class="sidebar-link" data-page="profile"><i class="fas fa-user"></i> Meu Perfil</a></li>
                         <li><a href="#" class="sidebar-link" data-page="chat"><i class="fas fa-comments"></i> Chat</a></li>
-                        <li><a href="#" class="sidebar-link treasurer-only" data-page="financeiro" style="display: none;"><i class="fas fa-coins"></i> Financeiro</a></li>
+                        <li><a href="#" class="sidebar-link admin-treasurer-only" data-page="financeiro" style="display: none;"><i class="fas fa-coins"></i> Financeiro</a></li>
                         <li><a href="#" class="sidebar-link admin-treasurer-only" data-page="graficos" style="display: none;"><i class="fas fa-chart-line"></i> Gráficos</a></li>
                         <li><a href="#" class="sidebar-link admin-only" data-page="users" style="display: none;"><i class="fas fa-users"></i> Gerenciar Usuários</a></li>
                         <li><a href="#" class="sidebar-link admin-only" data-page="categories" style="display: none;"><i class="fas fa-tags"></i> Gerenciar Categorias</a></li>
@@ -629,9 +629,9 @@
                 </div>
                 
                 <div class="form-group">
-                    <label class="form-label" for="newUserRole">Tipo de Usuário</label>
-                    <select class="form-control" id="newUserRole" required>
-                        <option value="user">Usuário Comum</option>
+                    <label class="form-label" for="registerRole">Tipo de Conta</label>
+                    <select class="form-control" id="registerRole" required>
+                        <option value="jovens">Jovens</option>
                         <option value="treasurer">Tesoureiro</option>
                         <option value="admin">Administrador</option>
                     </select>

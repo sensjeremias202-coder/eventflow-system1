@@ -39,8 +39,8 @@ function generateGuaranteedUniqueID(users) {
 // Dados padrão
 const defaultUsers = [
     { id: 1, name: 'Administrador', email: 'admin@eventflow.com', password: 'admin123', role: 'admin', registered: '2023-01-01', identificationNumber: 'EVTADM001' },
-    { id: 2, name: 'João Silva', email: 'joao@email.com', password: '123456', role: 'user', registered: '2023-02-15', identificationNumber: 'EVTJOA002' },
-    { id: 3, name: 'Maria Andrade', email: 'maria@email.com', password: '123456', role: 'user', registered: '2023-03-10', identificationNumber: 'EVTMAR003' },
+    { id: 2, name: 'João Silva', email: 'joao@email.com', password: '123456', role: 'jovens', registered: '2023-02-15', identificationNumber: 'EVTJOA002' },
+    { id: 3, name: 'Maria Andrade', email: 'maria@email.com', password: '123456', role: 'jovens', registered: '2023-03-10', identificationNumber: 'EVTMAR003' },
     { id: 4, name: 'Carlos Tesoureiro', email: 'tesoureiro@eventflow.com', password: 'tesoureiro123', role: 'treasurer', registered: '2023-01-15', identificationNumber: 'EVTTES004' }
 ];
 
@@ -372,13 +372,40 @@ function showApp() {
         });
     }
     
-    // Mostrar/ocultar funcionalidades de tesoureiro
-    if (currentUser.role === 'treasurer' || currentUser.role === 'admin') {
-        document.querySelectorAll('.treasurer-only').forEach(el => {
+    // Mostrar/ocultar funcionalidades baseado no role
+    if (currentUser.role === 'admin') {
+        // Admin: acesso total
+        document.querySelectorAll('.admin-only').forEach(el => {
             el.style.display = 'flex';
         });
         document.querySelectorAll('.admin-treasurer-only').forEach(el => {
             el.style.display = 'flex';
+        });
+        document.querySelectorAll('.treasurer-only').forEach(el => {
+            el.style.display = 'flex';
+        });
+    } else if (currentUser.role === 'treasurer') {
+        // Tesoureiro: acesso total exceto limpar dados
+        document.querySelectorAll('.admin-treasurer-only').forEach(el => {
+            el.style.display = 'flex';
+        });
+        document.querySelectorAll('.treasurer-only').forEach(el => {
+            el.style.display = 'flex';
+        });
+        // Ocultar botões de limpar dados (admin-only)
+        document.querySelectorAll('.admin-only').forEach(el => {
+            el.style.display = 'none';
+        });
+    } else if (currentUser.role === 'jovens') {
+        // Jovens: acesso apenas a Eventos e Chat
+        document.querySelectorAll('.admin-only').forEach(el => {
+            el.style.display = 'none';
+        });
+        document.querySelectorAll('.admin-treasurer-only').forEach(el => {
+            el.style.display = 'none';
+        });
+        document.querySelectorAll('.treasurer-only').forEach(el => {
+            el.style.display = 'none';
         });
     }
     
@@ -391,14 +418,21 @@ function showApp() {
     // Configurar logout (definido em app.js)
     if (typeof setupLogout === 'function') setupLogout();
     
-    // Carregar página inicial (Dashboard) usando sistema modular
-    console.log('[auth] ⚡ Carregando página inicial: dashboard');
+    // Definir página inicial baseado no role
+    let initialPage = 'dashboard';
+    if (currentUser.role === 'jovens') {
+        initialPage = 'events'; // Jovens começam na página de eventos
+    }
+    
+    // Carregar página inicial usando sistema modular
+    console.log(`[auth] ⚡ Carregando página inicial: ${initialPage}`);
     if (typeof showModularPage === 'function') {
         // Sistema modular - carrega dinamicamente
-        showModularPage('dashboard').catch(err => {
-            console.error('[auth] Erro ao carregar dashboard:', err);
+        showModularPage(initialPage).catch(err => {
+            console.error(`[auth] Erro ao carregar ${initialPage}:`, err);
             // Fallback: tentar carregar da forma antiga
-            if (typeof loadDashboard === 'function') loadDashboard();
+            if (initialPage === 'dashboard' && typeof loadDashboard === 'function') loadDashboard();
+            if (initialPage === 'events' && typeof loadEvents === 'function') loadEvents();
         });
     } else {
         // Fallback: sistema antigo

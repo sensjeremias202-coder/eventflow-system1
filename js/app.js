@@ -57,12 +57,28 @@ function showConfirm(message, title = 'Confirmação', options = {}) {
 }
 
 function setupNavigation() {
+    // Definir páginas permitidas por role
+    const allowedPages = {
+        'admin': ['dashboard', 'events', 'profile', 'chat', 'financeiro', 'graficos', 'users', 'categories'],
+        'treasurer': ['dashboard', 'events', 'profile', 'chat', 'financeiro', 'graficos', 'users', 'categories'],
+        'jovens': ['events', 'chat'] // Jovens: apenas Eventos e Chat
+    };
+    
     // Navegação principal
     document.querySelectorAll('.nav-link').forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
             const page = this.getAttribute('data-page');
             if (page) {
+                // Verificar permissão de acesso
+                const userRole = currentUser?.role || 'jovens';
+                const allowed = allowedPages[userRole] || [];
+                
+                if (!allowed.includes(page)) {
+                    showNotification('❌ Você não tem permissão para acessar esta página', 'error');
+                    return;
+                }
+                
                 showPage(page);
                 
                 // Atualizar estado ativo
@@ -78,6 +94,15 @@ function setupNavigation() {
             e.preventDefault();
             const page = this.getAttribute('data-page');
             if (page) {
+                // Verificar permissão de acesso
+                const userRole = currentUser?.role || 'jovens';
+                const allowed = allowedPages[userRole] || [];
+                
+                if (!allowed.includes(page)) {
+                    showNotification('❌ Você não tem permissão para acessar esta página', 'error');
+                    return;
+                }
+                
                 showPage(page);
                 
                 // Registrar navegação no Analytics
