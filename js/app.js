@@ -61,7 +61,7 @@ function setupNavigation() {
     const allowedPages = {
         'admin': ['dashboard', 'events', 'profile', 'chat', 'financeiro', 'graficos', 'users', 'categories'],
         'treasurer': ['dashboard', 'events', 'profile', 'chat', 'financeiro', 'graficos', 'users', 'categories'],
-        'jovens': ['events', 'chat'] // Jovens: apenas Eventos e Chat
+        'jovens': ['events', 'chat', 'profile'] // Jovens: Eventos, Chat e Perfil
     };
     
     // Navegação principal
@@ -72,7 +72,7 @@ function setupNavigation() {
             if (page) {
                 // Verificar permissão de acesso
                 const userRole = currentUser?.role || 'jovens';
-                const allowed = allowedPages[userRole] || ['events', 'chat'];
+                const allowed = allowedPages[userRole] || ['events', 'chat', 'profile'];
                 
                 if (!allowed.includes(page)) {
                     showNotification('❌ Você não tem permissão para acessar esta página', 'error');
@@ -96,7 +96,7 @@ function setupNavigation() {
             if (page) {
                 // Verificar permissão de acesso
                 const userRole = currentUser?.role || 'jovens';
-                const allowed = allowedPages[userRole] || ['events', 'chat'];
+                const allowed = allowedPages[userRole] || ['events', 'chat', 'profile'];
                 
                 if (!allowed.includes(page)) {
                     showNotification('❌ Você não tem permissão para acessar esta página', 'error');
