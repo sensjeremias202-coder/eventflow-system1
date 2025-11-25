@@ -50,6 +50,14 @@ function createEvent() {
         events.push(newEvent);
         saveData();
         console.log('[events] Evento salvo com sucesso. total eventos =', events.length);
+        
+        // Registrar criação de evento no Analytics
+        if (window.logAnalyticsEvent) {
+            logAnalyticsEvent('create_event', {
+                event_category: newEvent.category,
+                event_type: newEvent.type
+            });
+        }
 
         showNotification('Evento criado com sucesso!', 'success');
         closeModal('addEventModal');
@@ -517,6 +525,16 @@ function submitRating() {
         // Nova avaliação
         events[eventIdx].ratings.push(ratingData);
         console.log('[events] Nova avaliação adicionada:', ratingData);
+        
+        // Registrar avaliação no Analytics
+        if (window.logAnalyticsEvent) {
+            logAnalyticsEvent('rate_event', {
+                event_id: eventId,
+                rating_value: rating,
+                has_comment: comment.length > 0
+            });
+        }
+        
         showNotification('Avaliação enviada com sucesso!', 'success');
     }
     

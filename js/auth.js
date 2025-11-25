@@ -74,6 +74,14 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeData();
     setupAuth();
     
+    // Registrar visita da página no Analytics
+    if (window.logAnalyticsEvent) {
+        logAnalyticsEvent('page_view', {
+            page_title: 'EventFlow System',
+            page_location: window.location.href
+        });
+    }
+    
     // Se já houver um usuário logado, mostrar a aplicação
     const savedUser = localStorage.getItem('currentUser');
     if (savedUser) {
@@ -163,6 +171,15 @@ function setupAuth() {
         if (user) {
             currentUser = user;
             localStorage.setItem('currentUser', JSON.stringify(user));
+            
+            // Registrar login no Analytics
+            if (window.logAnalyticsEvent) {
+                logAnalyticsEvent('login', {
+                    method: 'email',
+                    user_role: user.role
+                });
+            }
+            
             showApp();
             showNotification('Login realizado com sucesso!', 'success');
         } else {
@@ -201,8 +218,16 @@ function setupAuth() {
         users.push(newUser);
         saveData();
         
+        // Registrar cadastro no Analytics
+        if (window.logAnalyticsEvent) {
+            logAnalyticsEvent('sign_up', {
+                method: 'email',
+                user_role: role
+            });
+        }
+        
         showNotification('Usuário cadastrado com sucesso! Faça login para continuar.', 'success');
-        showLoginForm();
+        showRegisterForm();
     });
     
     if (showRegister) {

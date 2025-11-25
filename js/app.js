@@ -80,6 +80,14 @@ function setupNavigation() {
             if (page) {
                 showPage(page);
                 
+                // Registrar navegação no Analytics
+                if (window.logAnalyticsEvent) {
+                    logAnalyticsEvent('page_view', {
+                        page_title: page,
+                        page_location: window.location.href + '#' + page
+                    });
+                }
+                
                 // Atualizar estado ativo
                 document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
                 this.classList.add('active');

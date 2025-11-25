@@ -145,18 +145,18 @@ function setupSentimentChart(sentimentData) {
     const sentimentCtx = document.getElementById('sentimentChart');
     if (!sentimentCtx) return;
     
-    // Destruir gráfico anterior se existir (compatível com Chart.js v2/v3+)
-    try {
-        const existing = getChartInstance(sentimentCtx, 'sentimentChart');
+    // Destruir gráfico anterior se existir
+    if (window.sentimentChart && typeof window.sentimentChart.destroy === 'function') {
+        window.sentimentChart.destroy();
+        window.sentimentChart = null;
+    }
+    
+    // Também verificar Chart.js v3+ getChart
+    if (typeof Chart !== 'undefined' && typeof Chart.getChart === 'function') {
+        const existing = Chart.getChart(sentimentCtx);
         if (existing) {
-            if (typeof existing.destroy === 'function') existing.destroy();
-            else {
-                console.warn('Existing sentiment chart has no destroy() method, clearing reference.');
-                try { window.sentimentChart = null; } catch (_) {}
-            }
+            existing.destroy();
         }
-    } catch (e) {
-        console.warn('Erro ao destruir sentimentChart existente:', e);
     }
     
     const total = sentimentData.positive + sentimentData.neutral + sentimentData.negative;
@@ -203,17 +203,18 @@ function setupTopicsChart(topicsData) {
     const topicsCtx = document.getElementById('topicsChart');
     if (!topicsCtx) return;
     
-    try {
-        const existing = getChartInstance(topicsCtx, 'topicsChart');
+    // Destruir gráfico anterior se existir
+    if (window.topicsChart && typeof window.topicsChart.destroy === 'function') {
+        window.topicsChart.destroy();
+        window.topicsChart = null;
+    }
+    
+    // Também verificar Chart.js v3+ getChart
+    if (typeof Chart !== 'undefined' && typeof Chart.getChart === 'function') {
+        const existing = Chart.getChart(topicsCtx);
         if (existing) {
-            if (typeof existing.destroy === 'function') existing.destroy();
-            else {
-                console.warn('Existing topics chart has no destroy() method, clearing reference.');
-                try { window.topicsChart = null; } catch(_) {}
-            }
+            existing.destroy();
         }
-    } catch (e) {
-        console.warn('Erro ao destruir topicsChart existente:', e);
     }
     
     // Ordenar tópicos por frequência
@@ -281,17 +282,18 @@ function setupCategoryChart(categoryData) {
     
     if (!categoryCtx) return;
     
-    try {
-        const existing = getChartInstance(categoryCtx, 'categoryChart');
+    // Destruir gráfico anterior se existir
+    if (window.categoryChart && typeof window.categoryChart.destroy === 'function') {
+        window.categoryChart.destroy();
+        window.categoryChart = null;
+    }
+    
+    // Também verificar Chart.js v3+ getChart
+    if (typeof Chart !== 'undefined' && typeof Chart.getChart === 'function') {
+        const existing = Chart.getChart(categoryCtx);
         if (existing) {
-            if (typeof existing.destroy === 'function') existing.destroy();
-            else {
-                console.warn('Existing category chart has no destroy() method, clearing reference.');
-                try { window.categoryChart = null; } catch(_) {}
-            }
+            existing.destroy();
         }
-    } catch (e) {
-        console.warn('Erro ao destruir categoryChart existente:', e);
     }
     
     const sortedCategories = Object.entries(categoryData)

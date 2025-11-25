@@ -18,6 +18,7 @@ const USE_FIREBASE = false; // Mude para true após criar o Realtime Database no
 
 let firebaseApp = null;
 let database = null;
+let analytics = null;
 
 // Inicializar Firebase
 function initFirebase() {
@@ -41,6 +42,12 @@ function initFirebase() {
         // Inicializar Firebase App
         firebaseApp = firebase.initializeApp(firebaseConfig);
         database = firebase.database();
+        
+        // Inicializar Analytics
+        if (firebase.analytics) {
+            analytics = firebase.analytics();
+            console.log('[firebase] 📊 Analytics inicializado');
+        }
 
         console.log('[firebase] ✅ Firebase inicializado com sucesso');
         console.log('[firebase] Projeto:', firebaseConfig.projectId);
@@ -60,6 +67,18 @@ function initFirebase() {
 // Exportar para uso global
 window.firebaseInitialized = initFirebase();
 window.firebaseDatabase = database;
+window.firebaseAnalytics = analytics;
+
+// Função para registrar eventos no Analytics
+function logAnalyticsEvent(eventName, params = {}) {
+    if (analytics) {
+        analytics.logEvent(eventName, params);
+        console.log(`[analytics] 📊 Evento registrado: ${eventName}`, params);
+    }
+}
+
+// Exportar função de analytics
+window.logAnalyticsEvent = logAnalyticsEvent;
 
 // Função para fazer upload inicial dos dados locais para o Firebase
 if (window.firebaseInitialized && window.firebaseDatabase) {
