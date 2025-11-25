@@ -43,9 +43,6 @@ function loadChatUsers() {
     if (chatPartners.length > 0) {
         selectChatUser(chatPartners[0].id);
     }
-    
-    // Iniciar mensagens automáticas
-    startAutoMessages();
 }
 
 function isUserOnline(userId) {
@@ -202,60 +199,9 @@ function sendMessage() {
     
     // Limpar input
     input.value = '';
-    
-    // Simular resposta automática após 2-5 segundos
-    setTimeout(() => {
-        generateAutoResponse(currentChatUser.id);
-    }, 2000 + Math.random() * 3000);
 }
 
-function generateAutoResponse(toUserId) {
-    if (!currentChatUser || currentChatUser.id !== toUserId) return;
-    
-    const autoResponses = [
-        "Obrigado pela sua mensagem! Em breve retornarei com mais informações.",
-        "Entendi sua dúvida. Vou verificar e te retorno em instantes.",
-        "Ótima pergunta! Deixe-me consultar isso para você.",
-        "Estou processando sua solicitação. Aguarde um momento...",
-        "Recebi sua mensagem. Em breve terei novidades para você!",
-        "Obrigado pelo contato! Estou analisando sua questão.",
-        "Mensagem recebida com sucesso. Retornarei em breve.",
-        "Agradeço seu interesse! Estou buscando as informações solicitadas."
-    ];
-    
-    const randomResponse = autoResponses[Math.floor(Math.random() * autoResponses.length)];
-    
-    const autoMessage = {
-        id: messages.length > 0 ? Math.max(...messages.map(m => m.id)) + 1 : 1,
-        from: toUserId,
-        to: currentUser.id,
-        content: randomResponse,
-        timestamp: new Date().toISOString(),
-        auto: true
-    };
-    
-    messages.push(autoMessage);
-    saveData();
-    
-    // Atualizar chat se ainda estiver na mesma conversa
-    if (currentChatUser && currentChatUser.id === toUserId) {
-        loadChatMessages(toUserId);
-    }
-}
 
-function startAutoMessages() {
-    // Limpar intervalo anterior se existir
-    if (autoMessageInterval) {
-        clearInterval(autoMessageInterval);
-    }
-    
-    // Gerar mensagens automáticas a cada 30-60 segundos
-    autoMessageInterval = setInterval(() => {
-        if (currentChatUser && Math.random() > 0.7) { // 30% de chance
-            generateAutoResponse(currentChatUser.id);
-        }
-    }, 30000 + Math.random() * 30000);
-}
 
 // Inicializar chat quando o documento carregar
 document.addEventListener('DOMContentLoaded', function() {

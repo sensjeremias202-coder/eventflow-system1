@@ -442,7 +442,7 @@ function setEventEditMode(isEditing) {
         if (submitBtn) submitBtn.textContent = isEditing ? 'Atualizar Evento' : 'Criar Evento';
     }
 }
-// Sistema de avaliação de eventos
+// Sistema de avaliaï¿½ï¿½o de eventos
 let currentRatingEventId = null;
 
 function openRatingModal(eventId) {
@@ -453,7 +453,7 @@ function openRatingModal(eventId) {
     const modal = document.getElementById('ratingModal');
     const form = document.getElementById('ratingForm');
     
-    // Verificar se usuário já avaliou
+    // Verificar se usuï¿½rio jï¿½ avaliou
     const existingRating = event.ratings?.find(r => r.userId === currentUser.id);
     
     // Reset form
@@ -466,7 +466,7 @@ function openRatingModal(eventId) {
         star.classList.add('far');
     });
     
-    // Se já avaliou, preencher dados
+    // Se jï¿½ avaliou, preencher dados
     if (existingRating) {
         document.getElementById('ratingValue').value = existingRating.rating;
         document.getElementById('ratingComment').value = existingRating.comment || '';
@@ -489,7 +489,7 @@ function submitRating() {
     const comment = document.getElementById('ratingComment').value.trim();
     
     if (!rating || rating < 1 || rating > 5) {
-        showNotification('Por favor, selecione uma avaliação de 1 a 5 estrelas', 'error');
+        showNotification('Por favor, selecione uma avaliaÃ§Ã£o de 1 a 5 estrelas', 'error');
         return;
     }
     
@@ -498,7 +498,7 @@ function submitRating() {
     
     if (!events[eventIdx].ratings) events[eventIdx].ratings = [];
     
-    // Verificar se usuário já avaliou
+    // Verificar se usuÃ¡rio jÃ¡ avaliou
     const existingIdx = events[eventIdx].ratings.findIndex(r => r.userId === currentUser.id);
     
     const ratingData = {
@@ -509,21 +509,24 @@ function submitRating() {
     };
     
     if (existingIdx !== -1) {
-        // Atualizar avaliação existente
+        // Atualizar avaliaÃ§Ã£o existente
         events[eventIdx].ratings[existingIdx] = ratingData;
-        showNotification('Avaliação atualizada com sucesso!', 'success');
+        console.log('[events] AvaliaÃ§Ã£o atualizada:', ratingData);
+        showNotification('AvaliaÃ§Ã£o atualizada com sucesso!', 'success');
     } else {
-        // Nova avaliação
+        // Nova avaliaÃ§Ã£o
         events[eventIdx].ratings.push(ratingData);
-        showNotification('Avaliação enviada com sucesso!', 'success');
+        console.log('[events] Nova avaliaÃ§Ã£o adicionada:', ratingData);
+        showNotification('AvaliaÃ§Ã£o enviada com sucesso!', 'success');
     }
     
+    console.log('[events] Total de avaliaÃ§Ãµes no evento:', events[eventIdx].ratings.length);
     saveData();
     closeModal('ratingModal');
     loadEvents();
 }
 
-// Setup do modal de avaliação
+// Setup do modal de avaliaï¿½ï¿½o
 document.addEventListener('DOMContentLoaded', function() {
     // Star rating interativo
     const stars = document.querySelectorAll('#starRating i');
@@ -532,7 +535,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const rating = parseInt(this.getAttribute('data-rating'));
             document.getElementById('ratingValue').value = rating;
             
-            // Atualizar visualização das estrelas
+            // Atualizar visualizaï¿½ï¿½o das estrelas
             stars.forEach((s, i) => {
                 if (i < rating) {
                     s.classList.remove('far');
@@ -572,7 +575,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Submit do formulário de avaliação
+    // Submit do formulï¿½rio de avaliaï¿½ï¿½o
     const ratingForm = document.getElementById('ratingForm');
     if (ratingForm) {
         ratingForm.addEventListener('submit', function(e) {
@@ -581,7 +584,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Fechar modal de avaliação
+    // Fechar modal de avaliaï¿½ï¿½o
     const ratingModal = document.getElementById('ratingModal');
     if (ratingModal) {
         const closeBtn = ratingModal.querySelector('.modal-close');

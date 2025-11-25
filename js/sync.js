@@ -42,14 +42,17 @@ function initFirebaseSync() {
     firebaseListeners.events = db.ref('events').on('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {
+            const remoteEvents = Object.values(data);
+            console.log('[firebase] Eventos recebidos do Firebase:', remoteEvents.length);
+            
             if (!localChangesMade) {
-                console.log('[firebase] Eventos atualizados remotamente');
-                events = Object.values(data);
+                console.log('[firebase] 📥 Aplicando atualização de eventos remotamente');
+                events = remoteEvents;
                 localStorage.setItem('events', JSON.stringify(events));
                 reloadCurrentPage();
                 showSyncNotification('Eventos atualizados', 'success');
             } else {
-                console.log('[firebase] Ignorando atualização de eventos (mudança local)');
+                console.log('[firebase] ⏭️ Ignorando atualização de eventos (mudança local recente)');
             }
         }
     });
