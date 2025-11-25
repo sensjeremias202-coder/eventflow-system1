@@ -14,7 +14,7 @@ const firebaseConfig = {
 
 // Ativar Firebase (true = sincronização entre dispositivos, false = apenas local)
 // IMPORTANTE: Defina como false se você não tiver configurado o Firebase Realtime Database
-const USE_FIREBASE = false; // Mude para true após criar o Realtime Database no Firebase Console
+const USE_FIREBASE = true; // Firebase Realtime Database habilitado para sincronização em nuvem
 
 let firebaseApp = null;
 let database = null;

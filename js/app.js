@@ -239,6 +239,11 @@ function showPage(page) {
         case 'events':
             loadEvents();
             break;
+        case 'profile':
+            if (typeof loadProfile === 'function') {
+                loadProfile();
+            }
+            break;
         case 'chat':
             loadChatUsers();
             break;

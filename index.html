@@ -125,6 +125,7 @@
                     <ul class="sidebar-menu">
                         <li><a href="#" class="sidebar-link active" data-page="dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
                         <li><a href="#" class="sidebar-link" data-page="events"><i class="fas fa-calendar-alt"></i> Eventos</a></li>
+                        <li><a href="#" class="sidebar-link" data-page="profile"><i class="fas fa-user"></i> Meu Perfil</a></li>
                         <li><a href="#" class="sidebar-link" data-page="chat"><i class="fas fa-comments"></i> Chat</a></li>
                         <li><a href="#" class="sidebar-link admin-only" data-page="users" style="display: none;"><i class="fas fa-users"></i> Gerenciar Usuários</a></li>
                         <li><a href="#" class="sidebar-link admin-only" data-page="categories" style="display: none;"><i class="fas fa-tags"></i> Gerenciar Categorias</a></li>
@@ -172,6 +173,71 @@
                                 </div>
                             </div>
                             
+                            <div class="card-body" id="eventsContainer">
+                                <!-- Events will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Profile Page -->
+                    <div class="page" id="profile-page">
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-title"><i class="fas fa-user"></i> Meu Perfil</div>
+                            </div>
+                            <div class="card-body">
+                                <div class="profile-info">
+                                    <div class="profile-avatar">
+                                        <i class="fas fa-user-circle"></i>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Nome Completo</label>
+                                        <input type="text" class="form-control" id="profileName" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">E-mail</label>
+                                        <input type="email" class="form-control" id="profileEmail" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Tipo de Conta</label>
+                                        <input type="text" class="form-control" id="profileRole" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Membro desde</label>
+                                        <input type="text" class="form-control" id="profileRegistered" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <button class="btn btn-primary" id="editProfileBtn">
+                                            <i class="fas fa-edit"></i> Editar Perfil
+                                        </button>
+                                        <button class="btn btn-danger" id="deleteAccountBtn" style="margin-left: 10px;">
+                                            <i class="fas fa-trash"></i> Excluir Conta
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="card" style="margin-top: 20px;">
+                                    <div class="card-header">
+                                        <div class="card-title"><i class="fas fa-calendar-check"></i> Meus Eventos</div>
+                                    </div>
+                                    <div class="card-body" id="myEventsProfile">
+                                        <!-- User's events will be loaded here -->
+                                    </div>
+                                </div>
+                                
+                                <div class="card" style="margin-top: 20px;">
+                                    <div class="card-header">
+                                        <div class="card-title"><i class="fas fa-star"></i> Minhas Avaliações</div>
+                                    </div>
+                                    <div class="card-body" id="myRatingsProfile">
+                                        <!-- User's ratings will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Chat Page -->
                             <div class="events-grid" id="eventsGrid">
                                 <!-- Events will be loaded here -->
                             </div>
@@ -471,14 +537,15 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
-    <script src="js/firebase-config.js?v=2024112418"></script>
-    <script src="js/auth.js?v=2024112418"></script>
-    <script src="js/sync.js?v=2024112418"></script>
-    <script src="js/app.js?v=2024112418"></script>
-    <script src="js/events.js?v=2024112418"></script>
-    <script src="js/users.js?v=2024112418"></script>
-    <script src="js/categories.js?v=2024112418"></script>
-    <script src="js/chat.js?v=2024112418"></script>
-    <script src="js/dashboard.js?v=2024112418"></script>
+    <script src="js/firebase-config.js?v=2024112501"></script>
+    <script src="js/auth.js?v=2024112501"></script>
+    <script src="js/sync.js?v=2024112501"></script>
+    <script src="js/app.js?v=2024112501"></script>
+    <script src="js/events.js?v=2024112501"></script>
+    <script src="js/users.js?v=2024112501"></script>
+    <script src="js/categories.js?v=2024112501"></script>
+    <script src="js/chat.js?v=2024112501"></script>
+    <script src="js/profile.js?v=2024112501"></script>
+    <script src="js/dashboard.js?v=2024112501"></script>
 </body>
 </html>
