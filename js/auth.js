@@ -90,14 +90,29 @@ document.addEventListener('DOMContentLoaded', function() {
 function initializeData() {
     try {
         console.log('[auth] Inicializando dados da aplicação...');
-        users = getSafeLocalStorage('users', defaultUsers);
-        categories = getSafeLocalStorage('categories', defaultCategories);
-        events = getSafeLocalStorage('events', defaultEvents);
-        messages = getSafeLocalStorage('messages', defaultMessages);
         
-        // Garantir que os dados sejam salvos inicialmente
-        if (!localStorage.getItem('users')) {
-            saveData();
+        // Se Firebase está ativo, aguardar dados do Firebase
+        if (window.firebaseInitialized && window.firebaseDatabase) {
+            console.log('[auth] 🔥 Firebase ativo - aguardando dados remotos...');
+            
+            // Carregar dados locais como fallback temporário
+            users = getSafeLocalStorage('users', defaultUsers);
+            categories = getSafeLocalStorage('categories', defaultCategories);
+            events = getSafeLocalStorage('events', defaultEvents);
+            messages = getSafeLocalStorage('messages', defaultMessages);
+            
+            // Os listeners do Firebase atualizarão os dados em breve
+        } else {
+            console.log('[auth] 💾 Modo local - usando localStorage');
+            users = getSafeLocalStorage('users', defaultUsers);
+            categories = getSafeLocalStorage('categories', defaultCategories);
+            events = getSafeLocalStorage('events', defaultEvents);
+            messages = getSafeLocalStorage('messages', defaultMessages);
+            
+            // Garantir que os dados sejam salvos inicialmente
+            if (!localStorage.getItem('users')) {
+                saveData();
+            }
         }
     } catch (error) {
         console.error('Erro na inicialização:', error);

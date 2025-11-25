@@ -37,6 +37,7 @@ function initSync() {
 // Inicializar sincronização com Firebase
 function initFirebaseSync() {
     const db = window.firebaseDatabase;
+    let initialLoadDone = false;
     
     // Listener para eventos
     firebaseListeners.events = db.ref('events').on('value', (snapshot) => {
@@ -45,12 +46,15 @@ function initFirebaseSync() {
             const remoteEvents = Object.values(data);
             console.log('[firebase] Eventos recebidos do Firebase:', remoteEvents.length);
             
-            if (!localChangesMade) {
-                console.log('[firebase] 📥 Aplicando atualização de eventos remotamente');
+            // Sempre aplicar na primeira carga ou quando não houver mudanças locais
+            if (!initialLoadDone || !localChangesMade) {
+                console.log('[firebase] 📥 Aplicando atualização de eventos');
                 events = remoteEvents;
                 localStorage.setItem('events', JSON.stringify(events));
-                reloadCurrentPage();
-                showSyncNotification('Eventos atualizados', 'success');
+                if (initialLoadDone) {
+                    reloadCurrentPage();
+                    showSyncNotification('Eventos atualizados', 'success');
+                }
             } else {
                 console.log('[firebase] ⏭️ Ignorando atualização de eventos (mudança local recente)');
             }
@@ -61,13 +65,18 @@ function initFirebaseSync() {
     firebaseListeners.categories = db.ref('categories').on('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {
-            if (!localChangesMade) {
-                console.log('[firebase] Categorias atualizadas remotamente');
-                categories = Object.values(data);
+            const remoteCategories = Object.values(data);
+            console.log('[firebase] Categorias recebidas do Firebase:', remoteCategories.length);
+            
+            if (!initialLoadDone || !localChangesMade) {
+                console.log('[firebase] 📥 Aplicando atualização de categorias');
+                categories = remoteCategories;
                 localStorage.setItem('categories', JSON.stringify(categories));
-                reloadCurrentPage();
+                if (initialLoadDone) {
+                    reloadCurrentPage();
+                }
             } else {
-                console.log('[firebase] Ignorando atualização de categorias (mudança local)');
+                console.log('[firebase] ⏭️ Ignorando atualização de categorias (mudança local)');
             }
         }
     });
@@ -76,16 +85,21 @@ function initFirebaseSync() {
     firebaseListeners.users = db.ref('users').on('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {
-            if (!localChangesMade) {
-                console.log('[firebase] Usuários atualizados remotamente');
-                users = Object.values(data);
+            const remoteUsers = Object.values(data);
+            console.log('[firebase] Usuários recebidos do Firebase:', remoteUsers.length);
+            
+            if (!initialLoadDone || !localChangesMade) {
+                console.log('[firebase] 📥 Aplicando atualização de usuários');
+                users = remoteUsers;
                 localStorage.setItem('users', JSON.stringify(users));
-                if (document.getElementById('users-page')?.classList.contains('active')) {
+                if (initialLoadDone && document.getElementById('users-page')?.classList.contains('active')) {
                     reloadCurrentPage();
                 }
-                showSyncNotification('Usuários sincronizados', 'success');
+                if (initialLoadDone) {
+                    showSyncNotification('Usuários sincronizados', 'success');
+                }
             } else {
-                console.log('[firebase] Ignorando atualização de usuários (mudança local)');
+                console.log('[firebase] ⏭️ Ignorando atualização de usuários (mudança local)');
             }
         }
     });
@@ -94,18 +108,27 @@ function initFirebaseSync() {
     firebaseListeners.messages = db.ref('messages').on('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {
-            if (!localChangesMade) {
-                console.log('[firebase] Mensagens atualizadas remotamente');
-                messages = Object.values(data);
+            const remoteMessages = Object.values(data);
+            console.log('[firebase] Mensagens recebidas do Firebase:', remoteMessages.length);
+            
+            if (!initialLoadDone || !localChangesMade) {
+                console.log('[firebase] 📥 Aplicando atualização de mensagens');
+                messages = remoteMessages;
                 localStorage.setItem('messages', JSON.stringify(messages));
-                if (document.getElementById('chat-page')?.classList.contains('active')) {
+                if (initialLoadDone && document.getElementById('chat-page')?.classList.contains('active')) {
                     reloadCurrentPage();
                 }
             } else {
-                console.log('[firebase] Ignorando atualização de mensagens (mudança local)');
+                console.log('[firebase] ⏭️ Ignorando atualização de mensagens (mudança local)');
             }
         }
     });
+    
+    // Marcar carga inicial como concluída após pequeno delay
+    setTimeout(() => {
+        initialLoadDone = true;
+        console.log('[firebase] ✅ Carga inicial concluída - sincronização ativa');
+    }, 2000);
     
     console.log('[firebase] Listeners ativos para sincronização em tempo real');
 }
