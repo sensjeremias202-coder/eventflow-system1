@@ -23,11 +23,16 @@ function updateStats() {
     let ratingCount = 0;
     
     events.forEach(event => {
-        totalComments += event.ratings.length;
-        event.ratings.forEach(rating => {
-            totalRating += rating.rating;
-            ratingCount++;
-        });
+        // Verificar se ratings existe e é um array
+        if (event.ratings && Array.isArray(event.ratings)) {
+            totalComments += event.ratings.length;
+            event.ratings.forEach(rating => {
+                if (rating && rating.rating) {
+                    totalRating += rating.rating;
+                    ratingCount++;
+                }
+            });
+        }
     });
     
     const avgRating = ratingCount > 0 ? (totalRating / ratingCount).toFixed(1) : '0.0';
@@ -49,7 +54,7 @@ function updateStats() {
             <i class="fas fa-comments fa-2x" style="color: var(--info);"></i>
             <div class="stat-value">${totalComments}</div>
             <div class="stat-label">Comentários</div>
-            <div class="stat-subtitle">${events.filter(e => e.ratings.length > 0).length} eventos com avaliações</div>
+            <div class="stat-subtitle">${events.filter(e => e.ratings && e.ratings.length > 0).length} eventos com avaliações</div>
         </div>
         <div class="stat-card rating stats-card">
             <i class="fas fa-star fa-2x" style="color: var(--warning);"></i>
@@ -96,31 +101,37 @@ function analyzeEventData() {
         }
         
         // Analisar comentários
-        event.ratings.forEach(rating => {
-            // Análise de sentimento
-            if (rating.rating >= 4) sentimentData.positive++;
-            else if (rating.rating >= 3) sentimentData.neutral++;
-            else sentimentData.negative++;
-            
-            // Análise de tópicos
-            const comment = rating.comment.toLowerCase();
-            const topics = {
-                location: ['local', 'lugar', 'localização', 'endereço', 'acesso'],
-                price: ['preço', 'valor', 'custo', 'caro', 'barato', 'gratuito'],
-                organization: ['organização', 'organizado', 'estrutura', 'logística'],
-                content: ['conteúdo', 'conteudo', 'informação', 'aprendizado', 'conhecimento'],
-                service: ['atendimento', 'serviço', 'suporte', 'equipe', 'staff'],
-                quality: ['qualidade', 'excelente', 'ótimo', 'bom', 'ruim', 'péssimo'],
-                experience: ['experiência', 'experiencia', 'vivencia', 'momentos'],
-                recommendation: ['recomendo', 'indicaria', 'voltaría', 'repetiría']
-            };
-            
-            Object.keys(topics).forEach(topic => {
-                if (topics[topic].some(word => comment.includes(word))) {
-                    topicsData[topic]++;
+        if (event.ratings && Array.isArray(event.ratings)) {
+            event.ratings.forEach(rating => {
+                if (!rating || !rating.rating) return;
+                
+                // Análise de sentimento
+                if (rating.rating >= 4) sentimentData.positive++;
+                else if (rating.rating >= 3) sentimentData.neutral++;
+                else sentimentData.negative++;
+                
+                // Análise de tópicos (apenas se houver comentário)
+                if (rating.comment) {
+                    const comment = rating.comment.toLowerCase();
+                    const topics = {
+                        location: ['local', 'lugar', 'localização', 'endereço', 'acesso'],
+                        price: ['preço', 'valor', 'custo', 'caro', 'barato', 'gratuito'],
+                        organization: ['organização', 'organizado', 'estrutura', 'logística'],
+                        content: ['conteúdo', 'conteudo', 'informação', 'aprendizado', 'conhecimento'],
+                        service: ['atendimento', 'serviço', 'suporte', 'equipe', 'staff'],
+                        quality: ['qualidade', 'excelente', 'ótimo', 'bom', 'ruim', 'péssimo'],
+                        experience: ['experiência', 'experiencia', 'vivencia', 'momentos'],
+                        recommendation: ['recomendo', 'indicaria', 'voltaría', 'repetiría']
+                    };
+                    
+                    Object.keys(topics).forEach(topic => {
+                        if (topics[topic].some(word => comment.includes(word))) {
+                            topicsData[topic]++;
+                        }
+                    });
                 }
             });
-        });
+        }
     });
     
     return {
