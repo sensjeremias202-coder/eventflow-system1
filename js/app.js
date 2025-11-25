@@ -492,6 +492,7 @@ function loadCategoryOptions() {
             // reset selection so user can re-open if needed
             this.value = '';
         }
+    };
 }
 
 // Adicione esta função no app.js
