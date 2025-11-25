@@ -4,18 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EventFlow - Sistema de Agendamento de Eventos</title>
+    
+    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>📅</text></svg>">
+    
+    <!-- External CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <!-- Login Screen -->
+    <!-- ============================================ -->
+    <!-- LOGIN SCREEN -->
+    <!-- ============================================ -->
     <div class="login-container" id="loginScreen">
         <div class="login-card">
+            <!-- Logo -->
             <div class="logo" style="justify-content: center; margin-bottom: 20px;">
                 <i class="fas fa-calendar-alt"></i>
                 <span>EventFlow</span>
             </div>
+            
+            <!-- Login Form -->
             <form id="loginForm">
                 <div class="form-group">
                     <label class="form-label" for="loginEmail">E-mail</label>
@@ -36,7 +45,7 @@
                 </div>
             </form>
             
-            <!-- Formulário de Registro -->
+            <!-- Register Form -->
             <form id="registerForm" style="display: none;">
                 <div class="form-group">
                     <label class="form-label" for="registerName">Nome Completo</label>
@@ -72,8 +81,11 @@
         </div>
     </div>
     
-    <!-- Main Application -->
+    <!-- ============================================ -->
+    <!-- MAIN APPLICATION -->
+    <!-- ============================================ -->
     <div id="app" style="display: none;">
+        <!-- Header -->
         <header>
             <div class="container">
                 <div class="navbar">
@@ -123,6 +135,7 @@
         
         <div class="container">
             <div class="main-content">
+                <!-- Sidebar Navigation -->
                 <div class="sidebar">
                     <h3>Menu</h3>
                     <ul class="sidebar-menu">
@@ -135,8 +148,11 @@
                     </ul>
                 </div>
                 
+                <!-- Main Content Area -->
                 <div class="content">
-                    <!-- Dashboard Page -->
+                    <!-- ============================================ -->
+                    <!-- DASHBOARD PAGE -->
+                    <!-- ============================================ -->
                     <div class="page active" id="dashboard-page">
                         <div class="stats-grid" id="statsGrid">
                             <!-- Stats will be loaded here -->
@@ -161,7 +177,9 @@
                         </div>
                     </div>
                     
-                    <!-- Events Page -->
+                    <!-- ============================================ -->
+                    <!-- EVENTS PAGE -->
+                    <!-- ============================================ -->
                     <div class="page" id="events-page">
                         <div class="card">
                             <div class="card-header">
@@ -182,7 +200,9 @@
                         </div>
                     </div>
                     
-                    <!-- Profile Page -->
+                    <!-- ============================================ -->
+                    <!-- PROFILE PAGE -->
+                    <!-- ============================================ -->
                     <div class="page" id="profile-page">
                         <div class="card">
                             <div class="card-header">
@@ -240,14 +260,9 @@
                         </div>
                     </div>
                     
-                    <!-- Chat Page -->
-                            <div class="events-grid" id="eventsGrid">
-                                <!-- Events will be loaded here -->
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Chat Page -->
+                    <!-- ============================================ -->
+                    <!-- CHAT PAGE -->
+                    <!-- ============================================ -->
                     <div class="page" id="chat-page">
                         <div class="card">
                             <div class="card-header">
@@ -280,7 +295,9 @@
                         </div>
                     </div>
                     
-                    <!-- Users Page -->
+                    <!-- ============================================ -->
+                    <!-- USERS MANAGEMENT PAGE (Admin Only) -->
+                    <!-- ============================================ -->
                     <div class="page" id="users-page">
                         <div class="card">
                             <div class="card-header">
@@ -307,7 +324,9 @@
                         </div>
                     </div>
                     
-                    <!-- Categories Page -->
+                    <!-- ============================================ -->
+                    <!-- CATEGORIES MANAGEMENT PAGE (Admin Only) -->
+                    <!-- ============================================ -->
                     <div class="page" id="categories-page">
                         <div class="card">
                             <div class="card-header">
@@ -338,7 +357,11 @@
         </div>
     </div>
     
-    <!-- Modals -->
+    <!-- ============================================ -->
+    <!-- MODALS -->
+    <!-- ============================================ -->
+    
+    <!-- Add Event Modal -->
     <div class="modal" id="addEventModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -407,6 +430,7 @@
         </div>
     </div>
     
+    <!-- Add User Modal -->
     <div class="modal" id="addUserModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -444,6 +468,7 @@
         </div>
     </div>
     
+    <!-- Add Category Modal -->
     <div class="modal" id="addCategoryModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -474,6 +499,7 @@
         </div>
     </div>
     
+    <!-- Event Details Modal -->
     <div class="modal" id="eventDetailsModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -486,7 +512,7 @@
         </div>
     </div>
 
-    <!-- Generic confirmation modal -->
+    <!-- Confirmation Modal -->
     <div class="modal" id="confirmModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -503,7 +529,7 @@
         </div>
     </div>
 
-    <!-- Rating modal -->
+    <!-- Rating Modal -->
     <div class="modal" id="ratingModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -535,20 +561,28 @@
         </div>
     </div>
 
+    <!-- ============================================ -->
+    <!-- EXTERNAL SCRIPTS -->
+    <!-- ============================================ -->
+    
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
-    <script src="js/firebase-config.js?v=2024112502"></script>
-    <script src="js/auth.js?v=2024112502"></script>
-    <script src="js/sync.js?v=2024112502"></script>
-    <script src="js/app.js?v=2024112502"></script>
-    <script src="js/events.js?v=2024112502"></script>
-    <script src="js/users.js?v=2024112502"></script>
-    <script src="js/categories.js?v=2024112502"></script>
-    <script src="js/chat.js?v=2024112502"></script>
-    <script src="js/profile.js?v=2024112502"></script>
-    <script src="js/dashboard.js?v=2024112502"></script>
+    
+    <!-- Application Scripts -->
+    <script src="js/firebase-config.js?v=2024112503"></script>
+    <script src="js/auth.js?v=2024112503"></script>
+    <script src="js/sync.js?v=2024112503"></script>
+    <script src="js/app.js?v=2024112503"></script>
+    <script src="js/events.js?v=2024112503"></script>
+    <script src="js/users.js?v=2024112503"></script>
+    <script src="js/categories.js?v=2024112503"></script>
+    <script src="js/chat.js?v=2024112503"></script>
+    <script src="js/profile.js?v=2024112503"></script>
+    <script src="js/dashboard.js?v=2024112503"></script>
 </body>
 </html>

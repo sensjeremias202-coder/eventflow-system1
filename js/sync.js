@@ -101,7 +101,7 @@ function initFirebaseSync() {
             localStorage.setItem('categories', JSON.stringify(categories));
         }
     });
-    });
+    };
     
     // Listener para usuários
     firebaseListeners.users = db.ref('users').on('value', (snapshot) => {
@@ -163,7 +163,7 @@ function initFirebaseSync() {
     }, 2000);
     
     console.log('[firebase] Listeners ativos para sincronização em tempo real');
-}
+
 
 // Inicializar sincronização local (fallback)
 function initLocalSync() {
