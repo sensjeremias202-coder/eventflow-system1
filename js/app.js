@@ -1,3 +1,61 @@
+// Modal de confirmação genérico que retorna uma Promise
+function showConfirm(message, title = 'Confirmação', options = {}) {
+    // options: { type: 'primary'|'danger'|'warning' }
+    return new Promise((resolve) => {
+        const modal = document.getElementById('confirmModal');
+        const msgEl = document.getElementById('confirmModalMessage');
+        const titleEl = document.getElementById('confirmModalTitle');
+        const okBtn = document.getElementById('confirmOkBtn');
+        const cancelBtn = document.getElementById('confirmCancelBtn');
+        const closeBtns = modal ? modal.querySelectorAll('.modal-close') : [];
+
+        if (!modal || !okBtn || !cancelBtn || !msgEl || !titleEl) {
+            // fallback para confirm() se modal não existir
+            const result = window.confirm(message);
+            resolve(result);
+            return;
+        }
+
+        const type = options.type || 'primary';
+        // set data-type to allow CSS theming
+        modal.setAttribute('data-type', type);
+
+        titleEl.textContent = title;
+        msgEl.textContent = message;
+        modal.classList.add('active');
+
+        // backdrop click handler (fechar ao clicar fora do conteúdo)
+        function onBackdropClick(e) {
+            if (e.target === modal) onCancel();
+        }
+
+        // Handlers
+        function cleanup() {
+            modal.classList.remove('active');
+            modal.removeEventListener('click', onBackdropClick);
+            okBtn.removeEventListener('click', onOk);
+            cancelBtn.removeEventListener('click', onCancel);
+            closeBtns.forEach(b => b.removeEventListener('click', onCancel));
+            modal.removeAttribute('data-type');
+        }
+
+        function onOk() {
+            cleanup();
+            resolve(true);
+        }
+
+        function onCancel() {
+            cleanup();
+            resolve(false);
+        }
+
+        modal.addEventListener('click', onBackdropClick);
+        okBtn.addEventListener('click', onOk);
+        cancelBtn.addEventListener('click', onCancel);
+        closeBtns.forEach(b => b.addEventListener('click', onCancel));
+    });
+}
+
 function setupNavigation() {
     // Navegação principal
     document.querySelectorAll('.nav-link').forEach(link => {
@@ -475,61 +533,3 @@ function setupLogout() {
 
 // Chame esta função no showApp()
 // (Função showApp já é definida em `js/auth.js`. Aqui mantemos apenas `setupLogout`.)
-
-// Modal de confirmação genérico que retorna uma Promise
-function showConfirm(message, title = 'Confirmação', options = {}) {
-    // options: { type: 'primary'|'danger'|'warning' }
-    return new Promise((resolve) => {
-        const modal = document.getElementById('confirmModal');
-        const msgEl = document.getElementById('confirmModalMessage');
-        const titleEl = document.getElementById('confirmModalTitle');
-        const okBtn = document.getElementById('confirmOkBtn');
-        const cancelBtn = document.getElementById('confirmCancelBtn');
-        const closeBtns = modal ? modal.querySelectorAll('.modal-close') : [];
-
-        if (!modal || !okBtn || !cancelBtn || !msgEl || !titleEl) {
-            // fallback para confirm() se modal não existir
-            const result = window.confirm(message);
-            resolve(result);
-            return;
-        }
-
-        const type = options.type || 'primary';
-        // set data-type to allow CSS theming
-        modal.setAttribute('data-type', type);
-
-        titleEl.textContent = title;
-        msgEl.textContent = message;
-        modal.classList.add('active');
-
-        // backdrop click handler (fechar ao clicar fora do conteúdo)
-        function onBackdropClick(e) {
-            if (e.target === modal) onCancel();
-        }
-
-        // Handlers
-        function cleanup() {
-            modal.classList.remove('active');
-            modal.removeEventListener('click', onBackdropClick);
-            okBtn.removeEventListener('click', onOk);
-            cancelBtn.removeEventListener('click', onCancel);
-            closeBtns.forEach(b => b.removeEventListener('click', onCancel));
-            modal.removeAttribute('data-type');
-        }
-
-        function onOk() {
-            cleanup();
-            resolve(true);
-        }
-
-        function onCancel() {
-            cleanup();
-            resolve(false);
-        }
-
-        modal.addEventListener('click', onBackdropClick);
-        okBtn.addEventListener('click', onOk);
-        cancelBtn.addEventListener('click', onCancel);
-        closeBtns.forEach(b => b.addEventListener('click', onCancel));
-    });
-}}
