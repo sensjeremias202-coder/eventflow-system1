@@ -285,13 +285,18 @@ function loadEvents() {
         });
     });
 
-    // Bind rate buttons for events not owned by current user
-    document.querySelectorAll('.rate-event').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const id = parseInt(this.getAttribute('data-id'));
-            openRatingModal(id);
+    // Configurar botões de avaliação se a função existir
+    if (typeof setupRatingButtons === 'function') {
+        setupRatingButtons();
+    } else {
+        // Fallback: Bind rate buttons for events not owned by current user
+        document.querySelectorAll('.rate-event').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = parseInt(this.getAttribute('data-id'));
+                openRatingModal(id);
+            });
         });
-    });
+    }
 }
 
 function escapeHtml(str) {
@@ -628,9 +633,9 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
-// Setup do modal de avalia��o
+// Setup do modal de avalia��o
 function initEventsPage() {
-    console.log('[events] Inicializando p�gina de eventos...');
+    console.log('[events] Inicializando p�gina de eventos...');
     
     // Star rating interativo
     const starRatingContainer = document.getElementById('starRating');
@@ -642,7 +647,7 @@ function initEventsPage() {
             star.parentNode.replaceChild(newStar, star);
         });
         
-        // Re-selecionar ap�s clonar
+        // Re-selecionar ap�s clonar
         const newStars = starRatingContainer.querySelectorAll('i');
         newStars.forEach((star, index) => {
             star.addEventListener('click', function() {
@@ -687,7 +692,7 @@ function initEventsPage() {
         });
     }
     
-    // Submit do formul�rio de avalia��o
+    // Submit do formul�rio de avalia��o
     const ratingForm = document.getElementById('ratingForm');
     if (ratingForm) {
         const newForm = ratingForm.cloneNode(true);
@@ -699,7 +704,7 @@ function initEventsPage() {
         });
     }
     
-    // Fechar modal de avalia��o
+    // Fechar modal de avalia��o
     const ratingModal = document.getElementById('ratingModal');
     if (ratingModal) {
         const closeBtn = ratingModal.querySelector('.modal-close');
@@ -724,10 +729,33 @@ function initEventsPage() {
     // Carregar eventos
     loadEvents();
     
-    // Carregar op��es de categorias
+    // Configurar event listeners para botões de avaliação
+    setupRatingButtons();
+    
+    // Carregar opções de categorias
     if (typeof loadCategoryOptions === 'function') {
         loadCategoryOptions();
     }
     
-    console.log('[events] P�gina de eventos inicializada com sucesso!');
+    console.log('[events] Página de eventos inicializada com sucesso!');
+}
+
+// Função para configurar botões de avaliação
+function setupRatingButtons() {
+    console.log('[events] Configurando botões de avaliação...');
+    
+    // Bind rate buttons for events not owned by current user
+    document.querySelectorAll('.rate-event').forEach(btn => {
+        // Clonar para remover listeners antigos
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
+        
+        newBtn.addEventListener('click', function() {
+            const id = parseInt(this.getAttribute('data-id'));
+            console.log('[events] Abrindo modal de avaliação para evento:', id);
+            openRatingModal(id);
+        });
+    });
+    
+    console.log('[events] Botões de avaliação configurados:', document.querySelectorAll('.rate-event').length);
 }
