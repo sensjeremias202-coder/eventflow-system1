@@ -38,31 +38,57 @@ function updateStats() {
     const avgRating = ratingCount > 0 ? (totalRating / ratingCount).toFixed(1) : '0.0';
     
     statsGrid.innerHTML = `
-        <div class="stat-card events stats-card">
+        <div class="stat-card events stats-card clickable-stat" data-page="events">
             <i class="fas fa-calendar-alt fa-2x" style="color: var(--primary);"></i>
             <div class="stat-value">${totalEvents}</div>
             <div class="stat-label">Total de Eventos</div>
             <div class="stat-subtitle">${activeEvents} ativos</div>
+            <div class="stat-action">
+                <i class="fas fa-arrow-right"></i> Ver Eventos
+            </div>
         </div>
-        <div class="stat-card users stats-card">
+        <div class="stat-card users stats-card clickable-stat" data-page="users">
             <i class="fas fa-users fa-2x" style="color: var(--success);"></i>
             <div class="stat-value">${totalUsers}</div>
             <div class="stat-label">Usuários Cadastrados</div>
             <div class="stat-subtitle">${users.filter(u => u.role === 'admin').length} administradores</div>
+            <div class="stat-action">
+                <i class="fas fa-arrow-right"></i> Ver Usuários
+            </div>
         </div>
-        <div class="stat-card comments stats-card">
+        <div class="stat-card comments stats-card clickable-stat" data-page="events">
             <i class="fas fa-comments fa-2x" style="color: var(--info);"></i>
             <div class="stat-value">${totalComments}</div>
             <div class="stat-label">Comentários</div>
             <div class="stat-subtitle">${events.filter(e => e.ratings && e.ratings.length > 0).length} eventos com avaliações</div>
+            <div class="stat-action">
+                <i class="fas fa-arrow-right"></i> Ver Eventos
+            </div>
         </div>
-        <div class="stat-card rating stats-card">
+        <div class="stat-card rating stats-card clickable-stat" data-page="events">
             <i class="fas fa-star fa-2x" style="color: var(--warning);"></i>
             <div class="stat-value">${avgRating}</div>
             <div class="stat-label">Avaliação Média</div>
             <div class="stat-subtitle">Baseado em ${ratingCount} avaliações</div>
+            <div class="stat-action">
+                <i class="fas fa-arrow-right"></i> Ver Eventos
+            </div>
         </div>
     `;
+    
+    // Adicionar event listeners aos cards clicáveis
+    setupStatCardListeners();
+}
+
+function setupStatCardListeners() {
+    document.querySelectorAll('.clickable-stat').forEach(card => {
+        card.addEventListener('click', function() {
+            const pageName = this.getAttribute('data-page');
+            if (pageName && typeof showModularPage === 'function') {
+                showModularPage(pageName);
+            }
+        });
+    });
 }
 
 function setupCharts() {
