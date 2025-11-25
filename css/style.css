@@ -624,6 +624,47 @@ header {
     font-size: 1.05rem;
 }
 
+/* Star rating styles */
+.star-rating {
+    display: flex;
+    gap: 8px;
+    font-size: 2rem;
+    margin: 10px 0;
+}
+
+.star-rating i {
+    cursor: pointer;
+    color: #ddd;
+    transition: color 0.2s;
+}
+
+.star-rating i:hover,
+.star-rating i.active {
+    color: #f8961e;
+}
+
+.star-rating i.fas {
+    color: #f8961e;
+}
+
+/* Rating display in event cards */
+.event-rating {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    color: var(--gray);
+}
+
+.event-rating .stars {
+    color: #f8961e;
+    font-size: 0.85rem;
+}
+
+.event-rating .count {
+    font-size: 0.85rem;
+}
+
 #confirmModal .modal-footer {
     background: transparent;
     border-top: none;

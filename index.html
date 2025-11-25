@@ -426,13 +426,45 @@
         </div>
     </div>
 
+    <!-- Rating modal -->
+    <div class="modal" id="ratingModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Avaliar Evento</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="ratingForm">
+                <div class="form-group">
+                    <label class="form-label">Sua Avaliação</label>
+                    <div class="star-rating" id="starRating">
+                        <i class="far fa-star" data-rating="1"></i>
+                        <i class="far fa-star" data-rating="2"></i>
+                        <i class="far fa-star" data-rating="3"></i>
+                        <i class="far fa-star" data-rating="4"></i>
+                        <i class="far fa-star" data-rating="5"></i>
+                    </div>
+                    <input type="hidden" id="ratingValue" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="ratingComment">Comentário (opcional)</label>
+                    <textarea class="form-control" id="ratingComment" rows="3" placeholder="Conte sua experiência..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Enviar Avaliação</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="js/auth.js?v=2024112402"></script>
-    <script src="js/app.js?v=2024112402"></script>
-    <script src="js/events.js?v=2024112402"></script>
-    <script src="js/users.js?v=2024112402"></script>
-    <script src="js/categories.js?v=2024112402"></script>
-    <script src="js/chat.js?v=2024112402"></script>
-    <script src="js/dashboard.js?v=2024112402"></script>
+    <script src="js/auth.js?v=2024112403"></script>
+    <script src="js/app.js?v=2024112403"></script>
+    <script src="js/events.js?v=2024112403"></script>
+    <script src="js/users.js?v=2024112403"></script>
+    <script src="js/categories.js?v=2024112403"></script>
+    <script src="js/chat.js?v=2024112403"></script>
+    <script src="js/dashboard.js?v=2024112403"></script>
 </body>
 </html>

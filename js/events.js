@@ -207,6 +207,14 @@ function loadEvents() {
 
     sorted.forEach(ev => {
         const category = categories.find(c => c.id === ev.category) || { name: 'Sem categoria', color: '#ccc' };
+        
+        // Calcular m√©dia de avalia√ß√µes
+        const ratings = ev.ratings || [];
+        const avgRating = ratings.length > 0 
+            ? (ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length).toFixed(1)
+            : 0;
+        const userRating = ratings.find(r => r.userId === currentUser?.id);
+        
         const card = document.createElement('div');
         card.className = 'event-card card';
         card.innerHTML = `
@@ -216,6 +224,13 @@ function loadEvents() {
             </div>
             <div class="card-body">
                 <p>${escapeHtml(ev.description)}</p>
+                ${ratings.length > 0 ? `
+                    <div class="event-rating">
+                        <span class="stars">${generateStarRating(avgRating)}</span>
+                        <span>${avgRating}</span>
+                        <span class="count">(${ratings.length} ${ratings.length === 1 ? 'avalia√ß√£o' : 'avalia√ß√µes'})</span>
+                    </div>
+                ` : ''}
             </div>
             <div class="card-footer">
                 <span class="category-badge" style="background:${category.color};">${escapeHtml(category.name)}</span>
@@ -223,7 +238,12 @@ function loadEvents() {
                 <div style="margin-left: auto; display:flex; gap:8px; align-items:center;">
                     <button class="btn btn-outline btn-sm edit-event" data-id="${ev.id}"><i class="far fa-edit"></i></button>
                     <button class="btn btn-outline btn-sm delete-event" data-id="${ev.id}"><i class="far fa-trash-alt"></i></button>
-                </div>` : ''}
+                </div>` : `
+                <div style="margin-left: auto; display:flex; gap:8px; align-items:center;">
+                    <button class="btn btn-outline btn-sm rate-event" data-id="${ev.id}" title="${userRating ? 'Atualizar avalia√ß√£o' : 'Avaliar evento'}">
+                        <i class="fa${userRating ? 's' : 'r'} fa-star"></i> ${userRating ? 'Sua avalia√ß√£o' : 'Avaliar'}
+                    </button>
+                </div>`}
             </div>
         `;
 
@@ -242,6 +262,14 @@ function loadEvents() {
         btn.addEventListener('click', function() {
             const id = parseInt(this.getAttribute('data-id'));
             deleteEvent(id);
+        });
+    });
+
+    // Bind rate buttons for events not owned by current user
+    document.querySelectorAll('.rate-event').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = parseInt(this.getAttribute('data-id'));
+            openRatingModal(id);
         });
     });
 }
@@ -414,3 +442,154 @@ function setEventEditMode(isEditing) {
         if (submitBtn) submitBtn.textContent = isEditing ? 'Atualizar Evento' : 'Criar Evento';
     }
 }
+// Sistema de avaliaÁ„o de eventos
+let currentRatingEventId = null;
+
+function openRatingModal(eventId) {
+    const event = events.find(e => e.id === eventId);
+    if (!event) return;
+
+    currentRatingEventId = eventId;
+    const modal = document.getElementById('ratingModal');
+    const form = document.getElementById('ratingForm');
+    
+    // Verificar se usu·rio j· avaliou
+    const existingRating = event.ratings?.find(r => r.userId === currentUser.id);
+    
+    // Reset form
+    if (form) form.reset();
+    document.getElementById('ratingValue').value = '';
+    
+    // Reset stars
+    document.querySelectorAll('#starRating i').forEach(star => {
+        star.classList.remove('fas', 'active');
+        star.classList.add('far');
+    });
+    
+    // Se j· avaliou, preencher dados
+    if (existingRating) {
+        document.getElementById('ratingValue').value = existingRating.rating;
+        document.getElementById('ratingComment').value = existingRating.comment || '';
+        
+        // Marcar estrelas
+        document.querySelectorAll('#starRating i').forEach((star, idx) => {
+            if (idx < existingRating.rating) {
+                star.classList.remove('far');
+                star.classList.add('fas', 'active');
+            }
+        });
+    }
+    
+    if (modal) modal.classList.add('active');
+}
+
+function submitRating() {
+    const eventId = currentRatingEventId;
+    const rating = parseInt(document.getElementById('ratingValue').value);
+    const comment = document.getElementById('ratingComment').value.trim();
+    
+    if (!rating || rating < 1 || rating > 5) {
+        showNotification('Por favor, selecione uma avaliaÁ„o de 1 a 5 estrelas', 'error');
+        return;
+    }
+    
+    const eventIdx = events.findIndex(e => e.id === eventId);
+    if (eventIdx === -1) return;
+    
+    if (!events[eventIdx].ratings) events[eventIdx].ratings = [];
+    
+    // Verificar se usu·rio j· avaliou
+    const existingIdx = events[eventIdx].ratings.findIndex(r => r.userId === currentUser.id);
+    
+    const ratingData = {
+        userId: currentUser.id,
+        rating,
+        comment,
+        date: new Date().toISOString()
+    };
+    
+    if (existingIdx !== -1) {
+        // Atualizar avaliaÁ„o existente
+        events[eventIdx].ratings[existingIdx] = ratingData;
+        showNotification('AvaliaÁ„o atualizada com sucesso!', 'success');
+    } else {
+        // Nova avaliaÁ„o
+        events[eventIdx].ratings.push(ratingData);
+        showNotification('AvaliaÁ„o enviada com sucesso!', 'success');
+    }
+    
+    saveData();
+    closeModal('ratingModal');
+    loadEvents();
+}
+
+// Setup do modal de avaliaÁ„o
+document.addEventListener('DOMContentLoaded', function() {
+    // Star rating interativo
+    const stars = document.querySelectorAll('#starRating i');
+    stars.forEach((star, index) => {
+        star.addEventListener('click', function() {
+            const rating = parseInt(this.getAttribute('data-rating'));
+            document.getElementById('ratingValue').value = rating;
+            
+            // Atualizar visualizaÁ„o das estrelas
+            stars.forEach((s, i) => {
+                if (i < rating) {
+                    s.classList.remove('far');
+                    s.classList.add('fas', 'active');
+                } else {
+                    s.classList.remove('fas', 'active');
+                    s.classList.add('far');
+                }
+            });
+        });
+        
+        // Hover effect
+        star.addEventListener('mouseenter', function() {
+            const rating = parseInt(this.getAttribute('data-rating'));
+            stars.forEach((s, i) => {
+                if (i < rating) {
+                    s.classList.add('active');
+                } else {
+                    s.classList.remove('active');
+                }
+            });
+        });
+    });
+    
+    // Reset hover ao sair
+    const starRatingContainer = document.getElementById('starRating');
+    if (starRatingContainer) {
+        starRatingContainer.addEventListener('mouseleave', function() {
+            const currentRating = parseInt(document.getElementById('ratingValue').value) || 0;
+            stars.forEach((s, i) => {
+                if (i < currentRating) {
+                    s.classList.add('active');
+                } else {
+                    s.classList.remove('active');
+                }
+            });
+        });
+    }
+    
+    // Submit do formul·rio de avaliaÁ„o
+    const ratingForm = document.getElementById('ratingForm');
+    if (ratingForm) {
+        ratingForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            submitRating();
+        });
+    }
+    
+    // Fechar modal de avaliaÁ„o
+    const ratingModal = document.getElementById('ratingModal');
+    if (ratingModal) {
+        const closeBtn = ratingModal.querySelector('.modal-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                ratingModal.classList.remove('active');
+                currentRatingEventId = null;
+            });
+        }
+    }
+});
