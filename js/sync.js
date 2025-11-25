@@ -247,10 +247,16 @@ function saveToFirebase() {
         .then(() => {
             console.log('[firebase] Dados salvos com sucesso');
             showSyncNotification('Sincronizado com sucesso', 'success');
+            // Resetar flag após salvar
+            setTimeout(() => {
+                localChangesMade = false;
+            }, 500);
         })
         .catch((error) => {
             console.error('[firebase] Erro ao salvar:', error);
             showNotification('Erro ao sincronizar. Verifique sua conexão.', 'error');
+            // Resetar flag mesmo em caso de erro
+            localChangesMade = false;
         });
 }
 

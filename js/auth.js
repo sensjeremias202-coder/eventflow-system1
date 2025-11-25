@@ -267,10 +267,16 @@ function showApp() {
 
 function saveData() {
     try {
-        localStorage.setItem('users', JSON.stringify(users));
-        localStorage.setItem('categories', JSON.stringify(categories));
-        localStorage.setItem('events', JSON.stringify(events));
-        localStorage.setItem('messages', JSON.stringify(messages));
+        // Usar sistema de sincronização se disponível
+        if (typeof saveDataWithSync === 'function') {
+            saveDataWithSync();
+        } else {
+            // Fallback para salvamento local apenas
+            localStorage.setItem('users', JSON.stringify(users));
+            localStorage.setItem('categories', JSON.stringify(categories));
+            localStorage.setItem('events', JSON.stringify(events));
+            localStorage.setItem('messages', JSON.stringify(messages));
+        }
     } catch (error) {
         console.error('Erro ao salvar dados:', error);
         showNotification('Erro ao salvar dados', 'error');
