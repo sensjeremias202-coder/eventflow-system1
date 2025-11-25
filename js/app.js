@@ -184,6 +184,27 @@ function setupButtons() {
             }
         });
     }
+    
+    // Botão de sincronização forçada
+    const forceSyncBtn = document.getElementById('forceSyncBtn');
+    if (forceSyncBtn) {
+        // Mostrar se Firebase estiver ativo
+        if (window.firebaseInitialized && window.firebaseDatabase) {
+            forceSyncBtn.style.display = 'inline-block';
+        }
+        
+        forceSyncBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('[sync] 🔄 Sincronização forçada iniciada pelo usuário');
+            
+            if (typeof saveDataWithSync === 'function') {
+                saveDataWithSync();
+                showNotification('Sincronizando dados com Firebase...', 'info');
+            } else {
+                showNotification('Sistema de sincronização não disponível', 'error');
+            }
+        });
+    }
 }
 
 function showPage(page) {

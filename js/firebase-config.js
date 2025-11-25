@@ -49,3 +49,72 @@ function initFirebase() {
 // Exportar para uso global
 window.firebaseInitialized = initFirebase();
 window.firebaseDatabase = database;
+
+// Função para fazer upload inicial dos dados locais para o Firebase
+if (window.firebaseInitialized && window.firebaseDatabase) {
+    // Verificar se há dados no Firebase
+    window.firebaseDatabase.ref('/events').once('value', (snapshot) => {
+        const firebaseData = snapshot.val();
+        
+        if (!firebaseData || Object.keys(firebaseData).length === 0) {
+            console.log('[firebase] 📤 Nenhum dado encontrado no Firebase. Fazendo upload inicial...');
+            
+            // Fazer upload dos dados locais se existirem
+            const localEvents = JSON.parse(localStorage.getItem('events') || '[]');
+            const localCategories = JSON.parse(localStorage.getItem('categories') || '[]');
+            const localUsers = JSON.parse(localStorage.getItem('users') || '[]');
+            const localMessages = JSON.parse(localStorage.getItem('messages') || '[]');
+            
+            if (localEvents.length > 0 || localCategories.length > 0 || localUsers.length > 0) {
+                const updates = {};
+                
+                // Converter arrays para objetos
+                const eventsObj = {};
+                localEvents.forEach(e => { eventsObj[e.id] = e; });
+                
+                const categoriesObj = {};
+                localCategories.forEach(c => { categoriesObj[c.id] = c; });
+                
+                const usersObj = {};
+                localUsers.forEach(u => { usersObj[u.id] = u; });
+                
+                const messagesObj = {};
+                localMessages.forEach(m => { messagesObj[m.id] = m; });
+                
+                updates['/events'] = eventsObj;
+                updates['/categories'] = categoriesObj;
+                updates['/users'] = usersObj;
+                updates['/messages'] = messagesObj;
+                updates['/lastUpdate'] = Date.now();
+                
+                window.firebaseDatabase.ref().update(updates)
+                    .then(() => {
+                        console.log('[firebase] ✅ Upload inicial concluído com sucesso!');
+                        console.log('[firebase] Dados enviados:', {
+                            eventos: localEvents.length,
+                            categorias: localCategories.length,
+                            usuarios: localUsers.length,
+                            mensagens: localMessages.length
+                        });
+                    })
+                    .catch((error) => {
+                        console.error('[firebase] ❌ Erro no upload inicial:', error);
+                    });
+            } else {
+                console.log('[firebase] ℹ️ Nenhum dado local para fazer upload');
+            }
+        } else {
+            console.log('[firebase] ✅ Dados já existem no Firebase');
+            console.log('[firebase] Eventos no Firebase:', Object.keys(firebaseData).length);
+        }
+    });
+    
+    // Teste de conexão
+    window.firebaseDatabase.ref('.info/connected').on('value', (snapshot) => {
+        if (snapshot.val() === true) {
+            console.log('[firebase] 🟢 Conectado ao Firebase Realtime Database');
+        } else {
+            console.log('[firebase] 🔴 Desconectado do Firebase');
+        }
+    });
+}
