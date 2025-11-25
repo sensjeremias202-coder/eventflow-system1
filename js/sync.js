@@ -10,17 +10,22 @@ const STORAGE_KEY_TIMESTAMP = 'lastUpdateTimestamp';
 
 // Inicializar sistema de sincronização
 function initSync() {
-    console.log('[sync] Iniciando sistema de sincronização em tempo real...');
+    console.log('[sync] ========================================');
+    console.log('[sync] Iniciando sistema de sincronização...');
+    console.log('[sync] ========================================');
     
     // Aguardar um momento para Firebase ser inicializado
     setTimeout(() => {
         const FIREBASE_ENABLED = window.firebaseInitialized || false;
         
+        console.log('[sync] Firebase habilitado:', FIREBASE_ENABLED);
+        console.log('[sync] Firebase database:', !!window.firebaseDatabase);
+        
         if (FIREBASE_ENABLED && window.firebaseDatabase) {
-            console.log('[sync] Modo Firebase - Sincronização entre dispositivos ATIVADA');
+            console.log('[sync] ✅ Modo Firebase - Sincronização entre dispositivos ATIVADA');
             initFirebaseSync();
         } else {
-            console.log('[sync] Modo localStorage - Sincronização apenas entre abas do mesmo navegador');
+            console.log('[sync] ⚠️ Modo localStorage - Sincronização apenas entre abas do mesmo navegador');
             initLocalSync();
         }
     }, 100);
@@ -36,54 +41,67 @@ function initFirebaseSync() {
     // Listener para eventos
     firebaseListeners.events = db.ref('events').on('value', (snapshot) => {
         const data = snapshot.val();
-        if (data && !localChangesMade) {
-            console.log('[firebase] Eventos atualizados remotamente');
-            events = Object.values(data);
-            localStorage.setItem('events', JSON.stringify(events));
-            reloadCurrentPage();
-            showSyncNotification('Eventos atualizados', 'success');
+        if (data) {
+            if (!localChangesMade) {
+                console.log('[firebase] Eventos atualizados remotamente');
+                events = Object.values(data);
+                localStorage.setItem('events', JSON.stringify(events));
+                reloadCurrentPage();
+                showSyncNotification('Eventos atualizados', 'success');
+            } else {
+                console.log('[firebase] Ignorando atualização de eventos (mudança local)');
+            }
         }
-        localChangesMade = false;
     });
     
     // Listener para categorias
     firebaseListeners.categories = db.ref('categories').on('value', (snapshot) => {
         const data = snapshot.val();
-        if (data && !localChangesMade) {
-            console.log('[firebase] Categorias atualizadas remotamente');
-            categories = Object.values(data);
-            localStorage.setItem('categories', JSON.stringify(categories));
-            reloadCurrentPage();
+        if (data) {
+            if (!localChangesMade) {
+                console.log('[firebase] Categorias atualizadas remotamente');
+                categories = Object.values(data);
+                localStorage.setItem('categories', JSON.stringify(categories));
+                reloadCurrentPage();
+            } else {
+                console.log('[firebase] Ignorando atualização de categorias (mudança local)');
+            }
         }
-        localChangesMade = false;
     });
     
     // Listener para usuários
     firebaseListeners.users = db.ref('users').on('value', (snapshot) => {
         const data = snapshot.val();
-        if (data && !localChangesMade) {
-            console.log('[firebase] Usuários atualizados remotamente');
-            users = Object.values(data);
-            localStorage.setItem('users', JSON.stringify(users));
-            if (document.getElementById('users-page')?.classList.contains('active')) {
-                reloadCurrentPage();
+        if (data) {
+            if (!localChangesMade) {
+                console.log('[firebase] Usuários atualizados remotamente');
+                users = Object.values(data);
+                localStorage.setItem('users', JSON.stringify(users));
+                if (document.getElementById('users-page')?.classList.contains('active')) {
+                    reloadCurrentPage();
+                }
+                showSyncNotification('Usuários sincronizados', 'success');
+            } else {
+                console.log('[firebase] Ignorando atualização de usuários (mudança local)');
             }
         }
-        localChangesMade = false;
     });
     
     // Listener para mensagens
     firebaseListeners.messages = db.ref('messages').on('value', (snapshot) => {
         const data = snapshot.val();
-        if (data && !localChangesMade) {
-            console.log('[firebase] Mensagens atualizadas remotamente');
-            messages = Object.values(data);
-            localStorage.setItem('messages', JSON.stringify(messages));
-            if (document.getElementById('chat-page')?.classList.contains('active')) {
-                reloadCurrentPage();
+        if (data) {
+            if (!localChangesMade) {
+                console.log('[firebase] Mensagens atualizadas remotamente');
+                messages = Object.values(data);
+                localStorage.setItem('messages', JSON.stringify(messages));
+                if (document.getElementById('chat-page')?.classList.contains('active')) {
+                    reloadCurrentPage();
+                }
+            } else {
+                console.log('[firebase] Ignorando atualização de mensagens (mudança local)');
             }
         }
-        localChangesMade = false;
     });
     
     console.log('[firebase] Listeners ativos para sincronização em tempo real');
@@ -185,22 +203,30 @@ function reloadData() {
 // Salvar dados com sincronização
 function saveDataWithSync() {
     try {
+        console.log('[sync] 💾 saveDataWithSync chamada');
+        
         // Marcar que mudanças locais foram feitas
         localChangesMade = true;
+        console.log('[sync] Flag localChangesMade definida como true');
         
         // Salvar localmente
         localStorage.setItem('users', JSON.stringify(users));
         localStorage.setItem('categories', JSON.stringify(categories));
         localStorage.setItem('events', JSON.stringify(events));
         localStorage.setItem('messages', JSON.stringify(messages));
+        console.log('[sync] Dados salvos no localStorage');
         
         // Verificar se Firebase está habilitado
         const FIREBASE_ENABLED = window.firebaseInitialized || false;
         
+        console.log('[sync] Firebase habilitado:', FIREBASE_ENABLED);
+        
         // Se Firebase habilitado, salvar remotamente
         if (FIREBASE_ENABLED && window.firebaseDatabase) {
+            console.log('[sync] Chamando saveToFirebase()...');
             saveToFirebase();
         } else {
+            console.log('[sync] Modo local - atualizando timestamp');
             // Atualizar timestamp local
             const newTimestamp = Date.now();
             localStorage.setItem(STORAGE_KEY_TIMESTAMP, newTimestamp.toString());
@@ -210,9 +236,9 @@ function saveDataWithSync() {
             broadcastUpdate();
         }
         
-        console.log('[sync] Dados salvos e sincronizados');
+        console.log('[sync] ✅ Processo de salvamento concluído');
     } catch (error) {
-        console.error('[sync] Erro ao salvar dados:', error);
+        console.error('[sync] ❌ Erro ao salvar dados:', error);
         showNotification('Erro ao salvar dados', 'error');
     }
 }
@@ -221,6 +247,8 @@ function saveDataWithSync() {
 function saveToFirebase() {
     const db = window.firebaseDatabase;
     const updates = {};
+    
+    console.log('[firebase] Preparando para salvar dados...');
     
     // Converter arrays em objetos indexados por ID
     const eventsObj = {};
@@ -242,18 +270,26 @@ function saveToFirebase() {
     updates['/messages'] = messagesObj;
     updates['/lastUpdate'] = Date.now();
     
+    console.log('[firebase] Salvando no Firebase...', {
+        eventos: events.length,
+        categorias: categories.length,
+        usuarios: users.length,
+        mensagens: messages.length
+    });
+    
     // Salvar no Firebase
     db.ref().update(updates)
         .then(() => {
-            console.log('[firebase] Dados salvos com sucesso');
+            console.log('[firebase] ✅ Dados salvos com sucesso no Firebase');
             showSyncNotification('Sincronizado com sucesso', 'success');
-            // Resetar flag após salvar
+            // Resetar flag após 1 segundo para garantir que o listener não processe a própria mudança
             setTimeout(() => {
                 localChangesMade = false;
-            }, 500);
+                console.log('[firebase] Flag localChangesMade resetada');
+            }, 1000);
         })
         .catch((error) => {
-            console.error('[firebase] Erro ao salvar:', error);
+            console.error('[firebase] ❌ Erro ao salvar:', error);
             showNotification('Erro ao sincronizar. Verifique sua conexão.', 'error');
             // Resetar flag mesmo em caso de erro
             localChangesMade = false;
