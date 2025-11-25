@@ -72,7 +72,7 @@ function setupNavigation() {
             if (page) {
                 // Verificar permissão de acesso
                 const userRole = currentUser?.role || 'jovens';
-                const allowed = allowedPages[userRole] || [];
+                const allowed = allowedPages[userRole] || ['events', 'chat'];
                 
                 if (!allowed.includes(page)) {
                     showNotification('❌ Você não tem permissão para acessar esta página', 'error');
@@ -96,7 +96,7 @@ function setupNavigation() {
             if (page) {
                 // Verificar permissão de acesso
                 const userRole = currentUser?.role || 'jovens';
-                const allowed = allowedPages[userRole] || [];
+                const allowed = allowedPages[userRole] || ['events', 'chat'];
                 
                 if (!allowed.includes(page)) {
                     showNotification('❌ Você não tem permissão para acessar esta página', 'error');
@@ -131,10 +131,21 @@ function setupNavigation() {
     // Botão de logout
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
-        logoutBtn.addEventListener('click', function() {
+        // Remover listeners anteriores duplicados
+        const newLogoutBtn = logoutBtn.cloneNode(true);
+        logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
+        
+        // Adicionar novo listener
+        document.getElementById('logoutBtn').addEventListener('click', function(e) {
+            e.preventDefault();
             if (confirm('Tem certeza que deseja sair?')) {
+                // Parar atualizações automáticas se existirem
+                if (typeof stopAutoMessages === 'function') stopAutoMessages();
+                
+                // Limpar sessão
                 currentUser = null;
                 localStorage.removeItem('currentUser');
+                
                 const app = document.getElementById('app');
                 const loginScreen = document.getElementById('loginScreen');
                 
@@ -143,6 +154,9 @@ function setupNavigation() {
                 
                 showLoginForm();
                 showNotification('Logout realizado com sucesso!', 'success');
+                
+                // Recarregar página para limpar tudo
+                setTimeout(() => location.reload(), 500);
             }
         });
     }
@@ -567,20 +581,19 @@ function loadCategoryOptions() {
     };
 }
 
-// Adicione esta função no app.js
+// Função setupLogout integrada em setupNavigation
 function setupLogout() {
+    // Esta função agora é chamada dentro de setupNavigation
+    // Mantida por compatibilidade, mas o código real está em setupNavigation
     const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        // Remover event listeners anteriores
-        const newLogoutBtn = logoutBtn.cloneNode(true);
-        logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
-        
-        document.getElementById('logoutBtn').addEventListener('click', function(e) {
+    if (logoutBtn && !logoutBtn.hasAttribute('data-listener-attached')) {
+        logoutBtn.setAttribute('data-listener-attached', 'true');
+        logoutBtn.addEventListener('click', function(e) {
             e.preventDefault();
             
             if (confirm('Tem certeza que deseja sair do sistema?')) {
                 // Parar todas as atualizações automáticas
-                stopAutoMessages();
+                if (typeof stopAutoMessages === 'function') stopAutoMessages();
                 
                 // Limpar dados da sessão
                 currentUser = null;
