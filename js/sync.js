@@ -2,14 +2,91 @@
 let syncInterval = null;
 let lastSyncTimestamp = Date.now();
 let localChangesMade = false;
+let firebaseListeners = {};
 
 // Configurações
 const SYNC_INTERVAL_MS = 2000; // Verifica atualizações a cada 2 segundos
 const STORAGE_KEY_TIMESTAMP = 'lastUpdateTimestamp';
+const FIREBASE_ENABLED = window.firebaseInitialized || false;
 
 // Inicializar sistema de sincronização
 function initSync() {
     console.log('[sync] Iniciando sistema de sincronização em tempo real...');
+    
+    if (FIREBASE_ENABLED && window.firebaseDatabase) {
+        console.log('[sync] Modo Firebase - Sincronização entre dispositivos ATIVADA');
+        initFirebaseSync();
+    } else {
+        console.log('[sync] Modo localStorage - Sincronização apenas entre abas do mesmo navegador');
+        initLocalSync();
+    }
+    
+    // Listener para visibilidade da página
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+}
+
+// Inicializar sincronização com Firebase
+function initFirebaseSync() {
+    const db = window.firebaseDatabase;
+    
+    // Listener para eventos
+    firebaseListeners.events = db.ref('events').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data && !localChangesMade) {
+            console.log('[firebase] Eventos atualizados remotamente');
+            events = Object.values(data);
+            localStorage.setItem('events', JSON.stringify(events));
+            reloadCurrentPage();
+            showSyncNotification('Eventos atualizados', 'success');
+        }
+        localChangesMade = false;
+    });
+    
+    // Listener para categorias
+    firebaseListeners.categories = db.ref('categories').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data && !localChangesMade) {
+            console.log('[firebase] Categorias atualizadas remotamente');
+            categories = Object.values(data);
+            localStorage.setItem('categories', JSON.stringify(categories));
+            reloadCurrentPage();
+        }
+        localChangesMade = false;
+    });
+    
+    // Listener para usuários
+    firebaseListeners.users = db.ref('users').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data && !localChangesMade) {
+            console.log('[firebase] Usuários atualizados remotamente');
+            users = Object.values(data);
+            localStorage.setItem('users', JSON.stringify(users));
+            if (document.getElementById('users-page')?.classList.contains('active')) {
+                reloadCurrentPage();
+            }
+        }
+        localChangesMade = false;
+    });
+    
+    // Listener para mensagens
+    firebaseListeners.messages = db.ref('messages').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data && !localChangesMade) {
+            console.log('[firebase] Mensagens atualizadas remotamente');
+            messages = Object.values(data);
+            localStorage.setItem('messages', JSON.stringify(messages));
+            if (document.getElementById('chat-page')?.classList.contains('active')) {
+                reloadCurrentPage();
+            }
+        }
+        localChangesMade = false;
+    });
+    
+    console.log('[firebase] Listeners ativos para sincronização em tempo real');
+}
+
+// Inicializar sincronização local (fallback)
+function initLocalSync() {
     
     // Registrar timestamp inicial
     if (!localStorage.getItem(STORAGE_KEY_TIMESTAMP)) {
@@ -107,24 +184,86 @@ function saveDataWithSync() {
         // Marcar que mudanças locais foram feitas
         localChangesMade = true;
         
-        // Salvar dados
+        // Salvar localmente
         localStorage.setItem('users', JSON.stringify(users));
         localStorage.setItem('categories', JSON.stringify(categories));
         localStorage.setItem('events', JSON.stringify(events));
         localStorage.setItem('messages', JSON.stringify(messages));
         
-        // Atualizar timestamp
-        const newTimestamp = Date.now();
-        localStorage.setItem(STORAGE_KEY_TIMESTAMP, newTimestamp.toString());
-        lastSyncTimestamp = newTimestamp;
+        // Se Firebase habilitado, salvar remotamente
+        if (FIREBASE_ENABLED && window.firebaseDatabase) {
+            saveToFirebase();
+        } else {
+            // Atualizar timestamp local
+            const newTimestamp = Date.now();
+            localStorage.setItem(STORAGE_KEY_TIMESTAMP, newTimestamp.toString());
+            lastSyncTimestamp = newTimestamp;
+            
+            // Broadcast para outras abas
+            broadcastUpdate();
+        }
         
         console.log('[sync] Dados salvos e sincronizados');
-        
-        // Broadcast para outras abas
-        broadcastUpdate();
     } catch (error) {
         console.error('[sync] Erro ao salvar dados:', error);
         showNotification('Erro ao salvar dados', 'error');
+    }
+}
+
+// Salvar dados no Firebase
+function saveToFirebase() {
+    const db = window.firebaseDatabase;
+    const updates = {};
+    
+    // Converter arrays em objetos indexados por ID
+    const eventsObj = {};
+    events.forEach(e => { eventsObj[e.id] = e; });
+    
+    const categoriesObj = {};
+    categories.forEach(c => { categoriesObj[c.id] = c; });
+    
+    const usersObj = {};
+    users.forEach(u => { usersObj[u.id] = u; });
+    
+    const messagesObj = {};
+    messages.forEach(m => { messagesObj[m.id] = m; });
+    
+    // Preparar updates
+    updates['/events'] = eventsObj;
+    updates['/categories'] = categoriesObj;
+    updates['/users'] = usersObj;
+    updates['/messages'] = messagesObj;
+    updates['/lastUpdate'] = Date.now();
+    
+    // Salvar no Firebase
+    db.ref().update(updates)
+        .then(() => {
+            console.log('[firebase] Dados salvos com sucesso');
+            showSyncNotification('Sincronizado com sucesso', 'success');
+        })
+        .catch((error) => {
+            console.error('[firebase] Erro ao salvar:', error);
+            showNotification('Erro ao sincronizar. Verifique sua conexão.', 'error');
+        });
+}
+
+// Recarregar página atual
+function reloadCurrentPage() {
+    const activePage = document.querySelector('.page.active');
+    if (!activePage) return;
+    
+    const pageId = activePage.id;
+    
+    if (pageId === 'dashboard-page') {
+        if (typeof loadDashboard === 'function') loadDashboard();
+    } else if (pageId === 'events-page') {
+        if (typeof loadEvents === 'function') loadEvents();
+    } else if (pageId === 'chat-page') {
+        if (typeof loadChatUsers === 'function') loadChatUsers();
+    } else if (pageId === 'users-page' && currentUser?.role === 'admin') {
+        if (typeof loadUsersTable === 'function') loadUsersTable();
+    } else if (pageId === 'categories-page' && currentUser?.role === 'admin') {
+        if (typeof loadCategoriesTable === 'function') loadCategoriesTable();
     }
 }
 
@@ -230,6 +369,45 @@ if (document.readyState === 'loading') {
 window.addEventListener('beforeunload', () => {
     stopSync();
     window.removeEventListener('storage', handleStorageChange);
+    
+    // Remover listeners do Firebase
+    if (FIREBASE_ENABLED && window.firebaseDatabase) {
+        Object.keys(firebaseListeners).forEach(key => {
+            window.firebaseDatabase.ref(key).off('value', firebaseListeners[key]);
+        });
+    }
 });
+
+// Status de conexão Firebase
+if (FIREBASE_ENABLED && window.firebaseDatabase) {
+    window.firebaseDatabase.ref('.info/connected').on('value', (snapshot) => {
+        const statusEl = document.getElementById('syncStatus');
+        if (snapshot.val() === true) {
+            console.log('[firebase] ✅ Conectado ao Firebase');
+            if (statusEl) {
+                statusEl.className = 'sync-status online';
+                statusEl.innerHTML = '<i class="fas fa-circle"></i><span>Online</span>';
+                statusEl.title = 'Sincronização em tempo real ativa';
+            }
+            showSyncNotification('Conectado - Sincronização ativa', 'success');
+        } else {
+            console.log('[firebase] ❌ Desconectado do Firebase');
+            if (statusEl) {
+                statusEl.className = 'sync-status offline';
+                statusEl.innerHTML = '<i class="fas fa-circle"></i><span>Offline</span>';
+                statusEl.title = 'Modo offline - reconectando...';
+            }
+            showSyncNotification('Modo offline - Dados locais', 'warning');
+        }
+    });
+} else {
+    // Modo local
+    const statusEl = document.getElementById('syncStatus');
+    if (statusEl) {
+        statusEl.className = 'sync-status local';
+        statusEl.innerHTML = '<i class="fas fa-circle"></i><span>Local</span>';
+        statusEl.title = 'Sincronização apenas entre abas (ative Firebase para sync entre dispositivos)';
+    }
+}
 
 console.log('[sync] Módulo de sincronização carregado');

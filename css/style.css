@@ -665,6 +665,40 @@ header {
     font-size: 0.85rem;
 }
 
+/* Sync status indicator */
+.sync-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: rgba(0,0,0,0.05);
+    border-radius: 20px;
+    font-size: 0.85rem;
+    margin-right: 10px;
+}
+
+.sync-status i {
+    font-size: 0.6rem;
+}
+
+.sync-status.online i {
+    color: #4cc9f0;
+    animation: pulse 2s infinite;
+}
+
+.sync-status.offline i {
+    color: #f72585;
+}
+
+.sync-status.local i {
+    color: #f8961e;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
 #confirmModal .modal-footer {
     background: transparent;
     border-top: none;
