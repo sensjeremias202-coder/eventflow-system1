@@ -491,6 +491,69 @@ function openRatingModal(eventId) {
         star.classList.add('far');
     });
     
+    // Configurar event listeners para as estrelas (toda vez que o modal abre)
+    const starRatingContainer = document.getElementById('starRating');
+    if (starRatingContainer) {
+        const stars = starRatingContainer.querySelectorAll('i');
+        
+        stars.forEach((star, index) => {
+            // Remover listeners antigos clonando
+            const newStar = star.cloneNode(true);
+            star.parentNode.replaceChild(newStar, star);
+        });
+        
+        // Re-selecionar e adicionar novos listeners
+        const newStars = starRatingContainer.querySelectorAll('i');
+        newStars.forEach((star, index) => {
+            star.addEventListener('click', function() {
+                const rating = parseInt(this.getAttribute('data-rating'));
+                const ratingInput = document.getElementById('ratingValue');
+                if (ratingInput) {
+                    ratingInput.value = rating;
+                    console.log('[events] ⭐ Estrela clicada - Rating:', rating, 'Input value:', ratingInput.value);
+                } else {
+                    console.error('[events] ❌ Input ratingValue não encontrado!');
+                }
+                
+                newStars.forEach((s, i) => {
+                    if (i < rating) {
+                        s.classList.remove('far');
+                        s.classList.add('fas', 'active');
+                    } else {
+                        s.classList.remove('fas', 'active');
+                        s.classList.add('far');
+                    }
+                });
+            });
+            
+            star.addEventListener('mouseenter', function() {
+                const rating = parseInt(this.getAttribute('data-rating'));
+                newStars.forEach((s, i) => {
+                    if (i < rating) {
+                        s.classList.add('active');
+                    } else {
+                        s.classList.remove('active');
+                    }
+                });
+            });
+        });
+        
+        // Mouseleave do container
+        starRatingContainer.addEventListener('mouseleave', function() {
+            const ratingInput = document.getElementById('ratingValue');
+            const currentRating = ratingInput ? parseInt(ratingInput.value) || 0 : 0;
+            newStars.forEach((s, i) => {
+                if (i < currentRating) {
+                    s.classList.add('fas', 'active');
+                    s.classList.remove('far');
+                } else {
+                    s.classList.remove('fas', 'active');
+                    s.classList.add('far');
+                }
+            });
+        });
+    }
+    
     // Se j� avaliou, preencher dados
     if (existingRating) {
         document.getElementById('ratingValue').value = existingRating.rating;
