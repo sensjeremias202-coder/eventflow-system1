@@ -182,8 +182,11 @@ async function initializePage(pageName) {
             break;
             
         case 'profile':
-            // Carregar perfil do usuário
-            if (typeof loadProfile === 'function') {
+            // Inicializar página de perfil
+            if (typeof initProfilePage === 'function') {
+                initProfilePage();
+            } else if (typeof loadProfile === 'function') {
+                // Fallback para compatibilidade
                 loadProfile();
             }
             break;
@@ -210,8 +213,10 @@ async function initializePage(pageName) {
             break;
             
         case 'categories':
-            // Carregar tabela de categorias (admin only)
-            if (currentUser?.role === 'admin' && typeof loadCategoriesTable === 'function') {
+            // Inicializar página de categorias (admin only)
+            if (currentUser?.role === 'admin' && typeof initCategoriesPage === 'function') {
+                initCategoriesPage();
+            } else if (currentUser?.role === 'admin' && typeof loadCategoriesTable === 'function') {
                 loadCategoriesTable();
             }
             break;
