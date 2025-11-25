@@ -510,10 +510,16 @@ function openRatingModal(eventId) {
 
 function submitRating() {
     const eventId = currentRatingEventId;
-    const rating = parseInt(document.getElementById('ratingValue').value);
+    const ratingInput = document.getElementById('ratingValue');
+    const ratingValue = ratingInput ? ratingInput.value : '';
+    const rating = parseInt(ratingValue);
     const comment = document.getElementById('ratingComment').value.trim();
     
-    if (!rating || rating < 1 || rating > 5) {
+    console.log('[events] Submit rating - Input:', ratingInput);
+    console.log('[events] Submit rating - Value:', ratingValue);
+    console.log('[events] Submit rating - Parsed:', rating);
+    
+    if (!rating || isNaN(rating) || rating < 1 || rating > 5) {
         showNotification('Por favor, selecione uma avaliação de 1 a 5 estrelas', 'error');
         return;
     }
@@ -653,7 +659,12 @@ function initEventsPage() {
             star.addEventListener('click', function() {
                 const rating = parseInt(this.getAttribute('data-rating'));
                 const ratingInput = document.getElementById('ratingValue');
-                if (ratingInput) ratingInput.value = rating;
+                if (ratingInput) {
+                    ratingInput.value = rating;
+                    console.log('[events] Estrela clicada - Rating:', rating, 'Input value:', ratingInput.value);
+                } else {
+                    console.error('[events] Input ratingValue não encontrado!');
+                }
                 
                 newStars.forEach((s, i) => {
                     if (i < rating) {
