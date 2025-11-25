@@ -86,7 +86,7 @@ if (window.firebaseInitialized && window.firebaseDatabase) {
     window.firebaseDatabase.ref('/events').once('value', (snapshot) => {
         const firebaseData = snapshot.val();
         
-        if (!firebaseData || Object.keys(firebaseData).length === 0) {
+        if (!firebaseData || (Array.isArray(firebaseData) && firebaseData.length === 0) || (typeof firebaseData === 'object' && Object.keys(firebaseData).length === 0)) {
             console.log('[firebase] 📤 Nenhum dado encontrado no Firebase. Fazendo upload inicial...');
             
             // Fazer upload dos dados locais se existirem
@@ -98,29 +98,17 @@ if (window.firebaseInitialized && window.firebaseDatabase) {
             if (localEvents.length > 0 || localCategories.length > 0 || localUsers.length > 0) {
                 const updates = {};
                 
-                // Converter arrays para objetos
-                const eventsObj = {};
-                localEvents.forEach(e => { eventsObj[e.id] = e; });
-                
-                const categoriesObj = {};
-                localCategories.forEach(c => { categoriesObj[c.id] = c; });
-                
-                const usersObj = {};
-                localUsers.forEach(u => { usersObj[u.id] = u; });
-                
-                const messagesObj = {};
-                localMessages.forEach(m => { messagesObj[m.id] = m; });
-                
-                updates['/events'] = eventsObj;
-                updates['/categories'] = categoriesObj;
-                updates['/users'] = usersObj;
-                updates['/messages'] = messagesObj;
+                // Salvar como arrays diretos
+                updates['/events'] = localEvents;
+                updates['/categories'] = localCategories;
+                updates['/users'] = localUsers;
+                updates['/messages'] = localMessages;
                 updates['/lastUpdate'] = Date.now();
                 
                 window.firebaseDatabase.ref().update(updates)
                     .then(() => {
                         console.log('[firebase] ✅ Upload inicial concluído com sucesso!');
-                        console.log('[firebase] Dados enviados:', {
+                        console.log('[firebase] 📊 Dados enviados:', {
                             eventos: localEvents.length,
                             categorias: localCategories.length,
                             usuarios: localUsers.length,
@@ -135,7 +123,8 @@ if (window.firebaseInitialized && window.firebaseDatabase) {
             }
         } else {
             console.log('[firebase] ✅ Dados já existem no Firebase');
-            console.log('[firebase] Eventos no Firebase:', Object.keys(firebaseData).length);
+            const eventCount = Array.isArray(firebaseData) ? firebaseData.length : Object.keys(firebaseData).length;
+            console.log('[firebase] 📊 Eventos no Firebase:', eventCount);
         }
     });
     

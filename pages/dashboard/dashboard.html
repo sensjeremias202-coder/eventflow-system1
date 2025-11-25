@@ -1,0 +1,24 @@
+<!-- ============================================ -->
+<!-- DASHBOARD PAGE -->
+<!-- ============================================ -->
+<div class="stats-grid" id="statsGrid">
+    <!-- Stats will be loaded here by dashboard.js -->
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Análise de Comentários</div>
+        <div class="tabs">
+            <div class="tab active" data-tab="sentiment">Análise de Sentimento</div>
+            <div class="tab" data-tab="topics">Tópicos Mais Comentados</div>
+        </div>
+    </div>
+    
+    <div class="tab-content active" id="sentiment">
+        <canvas id="sentimentChart" height="300"></canvas>
+    </div>
+    
+    <div class="tab-content" id="topics">
+        <canvas id="topicsChart" height="300"></canvas>
+    </div>
+</div>

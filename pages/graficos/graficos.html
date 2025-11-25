@@ -1,0 +1,127 @@
+<!-- ============================================ -->
+<!-- GRAFICOS PAGE (Admin & Treasurer) -->
+<!-- ============================================ -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">
+            <i class="fas fa-chart-line"></i> Gráficos Financeiros
+        </div>
+    </div>
+    
+    <div class="card-body">
+        <!-- Filtros -->
+        <div class="chart-filters">
+            <div class="form-group">
+                <label class="form-label">Tipo de Visualização</label>
+                <select class="form-control" id="chartType">
+                    <option value="event">Por Evento</option>
+                    <option value="monthly">Mensal</option>
+                    <option value="yearly">Anual</option>
+                </select>
+            </div>
+            
+            <div class="form-group" id="eventSelectorGroup">
+                <label class="form-label">Selecione o Evento</label>
+                <select class="form-control" id="selectEventChart">
+                    <option value="">Todos os eventos</option>
+                </select>
+            </div>
+            
+            <div class="form-group" id="yearSelectorGroup" style="display: none;">
+                <label class="form-label">Ano</label>
+                <select class="form-control" id="selectYear"></select>
+            </div>
+            
+            <div class="form-group" id="monthSelectorGroup" style="display: none;">
+                <label class="form-label">Mês</label>
+                <select class="form-control" id="selectMonth">
+                    <option value="0">Janeiro</option>
+                    <option value="1">Fevereiro</option>
+                    <option value="2">Março</option>
+                    <option value="3">Abril</option>
+                    <option value="4">Maio</option>
+                    <option value="5">Junho</option>
+                    <option value="6">Julho</option>
+                    <option value="7">Agosto</option>
+                    <option value="8">Setembro</option>
+                    <option value="9">Outubro</option>
+                    <option value="10">Novembro</option>
+                    <option value="11">Dezembro</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- Cards de Resumo -->
+        <div class="stats-grid" id="financialStats">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <div class="stat-details">
+                    <span class="stat-label">Total Arrecadado</span>
+                    <span class="stat-value" id="totalIncome">R$ 0,00</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon negative">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <div class="stat-details">
+                    <span class="stat-label">Total de Gastos</span>
+                    <span class="stat-value negative" id="totalExpenses">R$ 0,00</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon positive">
+                    <i class="fas fa-piggy-bank"></i>
+                </div>
+                <div class="stat-details">
+                    <span class="stat-label">Saldo Total</span>
+                    <span class="stat-value positive" id="totalBalance">R$ 0,00</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div class="stat-details">
+                    <span class="stat-label">Eventos Analisados</span>
+                    <span class="stat-value" id="eventsCount">0</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Gráfico de Entrada vs Saída -->
+        <div class="card" style="margin-top: 20px;">
+            <div class="card-header">
+                <div class="card-title">Entrada vs Saída</div>
+            </div>
+            <div class="card-body">
+                <canvas id="incomeExpensesChart" height="300"></canvas>
+            </div>
+        </div>
+        
+        <!-- Gráfico de Evolução Temporal -->
+        <div class="card" style="margin-top: 20px;">
+            <div class="card-header">
+                <div class="card-title">Evolução ao Longo do Tempo</div>
+            </div>
+            <div class="card-body">
+                <canvas id="timelineChart" height="300"></canvas>
+            </div>
+        </div>
+        
+        <!-- Gráfico de Pizza - Distribuição de Gastos -->
+        <div class="card" style="margin-top: 20px;">
+            <div class="card-header">
+                <div class="card-title">Distribuição de Gastos</div>
+            </div>
+            <div class="card-body">
+                <canvas id="expensesDistributionChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>

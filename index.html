@@ -10,8 +10,9 @@
     
     <!-- External CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/theme-christian.css">
+    <link rel="stylesheet" href="css/style.css?v=20241125100000">
+    <link rel="stylesheet" href="css/theme-christian.css?v=20241125100000">
+    <!-- CSS dos módulos são carregados dinamicamente pelo page-loader.js -->
     
     <!-- Google Fonts para fontes mais jovens -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -107,6 +108,8 @@
                         <a href="#" class="nav-link active" data-page="dashboard">Dashboard</a>
                         <a href="#" class="nav-link" data-page="events">Eventos</a>
                         <a href="#" class="nav-link" data-page="chat">Chat</a>
+                        <a href="#" class="nav-link treasurer-only" data-page="financeiro" style="display: none;">Financeiro</a>
+                        <a href="#" class="nav-link admin-treasurer-only" data-page="graficos" style="display: none;">Gráficos</a>
                         <a href="#" class="nav-link admin-only" data-page="users" style="display: none;">Usuários</a>
                         <a href="#" class="nav-link admin-only" data-page="categories" style="display: none;">Categorias</a>
                     </div>
@@ -152,6 +155,8 @@
                         <li><a href="#" class="sidebar-link" data-page="events"><i class="fas fa-calendar-alt"></i> Eventos</a></li>
                         <li><a href="#" class="sidebar-link" data-page="profile"><i class="fas fa-user"></i> Meu Perfil</a></li>
                         <li><a href="#" class="sidebar-link" data-page="chat"><i class="fas fa-comments"></i> Chat</a></li>
+                        <li><a href="#" class="sidebar-link treasurer-only" data-page="financeiro" style="display: none;"><i class="fas fa-coins"></i> Financeiro</a></li>
+                        <li><a href="#" class="sidebar-link admin-treasurer-only" data-page="graficos" style="display: none;"><i class="fas fa-chart-line"></i> Gráficos</a></li>
                         <li><a href="#" class="sidebar-link admin-only" data-page="users" style="display: none;"><i class="fas fa-users"></i> Gerenciar Usuários</a></li>
                         <li><a href="#" class="sidebar-link admin-only" data-page="categories" style="display: none;"><i class="fas fa-tags"></i> Gerenciar Categorias</a></li>
                     </ul>
@@ -159,212 +164,363 @@
                 
                 <!-- Main Content Area -->
                 <div class="content">
-                    <!-- ============================================ -->
-                    <!-- DASHBOARD PAGE -->
-                    <!-- ============================================ -->
-                    <div class="page active" id="dashboard-page">
-                        <div class="stats-grid" id="statsGrid">
-                            <!-- Stats will be loaded here -->
+                    <!-- As páginas serão carregadas dinamicamente aqui pelo page-loader.js -->
+                    <!-- Dashboard será a primeira página carregada -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ============================================ -->
+    <!-- PAGE TEMPLATES (Hidden HTML for dynamic loading) -->
+    <!-- ============================================ -->
+    <template id="template-dashboard">
+        <div class="stats-grid" id="statsGrid"></div>
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Análise de Comentários</div>
+                <div class="tabs">
+                    <div class="tab active" data-tab="sentiment">Análise de Sentimento</div>
+                    <div class="tab" data-tab="topics">Tópicos Mais Comentados</div>
+                </div>
+            </div>
+            <div class="tab-content active" id="sentiment">
+                <canvas id="sentimentChart" height="300"></canvas>
+            </div>
+            <div class="tab-content" id="topics">
+                <canvas id="topicsChart" height="300"></canvas>
+            </div>
+        </div>
+    </template>
+    
+    <template id="template-events">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Eventos</div>
+                <div>
+                    <button class="btn btn-outline" id="myEventsBtn" style="display: none;">
+                        <i class="fas fa-user"></i> Meus Eventos
+                    </button>
+                    <button class="btn btn-primary admin-only" id="addEventBtn" style="display: none;">
+                        <i class="fas fa-plus"></i> Adicionar Evento
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="events-grid" id="eventsGrid"></div>
+            </div>
+        </div>
+    </template>
+    
+    <template id="template-chat">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Chat</div>
+            </div>
+            <div class="chat-container">
+                <div class="chat-sidebar" id="chatUsers"></div>
+                <div class="chat-main">
+                    <div class="chat-header">
+                        <h4 id="currentChatUser">Selecione um usuário</h4>
+                        <div class="user-status" id="currentChatStatus"></div>
+                    </div>
+                    <div class="chat-messages" id="chatMessages"></div>
+                    <div class="chat-input">
+                        <input type="text" id="chatInput" placeholder="Digite sua mensagem...">
+                        <button class="btn btn-primary" id="sendMessageBtn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+    
+    <template id="template-profile">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><i class="fas fa-user"></i> Meu Perfil</div>
+            </div>
+            <div class="card-body">
+                <div class="profile-info">
+                    <div class="profile-avatar"><i class="fas fa-user-circle"></i></div>
+                    <div class="form-group">
+                        <label class="form-label">Nome Completo</label>
+                        <input type="text" class="form-control" id="profileName" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">E-mail</label>
+                        <input type="email" class="form-control" id="profileEmail" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tipo de Conta</label>
+                        <input type="text" class="form-control" id="profileRole" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Membro desde</label>
+                        <input type="text" class="form-control" id="profileRegistered" readonly>
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-primary" id="editProfileBtn">
+                            <i class="fas fa-edit"></i> Editar Perfil
+                        </button>
+                        <button class="btn btn-danger" id="deleteAccountBtn" style="margin-left: 10px;">
+                            <i class="fas fa-trash"></i> Excluir Conta
+                        </button>
+                    </div>
+                </div>
+                <div class="card" style="margin-top: 20px;">
+                    <div class="card-header">
+                        <div class="card-title"><i class="fas fa-calendar-check"></i> Meus Eventos</div>
+                    </div>
+                    <div class="card-body" id="myEventsProfile"></div>
+                </div>
+                <div class="card" style="margin-top: 20px;">
+                    <div class="card-header">
+                        <div class="card-title"><i class="fas fa-star"></i> Minhas Avaliações</div>
+                    </div>
+                    <div class="card-body" id="myRatingsProfile"></div>
+                </div>
+            </div>
+        </div>
+    </template>
+    
+    <template id="template-users">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Gerenciar Usuários</div>
+                <button class="btn btn-primary" id="addUserBtn">
+                    <i class="fas fa-plus"></i> Adicionar Usuário
+                </button>
+            </div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>E-mail</th>
+                        <th>Tipo</th>
+                        <th>Data de Registro</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTable"></tbody>
+            </table>
+        </div>
+    </template>
+    
+    <template id="template-categories">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Gerenciar Categorias</div>
+                <button class="btn btn-primary" id="addCategoryBtn">
+                    <i class="fas fa-plus"></i> Adicionar Categoria
+                </button>
+            </div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Cor</th>
+                        <th>Ícone</th>
+                        <th>Eventos</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="categoriesTable"></tbody>
+            </table>
+        </div>
+    </template>
+    
+    <template id="template-financeiro">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <i class="fas fa-coins"></i> Gestão Financeira de Eventos
+                </div>
+                <div>
+                    <button class="btn btn-primary treasurer-only" id="addExpenseBtn" style="display: none;">
+                        <i class="fas fa-plus"></i> Adicionar Gasto
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label class="form-label">Selecione o Evento</label>
+                    <select class="form-control" id="selectEventFinancial">
+                        <option value="">Selecione um evento...</option>
+                    </select>
+                </div>
+                <div id="financialInfo" style="display: none;">
+                    <div class="financial-summary">
+                        <div class="financial-card">
+                            <div class="financial-icon"><i class="fas fa-wallet"></i></div>
+                            <div class="financial-details">
+                                <span class="financial-label">Valor Inicial</span>
+                                <span class="financial-value" id="valorInicial">R$ 0,00</span>
+                            </div>
                         </div>
-                        
-                        <div class="card">
-                            <div class="card-header">
-                                <div class="card-title">Análise de Comentários</div>
-                                <div class="tabs">
-                                    <div class="tab active" data-tab="sentiment">Análise de Sentimento</div>
-                                    <div class="tab" data-tab="topics">Tópicos Mais Comentados</div>
-                                </div>
+                        <div class="financial-card">
+                            <div class="financial-icon negative"><i class="fas fa-shopping-cart"></i></div>
+                            <div class="financial-details">
+                                <span class="financial-label">Total de Gastos</span>
+                                <span class="financial-value negative" id="totalGastos">R$ 0,00</span>
                             </div>
-                            
-                            <div class="tab-content active" id="sentiment">
-                                <canvas id="sentimentChart" height="300"></canvas>
-                            </div>
-                            
-                            <div class="tab-content" id="topics">
-                                <canvas id="topicsChart" height="300"></canvas>
+                        </div>
+                        <div class="financial-card">
+                            <div class="financial-icon positive"><i class="fas fa-piggy-bank"></i></div>
+                            <div class="financial-details">
+                                <span class="financial-label">Valor de Sobra</span>
+                                <span class="financial-value positive" id="valorSobra">R$ 0,00</span>
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- ============================================ -->
-                    <!-- EVENTS PAGE -->
-                    <!-- ============================================ -->
-                    <div class="page" id="events-page">
-                        <div class="card">
-                            <div class="card-header">
-                                <div class="card-title">Eventos</div>
-                                <div>
-                                    <button class="btn btn-outline" id="myEventsBtn" style="display: none;">
-                                        <i class="fas fa-user"></i> Meus Eventos
-                                    </button>
-                                    <button class="btn btn-primary admin-only" id="addEventBtn" style="display: none;">
-                                        <i class="fas fa-plus"></i> Adicionar Evento
-                                    </button>
-                                </div>
+                    <div class="card treasurer-only" id="initialValueForm" style="display: none; margin-top: 20px;">
+                        <div class="card-header">
+                            <div class="card-title">Definir Valor Inicial</div>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label class="form-label">Valor Inicial (R$)</label>
+                                <input type="number" class="form-control" id="inputValorInicial" placeholder="0.00" step="0.01" min="0">
                             </div>
-                            
-                            <div class="card-body" id="eventsContainer">
-                                <!-- Events will be loaded here -->
+                            <div class="form-group">
+                                <label class="form-label">Justificativa</label>
+                                <textarea class="form-control" id="inputJustificativaInicial" rows="2" placeholder="Descreva a origem do valor inicial"></textarea>
+                            </div>
+                            <button class="btn btn-primary" id="saveInitialValueBtn">
+                                <i class="fas fa-save"></i> Salvar Valor Inicial
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card" style="margin-top: 20px;">
+                        <div class="card-header">
+                            <div class="card-title">Gastos Registrados</div>
+                        </div>
+                        <div class="card-body">
+                            <div id="expensesList">
+                                <p style="text-align: center; color: var(--gray);">Nenhum gasto registrado ainda.</p>
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- ============================================ -->
-                    <!-- PROFILE PAGE -->
-                    <!-- ============================================ -->
-                    <div class="page" id="profile-page">
-                        <div class="card">
-                            <div class="card-header">
-                                <div class="card-title"><i class="fas fa-user"></i> Meu Perfil</div>
-                            </div>
-                            <div class="card-body">
-                                <div class="profile-info">
-                                    <div class="profile-avatar">
-                                        <i class="fas fa-user-circle"></i>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Nome Completo</label>
-                                        <input type="text" class="form-control" id="profileName" readonly>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">E-mail</label>
-                                        <input type="email" class="form-control" id="profileEmail" readonly>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Tipo de Conta</label>
-                                        <input type="text" class="form-control" id="profileRole" readonly>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Membro desde</label>
-                                        <input type="text" class="form-control" id="profileRegistered" readonly>
-                                    </div>
-                                    <div class="form-group">
-                                        <button class="btn btn-primary" id="editProfileBtn">
-                                            <i class="fas fa-edit"></i> Editar Perfil
-                                        </button>
-                                        <button class="btn btn-danger" id="deleteAccountBtn" style="margin-left: 10px;">
-                                            <i class="fas fa-trash"></i> Excluir Conta
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div class="card" style="margin-top: 20px;">
-                                    <div class="card-header">
-                                        <div class="card-title"><i class="fas fa-calendar-check"></i> Meus Eventos</div>
-                                    </div>
-                                    <div class="card-body" id="myEventsProfile">
-                                        <!-- User's events will be loaded here -->
-                                    </div>
-                                </div>
-                                
-                                <div class="card" style="margin-top: 20px;">
-                                    <div class="card-header">
-                                        <div class="card-title"><i class="fas fa-star"></i> Minhas Avaliações</div>
-                                    </div>
-                                    <div class="card-body" id="myRatingsProfile">
-                                        <!-- User's ratings will be loaded here -->
-                                    </div>
-                                </div>
+                    <div class="card admin-only" id="changesHistory" style="display: none; margin-top: 20px;">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i class="fas fa-history"></i> Histórico de Alterações
                             </div>
                         </div>
-                    </div>
-                    
-                    <!-- ============================================ -->
-                    <!-- CHAT PAGE -->
-                    <!-- ============================================ -->
-                    <div class="page" id="chat-page">
-                        <div class="card">
-                            <div class="card-header">
-                                <div class="card-title">Chat</div>
+                        <div class="card-body">
+                            <div id="changesList">
+                                <p style="text-align: center; color: var(--gray);">Nenhuma alteração registrada.</p>
                             </div>
-                            
-                            <div class="chat-container">
-                                <div class="chat-sidebar" id="chatUsers">
-                                    <!-- Chat users will be loaded here -->
-                                </div>
-                                
-                                <div class="chat-main">
-                                    <div class="chat-header">
-                                        <h4 id="currentChatUser">Selecione um usuário</h4>
-                                        <div class="user-status" id="currentChatStatus"></div>
-                                    </div>
-                                    
-                                    <div class="chat-messages" id="chatMessages">
-                                        <!-- Messages will be loaded here -->
-                                    </div>
-                                    
-                                    <div class="chat-input">
-                                        <input type="text" id="chatInput" placeholder="Digite sua mensagem...">
-                                        <button class="btn btn-primary" id="sendMessageBtn">
-                                            <i class="fas fa-paper-plane"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- ============================================ -->
-                    <!-- USERS MANAGEMENT PAGE (Admin Only) -->
-                    <!-- ============================================ -->
-                    <div class="page" id="users-page">
-                        <div class="card">
-                            <div class="card-header">
-                                <div class="card-title">Gerenciar Usuários</div>
-                                <button class="btn btn-primary" id="addUserBtn">
-                                    <i class="fas fa-plus"></i> Adicionar Usuário
-                                </button>
-                            </div>
-                            
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Nome</th>
-                                        <th>E-mail</th>
-                                        <th>Tipo</th>
-                                        <th>Data de Registro</th>
-                                        <th>Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="usersTable">
-                                    <!-- Users will be loaded here -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    
-                    <!-- ============================================ -->
-                    <!-- CATEGORIES MANAGEMENT PAGE (Admin Only) -->
-                    <!-- ============================================ -->
-                    <div class="page" id="categories-page">
-                        <div class="card">
-                            <div class="card-header">
-                                <div class="card-title">Gerenciar Categorias</div>
-                                <button class="btn btn-primary" id="addCategoryBtn">
-                                    <i class="fas fa-plus"></i> Adicionar Categoria
-                                </button>
-                            </div>
-                            
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Nome</th>
-                                        <th>Cor</th>
-                                        <th>Ícone</th>
-                                        <th>Eventos</th>
-                                        <th>Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="categoriesTable">
-                                    <!-- Categories will be loaded here -->
-                                </tbody>
-                            </table>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </template>
+    
+    <template id="template-graficos">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <i class="fas fa-chart-line"></i> Gráficos Financeiros
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-filters">
+                    <div class="form-group">
+                        <label class="form-label">Tipo de Visualização</label>
+                        <select class="form-control" id="chartType">
+                            <option value="event">Por Evento</option>
+                            <option value="monthly">Mensal</option>
+                            <option value="yearly">Anual</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="eventSelectorGroup">
+                        <label class="form-label">Selecione o Evento</label>
+                        <select class="form-control" id="selectEventChart">
+                            <option value="">Todos os eventos</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="yearSelectorGroup" style="display: none;">
+                        <label class="form-label">Ano</label>
+                        <select class="form-control" id="selectYear"></select>
+                    </div>
+                    <div class="form-group" id="monthSelectorGroup" style="display: none;">
+                        <label class="form-label">Mês</label>
+                        <select class="form-control" id="selectMonth">
+                            <option value="0">Janeiro</option>
+                            <option value="1">Fevereiro</option>
+                            <option value="2">Março</option>
+                            <option value="3">Abril</option>
+                            <option value="4">Maio</option>
+                            <option value="5">Junho</option>
+                            <option value="6">Julho</option>
+                            <option value="7">Agosto</option>
+                            <option value="8">Setembro</option>
+                            <option value="9">Outubro</option>
+                            <option value="10">Novembro</option>
+                            <option value="11">Dezembro</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="stats-grid" id="financialStats">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-wallet"></i></div>
+                        <div class="stat-details">
+                            <span class="stat-label">Total Arrecadado</span>
+                            <span class="stat-value" id="totalIncome">R$ 0,00</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon negative"><i class="fas fa-shopping-cart"></i></div>
+                        <div class="stat-details">
+                            <span class="stat-label">Total de Gastos</span>
+                            <span class="stat-value negative" id="totalExpenses">R$ 0,00</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon positive"><i class="fas fa-piggy-bank"></i></div>
+                        <div class="stat-details">
+                            <span class="stat-label">Saldo Total</span>
+                            <span class="stat-value positive" id="totalBalance">R$ 0,00</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-calendar-alt"></i></div>
+                        <div class="stat-details">
+                            <span class="stat-label">Eventos Analisados</span>
+                            <span class="stat-value" id="eventsCount">0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card" style="margin-top: 20px;">
+                    <div class="card-header">
+                        <div class="card-title">Entrada vs Saída</div>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="incomeExpensesChart" height="300"></canvas>
+                    </div>
+                </div>
+                <div class="card" style="margin-top: 20px;">
+                    <div class="card-header">
+                        <div class="card-title">Evolução ao Longo do Tempo</div>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="timelineChart" height="300"></canvas>
+                    </div>
+                </div>
+                <div class="card" style="margin-top: 20px;">
+                    <div class="card-header">
+                        <div class="card-title">Distribuição de Gastos</div>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="expensesDistributionChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
     
     <!-- ============================================ -->
     <!-- MODALS -->
@@ -466,6 +622,7 @@
                     <label class="form-label" for="newUserRole">Tipo de Usuário</label>
                     <select class="form-control" id="newUserRole" required>
                         <option value="user">Usuário Comum</option>
+                        <option value="treasurer">Tesoureiro</option>
                         <option value="admin">Administrador</option>
                     </select>
                 </div>
@@ -569,6 +726,73 @@
             </form>
         </div>
     </div>
+    
+    <!-- Add Expense Modal -->
+    <div class="modal" id="addExpenseModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Adicionar Gasto</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="addExpenseForm">
+                <div class="form-group">
+                    <label class="form-label" for="expenseDescription">Descrição do Gasto</label>
+                    <input type="text" class="form-control" id="expenseDescription" placeholder="Ex: Aluguel de som" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="expenseValue">Valor (R$)</label>
+                    <input type="number" class="form-control" id="expenseValue" placeholder="0.00" step="0.01" min="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="expenseDate">Data do Gasto</label>
+                    <input type="date" class="form-control" id="expenseDate" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="expenseJustification">Justificativa</label>
+                    <textarea class="form-control" id="expenseJustification" rows="3" placeholder="Explique o motivo deste gasto" required></textarea>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-check"></i> Registrar Gasto
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Edit Expense Modal -->
+    <div class="modal" id="editExpenseModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Editar Gasto</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="editExpenseForm">
+                <input type="hidden" id="editExpenseId">
+                <div class="form-group">
+                    <label class="form-label" for="editExpenseDescription">Descrição do Gasto</label>
+                    <input type="text" class="form-control" id="editExpenseDescription" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="editExpenseValue">Valor (R$)</label>
+                    <input type="number" class="form-control" id="editExpenseValue" step="0.01" min="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="editExpenseDate">Data do Gasto</label>
+                    <input type="date" class="form-control" id="editExpenseDate" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="editExpenseJustification">Motivo da Alteração</label>
+                    <textarea class="form-control" id="editExpenseJustification" rows="3" placeholder="Explique por que está alterando este gasto" required></textarea>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-save"></i> Salvar Alterações
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- ============================================ -->
     <!-- EXTERNAL SCRIPTS -->
@@ -583,15 +807,16 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
     
     <!-- Application Scripts -->
-    <script src="js/firebase-config.js?v=2024112504"></script>
-    <script src="js/auth.js?v=2024112504"></script>
-    <script src="js/sync.js?v=2024112504"></script>
-    <script src="js/app.js?v=2024112504"></script>
-    <script src="js/events.js?v=2024112504"></script>
-    <script src="js/users.js?v=2024112504"></script>
-    <script src="js/categories.js?v=2024112504"></script>
-    <script src="js/chat.js?v=2024112504"></script>
-    <script src="js/profile.js?v=2024112504"></script>
-    <script src="js/dashboard.js?v=2024112504"></script>
+    <script>
+        // Definir versão global para cache busting
+        window.APP_VERSION = '20241125100000';
+    </script>
+    <script src="js/firebase-config.js?v=20241125100000"></script>
+    <script src="js/auth.js?v=20241125100000"></script>
+    <script src="js/sync.js?v=20241125100000"></script>
+    <script src="js/page-loader.js?v=20241125100000"></script>
+    <script src="js/app.js?v=20241125100000"></script>
+    <!-- Scripts específicos das páginas agora são carregados dinamicamente pelo page-loader.js -->
+    <!-- Não é mais necessário carregar: events.js, chat.js, dashboard.js, users.js, categories.js, profile.js -->
 </body>
-</html>
+</html> 

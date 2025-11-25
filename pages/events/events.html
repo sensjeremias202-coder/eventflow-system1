@@ -1,0 +1,121 @@
+<!-- ============================================ -->
+<!-- EVENTS PAGE -->
+<!-- ============================================ -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Eventos</div>
+        <div>
+            <button class="btn btn-outline" id="myEventsBtn" style="display: none;">
+                <i class="fas fa-user"></i> Meus Eventos
+            </button>
+            <button class="btn btn-primary admin-only" id="addEventBtn" style="display: none;">
+                <i class="fas fa-plus"></i> Adicionar Evento
+            </button>
+        </div>
+    </div>
+    
+    <div class="card-body">
+        <div class="events-grid" id="eventsGrid">
+            <!-- Events will be loaded here by events.js -->
+        </div>
+    </div>
+</div>
+
+<!-- Add Event Modal -->
+<div class="modal" id="addEventModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-header-left">
+                <h3>Adicionar Novo Evento</h3>
+                <span id="eventEditBadge" class="event-edit-badge">Editando Evento</span>
+            </div>
+            <div class="modal-header-right">
+                <button id="cancelEditHeaderBtn" class="btn btn-outline btn-cancel-header" title="Cancelar edição">
+                    <i class="fas fa-ban"></i>
+                </button>
+                <button class="modal-close">&times;</button>
+            </div>
+        </div>
+        <form id="addEventForm">
+            <div class="form-group">
+                <label class="form-label" for="eventTitle">Título do Evento</label>
+                <input type="text" class="form-control" id="eventTitle" placeholder="Digite o título do evento" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="eventDate">Data do Evento</label>
+                <input type="date" class="form-control" id="eventDate" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="eventTime">Horário</label>
+                <input type="time" class="form-control" id="eventTime" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="eventLocation">Local</label>
+                <input type="text" class="form-control" id="eventLocation" placeholder="Digite o local do evento" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="eventDescription">Descrição</label>
+                <textarea class="form-control" id="eventDescription" rows="4" placeholder="Descreva o evento" required></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="eventCategory">Categoria</label>
+                <select class="form-control" id="eventCategory" required>
+                    <option value="">Selecione uma categoria</option>
+                </select>
+                <div id="inlineCategoryForm" class="inline-category-form" style="display:none; margin-top:12px;">
+                    <div class="form-row" style="display:flex; gap:8px;">
+                        <input type="text" id="inlineCategoryName" class="form-control" placeholder="Nome da nova categoria" />
+                        <input type="color" id="inlineCategoryColor" class="form-control" value="#4361ee" style="width:56px; padding:0;" />
+                    </div>
+                    <div style="display:flex; gap:8px; margin-top:8px; align-items:center;">
+                        <input type="text" id="inlineCategoryIcon" class="form-control" placeholder="Ícone (ex: fas fa-music)" />
+                        <button type="button" id="inlineCreateCategoryBtn" class="btn btn-primary">Criar categoria</button>
+                        <button type="button" id="inlineCancelCategoryBtn" class="btn btn-outline">Cancelar</button>
+                    </div>
+                    <small style="color:var(--gray); display:block; margin-top:6px;">Use classes do Font Awesome.</small>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary btn-submit-event">Criar Evento</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Rating Modal -->
+<div class="modal" id="ratingModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Avaliar Evento</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <form id="ratingForm">
+            <div class="form-group">
+                <label class="form-label">Sua Avaliação</label>
+                <div class="star-rating" id="starRating">
+                    <i class="far fa-star" data-rating="1"></i>
+                    <i class="far fa-star" data-rating="2"></i>
+                    <i class="far fa-star" data-rating="3"></i>
+                    <i class="far fa-star" data-rating="4"></i>
+                    <i class="far fa-star" data-rating="5"></i>
+                </div>
+                <input type="hidden" id="ratingValue" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="ratingComment">Comentário (opcional)</label>
+                <textarea class="form-control" id="ratingComment" rows="3" placeholder="Conte sua experiência..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Enviar Avaliação</button>
+            </div>
+        </form>
+    </div>
+</div>

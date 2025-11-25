@@ -218,45 +218,58 @@ function setupButtons() {
 function showPage(page) {
     if (!page) return;
     
-    // Ocultar todas as páginas
-    document.querySelectorAll('.page').forEach(p => {
-        if (p.classList.contains('active')) {
-            p.classList.remove('active');
+    console.log('[app] 🔄 Mostrando página:', page);
+    
+    // Usar sistema modular de carregamento
+    if (typeof showModularPage === 'function') {
+        showModularPage(page);
+    } else {
+        // Fallback para sistema antigo (se page-loader não carregou)
+        console.warn('[app] ⚠️ page-loader não disponível, usando sistema antigo');
+        
+        // Ocultar todas as páginas
+        document.querySelectorAll('.page').forEach(p => {
+            if (p.classList.contains('active')) {
+                p.classList.remove('active');
+            }
+        });
+        
+        // Mostrar a página solicitada
+        const pageElement = document.getElementById(`${page}-page`);
+        if (pageElement) {
+            pageElement.classList.add('active');
         }
-    });
-    
-    // Mostrar a página solicitada
-    const pageElement = document.getElementById(`${page}-page`);
-    if (pageElement) {
-        pageElement.classList.add('active');
-    }
-    
-    // Recarregar dados específicos da página
-    switch (page) {
-        case 'dashboard':
-            loadDashboard();
-            break;
-        case 'events':
-            loadEvents();
-            break;
-        case 'profile':
-            if (typeof loadProfile === 'function') {
-                loadProfile();
-            }
-            break;
-        case 'chat':
-            loadChatUsers();
-            break;
-        case 'users':
-            if (currentUser && currentUser.role === 'admin') {
-                loadUsersTable();
-            }
-            break;
-        case 'categories':
-            if (currentUser && currentUser.role === 'admin') {
-                loadCategoriesTable();
-            }
-            break;
+        
+        // Recarregar dados específicos da página
+        switch (page) {
+            case 'dashboard':
+                if (typeof loadDashboard === 'function') loadDashboard();
+                break;
+            case 'events':
+                console.log('[app] 📅 Carregando página de eventos...');
+                if (typeof loadEvents === 'function') {
+                    loadEvents();
+                } else {
+                    console.error('[app] ❌ Função loadEvents não encontrada!');
+                }
+                break;
+            case 'profile':
+                if (typeof loadProfile === 'function') loadProfile();
+                break;
+            case 'chat':
+                if (typeof loadChatUsers === 'function') loadChatUsers();
+                break;
+            case 'users':
+                if (currentUser && currentUser.role === 'admin' && typeof loadUsersTable === 'function') {
+                    loadUsersTable();
+                }
+                break;
+            case 'categories':
+                if (currentUser && currentUser.role === 'admin' && typeof loadCategoriesTable === 'function') {
+                    loadCategoriesTable();
+                }
+                break;
+        }
     }
 }
 

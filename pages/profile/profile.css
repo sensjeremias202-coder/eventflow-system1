@@ -1,0 +1,55 @@
+/* ============================================ */
+/* PROFILE PAGE STYLES */
+/* ============================================ */
+
+.profile-info {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.profile-avatar {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.profile-avatar i {
+    font-size: 120px;
+    color: var(--primary);
+}
+
+.profile-info .form-control[readonly] {
+    background-color: #f8f9fa;
+    cursor: default;
+}
+
+.profile-info .form-control:not([readonly]) {
+    background-color: white;
+    border-color: var(--primary);
+}
+
+.events-list,
+.ratings-list {
+    margin-top: 10px;
+}
+
+.event-card,
+.rating-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.event-card:hover,
+.rating-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .profile-avatar i {
+        font-size: 80px;
+    }
+    
+    .profile-info {
+        padding: 0 10px;
+    }
+}

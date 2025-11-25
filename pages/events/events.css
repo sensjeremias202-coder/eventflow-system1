@@ -1,0 +1,200 @@
+/* ============================================ */
+/* EVENTS PAGE STYLES */
+/* ============================================ */
+
+.events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.event-card {
+    background-color: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s;
+}
+
+.event-card:hover {
+    transform: translateY(-5px);
+}
+
+.event-image {
+    height: 160px;
+    background-color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.event-content {
+    padding: 15px;
+}
+
+.event-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.event-meta {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+    color: var(--gray);
+}
+
+.event-meta i {
+    margin-right: 5px;
+}
+
+.event-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+}
+
+.event-rating {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    color: var(--gray);
+}
+
+.event-rating .stars {
+    color: #f8961e;
+    font-size: 0.85rem;
+}
+
+.event-rating .count {
+    font-size: 0.85rem;
+}
+
+/* Star rating styles */
+.star-rating {
+    display: flex;
+    gap: 8px;
+    font-size: 2rem;
+    margin: 10px 0;
+}
+
+.star-rating i {
+    cursor: pointer;
+    color: #ddd;
+    transition: color 0.2s;
+}
+
+.star-rating i:hover,
+.star-rating i.active {
+    color: #f8961e;
+}
+
+.star-rating i.fas {
+    color: #f8961e;
+}
+
+/* Edit mode badge and cancel button */
+.event-edit-badge {
+    display: none;
+    margin-left: 12px;
+    padding: 4px 8px;
+    background-color: var(--warning);
+    color: white;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    align-self: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.btn-cancel-header {
+    display: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--danger);
+    border: 1px solid rgba(0,0,0,0.06);
+}
+
+.btn-cancel-header i {
+    font-size: 1.1rem;
+}
+
+/* Animation when opening modal in edit mode */
+.modal.editing .modal-content {
+    animation: modalEditOpen 180ms cubic-bezier(.22,1,.36,1);
+    transform-origin: top center;
+}
+
+@keyframes modalEditOpen {
+    0% {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.98);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Inline category form */
+.inline-category-form {
+    background: #fbfbff;
+    border: 1px solid #eee;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.inline-category-form .form-control {
+    padding: 8px 10px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .events-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .event-card .event-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .event-card .event-actions .btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .event-card .event-content {
+        padding: 15px;
+    }
+    
+    .event-card .event-title {
+        font-size: 1.1rem;
+    }
+    
+    .event-card .event-meta {
+        flex-direction: column;
+        gap: 8px;
+        font-size: 0.85rem;
+    }
+    
+    .inline-category-form {
+        padding: 8px;
+    }
+    
+    .inline-category-form .form-row {
+        flex-direction: column;
+    }
+    
+    .event-edit-badge {
+        font-size: 0.7rem;
+        padding: 3px 6px;
+    }
+}

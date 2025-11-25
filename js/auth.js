@@ -16,7 +16,8 @@ function getSafeLocalStorage(key, defaultValue) {
 const defaultUsers = [
     { id: 1, name: 'Administrador', email: 'admin@eventflow.com', password: 'admin123', role: 'admin', registered: '2023-01-01' },
     { id: 2, name: 'João Silva', email: 'joao@email.com', password: '123456', role: 'user', registered: '2023-02-15' },
-    { id: 3, name: 'Maria Andrade', email: 'maria@email.com', password: '123456', role: 'user', registered: '2023-03-10' }
+    { id: 3, name: 'Maria Andrade', email: 'maria@email.com', password: '123456', role: 'user', registered: '2023-03-10' },
+    { id: 4, name: 'Carlos Tesoureiro', email: 'tesoureiro@eventflow.com', password: 'tesoureiro123', role: 'treasurer', registered: '2023-01-15', identificationNumber: '12345' }
 ];
 
 const defaultCategories = [
@@ -282,6 +283,16 @@ function showApp() {
         });
     }
     
+    // Mostrar/ocultar funcionalidades de tesoureiro
+    if (currentUser.role === 'treasurer' || currentUser.role === 'admin') {
+        document.querySelectorAll('.treasurer-only').forEach(el => {
+            el.style.display = 'flex';
+        });
+        document.querySelectorAll('.admin-treasurer-only').forEach(el => {
+            el.style.display = 'flex';
+        });
+    }
+    
     // Configurar navegação
     setupNavigation();
     
@@ -291,14 +302,26 @@ function showApp() {
     // Configurar logout (definido em app.js)
     if (typeof setupLogout === 'function') setupLogout();
     
-    // Carregar dados iniciais
-    loadDashboard();
-    loadEvents();
-    loadChatUsers();
-    
-    if (currentUser.role === 'admin') {
-        loadUsersTable();
-        loadCategoriesTable();
+    // Carregar página inicial (Dashboard) usando sistema modular
+    console.log('[auth] ⚡ Carregando página inicial: dashboard');
+    if (typeof showModularPage === 'function') {
+        // Sistema modular - carrega dinamicamente
+        showModularPage('dashboard').catch(err => {
+            console.error('[auth] Erro ao carregar dashboard:', err);
+            // Fallback: tentar carregar da forma antiga
+            if (typeof loadDashboard === 'function') loadDashboard();
+        });
+    } else {
+        // Fallback: sistema antigo
+        console.warn('[auth] ⚠️ Sistema modular não disponível, usando carregamento tradicional');
+        if (typeof loadDashboard === 'function') loadDashboard();
+        if (typeof loadEvents === 'function') loadEvents();
+        if (typeof loadChatUsers === 'function') loadChatUsers();
+        
+        if (currentUser.role === 'admin') {
+            if (typeof loadUsersTable === 'function') loadUsersTable();
+            if (typeof loadCategoriesTable === 'function') loadCategoriesTable();
+        }
     }
     
     // Configurar modais

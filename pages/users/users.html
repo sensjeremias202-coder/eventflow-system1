@@ -1,0 +1,64 @@
+<!-- ============================================ -->
+<!-- USERS MANAGEMENT PAGE (Admin Only) -->
+<!-- ============================================ -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Gerenciar Usuários</div>
+        <button class="btn btn-primary" id="addUserBtn">
+            <i class="fas fa-plus"></i> Adicionar Usuário
+        </button>
+    </div>
+    
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>E-mail</th>
+                <th>Tipo</th>
+                <th>Data de Registro</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody id="usersTable">
+            <!-- Users will be loaded here by users.js -->
+        </tbody>
+    </table>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal" id="addUserModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Adicionar Novo Usuário</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <form id="addUserForm">
+            <div class="form-group">
+                <label class="form-label" for="newUserName">Nome Completo</label>
+                <input type="text" class="form-control" id="newUserName" placeholder="Nome completo do usuário" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="newUserEmail">E-mail</label>
+                <input type="email" class="form-control" id="newUserEmail" placeholder="E-mail do usuário" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="newUserPassword">Senha</label>
+                <input type="password" class="form-control" id="newUserPassword" placeholder="Senha do usuário" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="newUserRole">Tipo de Usuário</label>
+                <select class="form-control" id="newUserRole" required>
+                    <option value="user">Usuário Comum</option>
+                    <option value="admin">Administrador</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Criar Usuário</button>
+            </div>
+        </form>
+    </div>
+</div>

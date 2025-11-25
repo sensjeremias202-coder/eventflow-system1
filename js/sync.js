@@ -1,4 +1,7 @@
 // Sistema de sincronização em tempo real
+// Versão: 20241125092000 - Correção filtro null/undefined
+console.log('[sync] 🔄 sync.js carregado - Versão: 20241125092000');
+
 let syncInterval = null;
 let lastSyncTimestamp = Date.now();
 let localChangesMade = false;
@@ -37,9 +40,20 @@ function initSync() {
 // Inicializar sincronização com Firebase
 function initFirebaseSync() {
     const db = window.firebaseDatabase;
+    
+    if (!db) {
+        console.error('[firebase] ❌ ERRO: Firebase Database não está disponível!');
+        console.error('[firebase] window.firebaseDatabase:', window.firebaseDatabase);
+        console.error('[firebase] window.firebaseInitialized:', window.firebaseInitialized);
+        console.log('[firebase] ⚠️ Voltando para modo local...');
+        initLocalSync();
+        return;
+    }
+    
     let initialLoadDone = false;
     
     console.log('[firebase] 🔄 Iniciando sincronização com Firebase...');
+    console.log('[firebase] ✅ Database object válido:', typeof db);
     console.log('[firebase] 📋 Limpando dados locais antigos do localStorage...');
     
     // Limpar localStorage completamente para forçar uso do Firebase
@@ -53,10 +67,19 @@ function initFirebaseSync() {
     // Listener para eventos
     firebaseListeners.events = db.ref('events').on('value', (snapshot) => {
         const data = snapshot.val();
-        console.log('[firebase] 📥 Eventos recebidos do Firebase:', data ? Object.keys(data).length : 0);
+        console.log('[firebase] 📥 Eventos recebidos do Firebase (raw):', data);
         
         if (data) {
-            const remoteEvents = Object.values(data);
+            // Converter para array se necessário E REMOVER NULLS/UNDEFINED
+            let remoteEvents = [];
+            if (Array.isArray(data)) {
+                remoteEvents = data.filter(e => e !== null && e !== undefined && typeof e === 'object');
+            } else if (typeof data === 'object') {
+                remoteEvents = Object.values(data).filter(e => e !== null && e !== undefined && typeof e === 'object');
+            }
+            
+            console.log('[firebase] 📊 Total de eventos válidos:', remoteEvents.length);
+            console.log('[firebase] 📋 Eventos processados:', remoteEvents);
             
             // SEMPRE aplicar dados do Firebase (fonte única de verdade)
             if (!localChangesMade || !initialLoadDone) {
@@ -77,13 +100,56 @@ function initFirebaseSync() {
         }
     });
     
+    // Listener para mensagens do chat
+    firebaseListeners.messages = db.ref('messages').on('value', (snapshot) => {
+        const data = snapshot.val();
+        console.log('[firebase] 💬 Mensagens recebidas do Firebase (raw):', data);
+        
+        if (data) {
+            // Converter para array se necessário E REMOVER NULLS/UNDEFINED
+            let remoteMessages = [];
+            if (Array.isArray(data)) {
+                remoteMessages = data.filter(m => m !== null && m !== undefined && typeof m === 'object');
+            } else if (typeof data === 'object') {
+                remoteMessages = Object.values(data).filter(m => m !== null && m !== undefined && typeof m === 'object');
+            }
+            
+            console.log('[firebase] 📊 Total de mensagens válidas:', remoteMessages.length);
+            
+            if (!localChangesMade || !initialLoadDone) {
+                console.log('[firebase] ✅ Aplicando mensagens do Firebase');
+                messages = remoteMessages;
+                localStorage.setItem('messages', JSON.stringify(messages));
+                if (initialLoadDone && typeof currentChatUser !== 'undefined' && currentChatUser) {
+                    // Recarregar chat se estiver aberto
+                    if (typeof loadChatMessages === 'function') {
+                        loadChatMessages(currentChatUser.id);
+                    }
+                    showSyncNotification('Nova mensagem recebida', 'info');
+                }
+            }
+        } else {
+            console.log('[firebase] ⚠️ Nenhuma mensagem no Firebase');
+            messages = [];
+            localStorage.setItem('messages', JSON.stringify(messages));
+        }
+    });
+    
     // Listener para categorias
     firebaseListeners.categories = db.ref('categories').on('value', (snapshot) => {
         const data = snapshot.val();
-        console.log('[firebase] 📥 Categorias recebidas do Firebase:', data ? Object.keys(data).length : 0);
+        console.log('[firebase] 📥 Categorias recebidas do Firebase (raw):', data);
         
         if (data) {
-            const remoteCategories = Object.values(data);
+            // Converter para array se necessário E REMOVER NULLS/UNDEFINED
+            let remoteCategories = [];
+            if (Array.isArray(data)) {
+                remoteCategories = data.filter(c => c !== null && c !== undefined && typeof c === 'object');
+            } else if (typeof data === 'object') {
+                remoteCategories = Object.values(data).filter(c => c !== null && c !== undefined && typeof c === 'object');
+            }
+            
+            console.log('[firebase] 📊 Total de categorias válidas:', remoteCategories.length);
             
             if (!localChangesMade || !initialLoadDone) {
                 console.log('[firebase] ✅ Aplicando categorias do Firebase');
@@ -101,15 +167,22 @@ function initFirebaseSync() {
             localStorage.setItem('categories', JSON.stringify(categories));
         }
     });
-    };
     
     // Listener para usuários
     firebaseListeners.users = db.ref('users').on('value', (snapshot) => {
         const data = snapshot.val();
-        console.log('[firebase] 📥 Usuários recebidos do Firebase:', data ? Object.keys(data).length : 0);
+        console.log('[firebase] 📥 Usuários recebidos do Firebase (raw):', data);
         
         if (data) {
-            const remoteUsers = Object.values(data);
+            // Converter para array se necessário E REMOVER NULLS/UNDEFINED
+            let remoteUsers = [];
+            if (Array.isArray(data)) {
+                remoteUsers = data.filter(u => u !== null && u !== undefined && typeof u === 'object');
+            } else if (typeof data === 'object') {
+                remoteUsers = Object.values(data).filter(u => u !== null && u !== undefined && typeof u === 'object');
+            }
+            
+            console.log('[firebase] 📊 Total de usuários válidos:', remoteUsers.length);
             
             if (!localChangesMade || !initialLoadDone) {
                 console.log('[firebase] ✅ Aplicando usuários do Firebase');
@@ -131,31 +204,6 @@ function initFirebaseSync() {
         }
     });
     
-    // Listener para mensagens
-    firebaseListeners.messages = db.ref('messages').on('value', (snapshot) => {
-        const data = snapshot.val();
-        console.log('[firebase] 📥 Mensagens recebidas do Firebase:', data ? Object.keys(data).length : 0);
-        
-        if (data) {
-            const remoteMessages = Object.values(data);
-            
-            if (!localChangesMade || !initialLoadDone) {
-                console.log('[firebase] ✅ Aplicando mensagens do Firebase');
-                messages = remoteMessages;
-                localStorage.setItem('messages', JSON.stringify(messages));
-                if (initialLoadDone && document.getElementById('chat-page')?.classList.contains('active')) {
-                    reloadCurrentPage();
-                }
-            } else {
-                console.log('[firebase] ⏭️ Ignorando (mudança local)');
-            }
-        } else {
-            console.log('[firebase] ⚠️ Nenhuma mensagem no Firebase');
-            messages = [];
-            localStorage.setItem('messages', JSON.stringify(messages));
-        }
-    });
-    
     // Marcar carga inicial como concluída após pequeno delay
     setTimeout(() => {
         initialLoadDone = true;
@@ -163,6 +211,7 @@ function initFirebaseSync() {
     }, 2000);
     
     console.log('[firebase] Listeners ativos para sincronização em tempo real');
+}
 
 
 // Inicializar sincronização local (fallback)
@@ -306,34 +355,22 @@ function saveToFirebase() {
     const db = window.firebaseDatabase;
     const updates = {};
     
-    console.log('[firebase] Preparando para salvar dados...');
-    
-    // Converter arrays em objetos indexados por ID
-    const eventsObj = {};
-    events.forEach(e => { eventsObj[e.id] = e; });
-    
-    const categoriesObj = {};
-    categories.forEach(c => { categoriesObj[c.id] = c; });
-    
-    const usersObj = {};
-    users.forEach(u => { usersObj[u.id] = u; });
-    
-    const messagesObj = {};
-    messages.forEach(m => { messagesObj[m.id] = m; });
-    
-    // Preparar updates
-    updates['/events'] = eventsObj;
-    updates['/categories'] = categoriesObj;
-    updates['/users'] = usersObj;
-    updates['/messages'] = messagesObj;
-    updates['/lastUpdate'] = Date.now();
-    
-    console.log('[firebase] Salvando no Firebase...', {
+    console.log('[firebase] 💾 Preparando para salvar dados...');
+    console.log('[firebase] 📊 Dados:', {
         eventos: events.length,
         categorias: categories.length,
         usuarios: users.length,
         mensagens: messages.length
     });
+    
+    // Salvar diretamente como arrays para manter compatibilidade
+    updates['/events'] = events;
+    updates['/categories'] = categories;
+    updates['/users'] = users;
+    updates['/messages'] = messages;
+    updates['/lastUpdate'] = Date.now();
+    
+    console.log('[firebase] ☁️ Enviando para Firebase...');
     
     // Salvar no Firebase
     db.ref().update(updates)
@@ -356,21 +393,33 @@ function saveToFirebase() {
 
 // Recarregar página atual
 function reloadCurrentPage() {
+    console.log('[sync] 🔄 Recarregando página atual após sincronização...');
     const activePage = document.querySelector('.page.active');
-    if (!activePage) return;
+    if (!activePage) {
+        console.log('[sync] ⚠️ Nenhuma página ativa encontrada');
+        return;
+    }
     
     const pageId = activePage.id;
+    console.log('[sync] 📄 Página ativa detectada:', pageId);
     
     if (pageId === 'dashboard-page') {
         if (typeof loadDashboard === 'function') loadDashboard();
     } else if (pageId === 'events-page') {
-        if (typeof loadEvents === 'function') loadEvents();
+        console.log('[sync] 📅 Recarregando eventos...');
+        if (typeof loadEvents === 'function') {
+            loadEvents();
+        } else {
+            console.error('[sync] ❌ Função loadEvents não encontrada!');
+        }
     } else if (pageId === 'chat-page') {
         if (typeof loadChatUsers === 'function') loadChatUsers();
     } else if (pageId === 'users-page' && currentUser?.role === 'admin') {
         if (typeof loadUsersTable === 'function') loadUsersTable();
     } else if (pageId === 'categories-page' && currentUser?.role === 'admin') {
         if (typeof loadCategoriesTable === 'function') loadCategoriesTable();
+    } else if (pageId === 'profile-page') {
+        if (typeof loadProfile === 'function') loadProfile();
     }
 }
 

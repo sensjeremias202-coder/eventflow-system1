@@ -1,0 +1,32 @@
+<!-- ============================================ -->
+<!-- CHAT PAGE -->
+<!-- ============================================ -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Chat</div>
+    </div>
+    
+    <div class="chat-container">
+        <div class="chat-sidebar" id="chatUsers">
+            <!-- Chat users will be loaded here by chat.js -->
+        </div>
+        
+        <div class="chat-main">
+            <div class="chat-header">
+                <h4 id="currentChatUser">Selecione um usuário</h4>
+                <div class="user-status" id="currentChatStatus"></div>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <!-- Messages will be loaded here -->
+            </div>
+            
+            <div class="chat-input">
+                <input type="text" id="chatInput" placeholder="Digite sua mensagem...">
+                <button class="btn btn-primary" id="sendMessageBtn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
