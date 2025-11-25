@@ -7,11 +7,8 @@ function loadChatUsers() {
     
     chatUsers.innerHTML = '';
     
-    // Mostrar apenas usuários comuns para administradores, e vice-versa
-    const chatPartners = users.filter(user => 
-        user.id !== currentUser.id && 
-        (currentUser.role === 'admin' ? user.role === 'user' : user.role === 'admin')
-    );
+    // Mostrar todos os usuários exceto o próprio usuário logado
+    const chatPartners = users.filter(user => user.id !== currentUser.id);
     
     if (chatPartners.length === 0) {
         chatUsers.innerHTML = '<p style="text-align: center; color: var(--gray);">Nenhum usuário disponível para chat</p>';
@@ -146,22 +143,33 @@ function setupChat() {
     const chatInput = document.getElementById('chatInput');
     
     if (sendMessageBtn) {
-        sendMessageBtn.addEventListener('click', sendMessage);
+        // Remover listeners antigos para evitar duplicação
+        const newBtn = sendMessageBtn.cloneNode(true);
+        sendMessageBtn.parentNode.replaceChild(newBtn, sendMessageBtn);
+        
+        document.getElementById('sendMessageBtn').addEventListener('click', sendMessage);
     }
     
     if (chatInput) {
-        chatInput.addEventListener('keypress', function(e) {
+        // Remover listeners antigos
+        const newInput = chatInput.cloneNode(true);
+        chatInput.parentNode.replaceChild(newInput, chatInput);
+        
+        document.getElementById('chatInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 sendMessage();
             }
         });
         
-        // Desativar inicialmente
-        chatInput.disabled = true;
+        // Desativar inicialmente apenas se não houver usuário selecionado
+        if (!currentChatUser) {
+            document.getElementById('chatInput').disabled = true;
+        }
     }
     
-    if (sendMessageBtn) {
-        sendMessageBtn.disabled = true;
+    const btnElement = document.getElementById('sendMessageBtn');
+    if (btnElement && !currentChatUser) {
+        btnElement.disabled = true;
     }
 }
 
@@ -213,10 +221,8 @@ function sendMessage() {
 
 
 
-// Inicializar chat quando o documento carregar
-document.addEventListener('DOMContentLoaded', function() {
-    setupChat();
-});
+// Não usar DOMContentLoaded - setupChat será chamado pelo page-loader
+// quando a página for carregada dinamicamente
 
 // Parar mensagens automáticas quando sair da página de chat
 function stopAutoMessages() {
