@@ -163,44 +163,44 @@ function setupButtons() {
 
     // Botão de restaurar dados de demonstração
     const resetBtn = document.getElementById('resetDataBtn');
-    if (resetBtn) {
-        // Mostrar apenas para administradores
-        if (currentUser && currentUser.role === 'admin') {
-            resetBtn.style.display = 'inline-block';
-        }
-
-        resetBtn.addEventListener('click', async function(e) {
-            e.preventDefault();
-            const confirmed = await showConfirm('Isto irá restaurar os dados para o estado padrão e recarregar a aplicação. Deseja continuar?', 'Restaurar Dados', { type: 'warning' });
-            if (!confirmed) return;
-
-            try {
-                if (typeof resetToDefaultData === 'function') {
-                    resetToDefaultData();
-                } else {
-                    localStorage.removeItem('users');
-                    localStorage.removeItem('categories');
-                    localStorage.removeItem('events');
-                    localStorage.removeItem('messages');
-                    localStorage.removeItem('currentUser');
+    if (resetBtn && currentUser && currentUser.role === 'admin') {
+        resetBtn.style.display = 'inline-block';
+        resetBtn.addEventListener('click', resetDemoData);
+    }
+    
+    // Botão de limpar cache local
+    const clearCacheBtn = document.getElementById('clearCacheBtn');
+    if (clearCacheBtn && currentUser) {
+        clearCacheBtn.style.display = 'inline-block';
+        clearCacheBtn.addEventListener('click', function() {
+            if (confirm('⚠️ Isso vai limpar todos os dados locais e recarregar do Firebase.\n\nContinuar?')) {
+                console.log('[cache] Limpando localStorage...');
+                
+                // Salvar usuário atual
+                const savedUser = localStorage.getItem('currentUser');
+                
+                // Limpar tudo
+                localStorage.clear();
+                
+                // Restaurar usuário
+                if (savedUser) {
+                    localStorage.setItem('currentUser', savedUser);
                 }
-                showNotification('Dados restaurados. Recarregando...', 'success');
-                setTimeout(() => location.reload(), 900);
-            } catch (err) {
-                console.error('Erro ao restaurar dados:', err);
-                showNotification('Falha ao restaurar dados. Veja o console.', 'error');
+                
+                showNotification('Cache limpo! Recarregando dados do Firebase...', 'success');
+                
+                // Recarregar página após 1 segundo
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
             }
         });
     }
     
-    // Botão de sincronização forçada
+    // Botão de forçar sincronização
     const forceSyncBtn = document.getElementById('forceSyncBtn');
-    if (forceSyncBtn) {
-        // Mostrar se Firebase estiver ativo
-        if (window.firebaseInitialized && window.firebaseDatabase) {
-            forceSyncBtn.style.display = 'inline-block';
-        }
-        
+    if (forceSyncBtn && window.firebaseInitialized && window.firebaseDatabase) {
+        forceSyncBtn.style.display = 'inline-block';
         forceSyncBtn.addEventListener('click', function(e) {
             e.preventDefault();
             console.log('[sync] 🔄 Sincronização forçada iniciada pelo usuário');
@@ -563,6 +563,40 @@ function setupLogout() {
                 showNotification('Logout realizado com sucesso!', 'success');
             }
         });
+    }
+}
+
+// Função para resetar dados de demonstração
+function resetDemoData() {
+    if (!confirm('⚠️ Isso vai restaurar os dados de demonstração e apagar todos os dados atuais.\n\nContinuar?')) {
+        return;
+    }
+    
+    console.log('[reset] Restaurando dados de demonstração...');
+    
+    // Limpar localStorage
+    const savedUser = localStorage.getItem('currentUser');
+    localStorage.clear();
+    if (savedUser) {
+        localStorage.setItem('currentUser', savedUser);
+    }
+    
+    // Se Firebase estiver ativo, limpar também
+    if (window.firebaseDatabase) {
+        window.firebaseDatabase.ref().remove()
+            .then(() => {
+                console.log('[reset] Dados do Firebase limpos');
+                showNotification('Dados limpos! Recarregando...', 'success');
+                setTimeout(() => location.reload(), 1000);
+            })
+            .catch((error) => {
+                console.error('[reset] Erro ao limpar Firebase:', error);
+                showNotification('Dados locais limpos! Recarregando...', 'success');
+                setTimeout(() => location.reload(), 1000);
+            });
+    } else {
+        showNotification('Dados locais limpos! Recarregando...', 'success');
+        setTimeout(() => location.reload(), 1000);
     }
 }
 

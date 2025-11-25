@@ -39,16 +39,28 @@ function initFirebaseSync() {
     const db = window.firebaseDatabase;
     let initialLoadDone = false;
     
+    console.log('[firebase] 🔄 Iniciando sincronização com Firebase...');
+    console.log('[firebase] 📋 Limpando dados locais antigos do localStorage...');
+    
+    // Limpar localStorage completamente para forçar uso do Firebase
+    // Manter apenas o currentUser
+    const savedUser = localStorage.getItem('currentUser');
+    localStorage.clear();
+    if (savedUser) {
+        localStorage.setItem('currentUser', savedUser);
+    }
+    
     // Listener para eventos
     firebaseListeners.events = db.ref('events').on('value', (snapshot) => {
         const data = snapshot.val();
+        console.log('[firebase] 📥 Eventos recebidos do Firebase:', data ? Object.keys(data).length : 0);
+        
         if (data) {
             const remoteEvents = Object.values(data);
-            console.log('[firebase] Eventos recebidos do Firebase:', remoteEvents.length);
             
-            // Sempre aplicar na primeira carga ou quando não houver mudanças locais
-            if (!initialLoadDone || !localChangesMade) {
-                console.log('[firebase] 📥 Aplicando atualização de eventos');
+            // SEMPRE aplicar dados do Firebase (fonte única de verdade)
+            if (!localChangesMade || !initialLoadDone) {
+                console.log('[firebase] ✅ Aplicando eventos do Firebase');
                 events = remoteEvents;
                 localStorage.setItem('events', JSON.stringify(events));
                 if (initialLoadDone) {
@@ -56,40 +68,51 @@ function initFirebaseSync() {
                     showSyncNotification('Eventos atualizados', 'success');
                 }
             } else {
-                console.log('[firebase] ⏭️ Ignorando atualização de eventos (mudança local recente)');
+                console.log('[firebase] ⏭️ Ignorando (mudança local recente)');
             }
+        } else {
+            console.log('[firebase] ⚠️ Nenhum evento no Firebase');
+            events = [];
+            localStorage.setItem('events', JSON.stringify(events));
         }
     });
     
     // Listener para categorias
     firebaseListeners.categories = db.ref('categories').on('value', (snapshot) => {
         const data = snapshot.val();
+        console.log('[firebase] 📥 Categorias recebidas do Firebase:', data ? Object.keys(data).length : 0);
+        
         if (data) {
             const remoteCategories = Object.values(data);
-            console.log('[firebase] Categorias recebidas do Firebase:', remoteCategories.length);
             
-            if (!initialLoadDone || !localChangesMade) {
-                console.log('[firebase] 📥 Aplicando atualização de categorias');
+            if (!localChangesMade || !initialLoadDone) {
+                console.log('[firebase] ✅ Aplicando categorias do Firebase');
                 categories = remoteCategories;
                 localStorage.setItem('categories', JSON.stringify(categories));
                 if (initialLoadDone) {
                     reloadCurrentPage();
                 }
             } else {
-                console.log('[firebase] ⏭️ Ignorando atualização de categorias (mudança local)');
+                console.log('[firebase] ⏭️ Ignorando (mudança local)');
             }
+        } else {
+            console.log('[firebase] ⚠️ Nenhuma categoria no Firebase');
+            categories = [];
+            localStorage.setItem('categories', JSON.stringify(categories));
         }
+    });
     });
     
     // Listener para usuários
     firebaseListeners.users = db.ref('users').on('value', (snapshot) => {
         const data = snapshot.val();
+        console.log('[firebase] 📥 Usuários recebidos do Firebase:', data ? Object.keys(data).length : 0);
+        
         if (data) {
             const remoteUsers = Object.values(data);
-            console.log('[firebase] Usuários recebidos do Firebase:', remoteUsers.length);
             
-            if (!initialLoadDone || !localChangesMade) {
-                console.log('[firebase] 📥 Aplicando atualização de usuários');
+            if (!localChangesMade || !initialLoadDone) {
+                console.log('[firebase] ✅ Aplicando usuários do Firebase');
                 users = remoteUsers;
                 localStorage.setItem('users', JSON.stringify(users));
                 if (initialLoadDone && document.getElementById('users-page')?.classList.contains('active')) {
@@ -99,28 +122,37 @@ function initFirebaseSync() {
                     showSyncNotification('Usuários sincronizados', 'success');
                 }
             } else {
-                console.log('[firebase] ⏭️ Ignorando atualização de usuários (mudança local)');
+                console.log('[firebase] ⏭️ Ignorando (mudança local)');
             }
+        } else {
+            console.log('[firebase] ⚠️ Nenhum usuário no Firebase');
+            users = [];
+            localStorage.setItem('users', JSON.stringify(users));
         }
     });
     
     // Listener para mensagens
     firebaseListeners.messages = db.ref('messages').on('value', (snapshot) => {
         const data = snapshot.val();
+        console.log('[firebase] 📥 Mensagens recebidas do Firebase:', data ? Object.keys(data).length : 0);
+        
         if (data) {
             const remoteMessages = Object.values(data);
-            console.log('[firebase] Mensagens recebidas do Firebase:', remoteMessages.length);
             
-            if (!initialLoadDone || !localChangesMade) {
-                console.log('[firebase] 📥 Aplicando atualização de mensagens');
+            if (!localChangesMade || !initialLoadDone) {
+                console.log('[firebase] ✅ Aplicando mensagens do Firebase');
                 messages = remoteMessages;
                 localStorage.setItem('messages', JSON.stringify(messages));
                 if (initialLoadDone && document.getElementById('chat-page')?.classList.contains('active')) {
                     reloadCurrentPage();
                 }
             } else {
-                console.log('[firebase] ⏭️ Ignorando atualização de mensagens (mudança local)');
+                console.log('[firebase] ⏭️ Ignorando (mudança local)');
             }
+        } else {
+            console.log('[firebase] ⚠️ Nenhuma mensagem no Firebase');
+            messages = [];
+            localStorage.setItem('messages', JSON.stringify(messages));
         }
     });
     
