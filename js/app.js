@@ -638,6 +638,7 @@ function setupModals() {
         
         console.log('[app] Grupo criado:', newGroup);
         console.log('[app] Total de grupos:', chatGroups.length);
+        console.log('[app] Grupos no localStorage:', localStorage.getItem('chatGroups'));
         
         showNotification('Grupo criado com sucesso!', 'success');
         
@@ -652,10 +653,30 @@ function setupModals() {
         if (groupNameInput) groupNameInput.value = '';
         checkboxes.forEach(cb => cb.checked = false);
         
-        // Recarregar lista de usuários/grupos se a função existir
-        if (typeof loadChatUsers === 'function') {
-            loadChatUsers();
+        // Forçar recarregamento dos grupos na variável global do chat.js
+        if (window.chatGroups) {
+            window.chatGroups = chatGroups;
+            console.log('[app] Variável global chatGroups atualizada');
         }
+        
+        // Recarregar lista de usuários/grupos - tentar múltiplas formas
+        console.log('[app] Tentando recarregar lista de chat...');
+        
+        // Método 1: Chamar loadChatUsers se existir
+        if (typeof loadChatUsers === 'function') {
+            console.log('[app] Chamando loadChatUsers()');
+            loadChatUsers();
+        } else {
+            console.warn('[app] loadChatUsers não está disponível');
+        }
+        
+        // Método 2: Recarregar a página de chat
+        setTimeout(() => {
+            if (typeof initChat === 'function') {
+                console.log('[app] Chamando initChat()');
+                initChat();
+            }
+        }, 100);
     }
     
     // Modal de usuário (delegação configurada acima, mantido para compatibilidade)

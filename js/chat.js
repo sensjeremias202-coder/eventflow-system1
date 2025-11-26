@@ -2,6 +2,9 @@ let currentChatUser = null;
 let autoMessageInterval = null;
 let chatGroups = [];
 
+// Exportar variável para acesso global
+window.chatGroups = chatGroups;
+
 function loadChatUsers() {
     console.log('[chat] Carregando usuários do chat...');
     const chatUsers = document.getElementById('chatUsers');
@@ -14,18 +17,25 @@ function loadChatUsers() {
     
     // Carregar grupos do localStorage
     const savedGroups = localStorage.getItem('chatGroups');
+    console.log('[chat] Grupos salvos no localStorage:', savedGroups);
     if (savedGroups) {
         chatGroups = JSON.parse(savedGroups);
+        window.chatGroups = chatGroups; // Atualizar global
+        console.log('[chat] Total de grupos carregados:', chatGroups.length);
+    } else {
+        console.log('[chat] Nenhum grupo encontrado no localStorage');
     }
     
     // Adicionar grupos primeiro
     if (chatGroups.length > 0) {
+        console.log('[chat] Adicionando seção de grupos com', chatGroups.length, 'grupo(s)');
         const groupsHeader = document.createElement('div');
         groupsHeader.className = 'chat-section-header';
         groupsHeader.innerHTML = '<h4>Grupos</h4>';
         chatUsers.appendChild(groupsHeader);
         
-        chatGroups.forEach(group => {
+        chatGroups.forEach((group, index) => {
+            console.log('[chat] Adicionando grupo', index + 1, ':', group.name);
             const groupElement = document.createElement('div');
             groupElement.className = 'chat-user chat-group';
             groupElement.setAttribute('data-group-id', group.id);
@@ -40,6 +50,7 @@ function loadChatUsers() {
             
             groupElement.addEventListener('click', function() {
                 const groupId = this.getAttribute('data-group-id');
+                console.log('[chat] Grupo clicado:', groupId);
                 selectChatGroup(groupId);
             });
         });
@@ -49,6 +60,8 @@ function loadChatUsers() {
         separator.className = 'chat-section-header';
         separator.innerHTML = '<h4>Usuários</h4>';
         chatUsers.appendChild(separator);
+    } else {
+        console.log('[chat] Nenhum grupo para exibir');
     }
     
     // Verificar se há usuário atual
