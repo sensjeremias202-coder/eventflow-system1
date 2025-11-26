@@ -1257,12 +1257,14 @@ header::before {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
     background-color: rgba(0, 0, 0, 0.5);
     z-index: 1000;
     align-items: center;
     justify-content: center;
+    margin: 0;
+    padding: 0;
 }
 
 .modal.active {
@@ -1281,6 +1283,8 @@ header::before {
     transform-style: preserve-3d;
     transform: perspective(1200px) rotateX(0deg) scale(1);
     animation: modalAppear 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    margin: 0;
+    position: relative;
 }
 
 @keyframes modalAppear {
