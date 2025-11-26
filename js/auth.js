@@ -378,27 +378,32 @@ function showApp() {
         const adminElements = document.querySelectorAll('.admin-only');
         console.log('[auth] 🔍 Total de elementos admin-only encontrados:', adminElements.length);
         adminElements.forEach(el => {
-            // Usar block para <li> e flex para outros elementos
-            el.style.display = el.tagName === 'LI' ? 'block' : 'flex';
+            // Forçar display com !important
+            const displayValue = el.tagName === 'LI' ? 'block' : 'flex';
+            el.style.setProperty('display', displayValue, 'important');
             console.log('[auth] ✅ Exibindo elemento admin-only:', el.textContent?.trim() || el.innerHTML.substring(0, 50));
         });
         document.querySelectorAll('.admin-treasurer-only').forEach(el => {
-            el.style.display = el.tagName === 'LI' ? 'block' : 'flex';
+            const displayValue = el.tagName === 'LI' ? 'block' : 'flex';
+            el.style.setProperty('display', displayValue, 'important');
         });
         document.querySelectorAll('.treasurer-only').forEach(el => {
-            el.style.display = el.tagName === 'LI' ? 'block' : 'flex';
+            const displayValue = el.tagName === 'LI' ? 'block' : 'flex';
+            el.style.setProperty('display', displayValue, 'important');
         });
     } else if (currentUser.role === 'treasurer') {
         // Tesoureiro: acesso total exceto limpar dados
         document.querySelectorAll('.admin-treasurer-only').forEach(el => {
-            el.style.display = el.tagName === 'LI' ? 'block' : 'flex';
+            const displayValue = el.tagName === 'LI' ? 'block' : 'flex';
+            el.style.setProperty('display', displayValue, 'important');
         });
         document.querySelectorAll('.treasurer-only').forEach(el => {
-            el.style.display = el.tagName === 'LI' ? 'block' : 'flex';
+            const displayValue = el.tagName === 'LI' ? 'block' : 'flex';
+            el.style.setProperty('display', displayValue, 'important');
         });
         // Ocultar botões de limpar dados (admin-only)
         document.querySelectorAll('.admin-only').forEach(el => {
-            el.style.display = 'none';
+            el.style.setProperty('display', 'none', 'important');
         });
     } else if (currentUser.role === 'jovens') {
         // Jovens: acesso apenas a Eventos e Chat
