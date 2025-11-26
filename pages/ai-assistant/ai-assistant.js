@@ -524,22 +524,38 @@ Seja preciso e gere código funcional que pode ser aplicado diretamente.`;
  * Analisa intenção do usuário
  */
 function analyzeIntent(message) {
+    const lowerMsg = message.toLowerCase();
+    
     const intents = {
-        changeColor: /mudar|alterar|trocar.*(cor|tema|estilo|visual)/i,
-        addFeature: /adicionar|criar|implementar|fazer.*(campo|botão|funcionalidade|recurso)/i,
-        fixBug: /corrigir|consertar|resolver|bug|erro|problema/i,
-        modifyLayout: /mudar|alterar|modificar.*(layout|posição|tamanho|estilo)/i,
-        generateReport: /gerar|criar|fazer.*(relatório|gráfico|estatística)/i,
-        addValidation: /validar|validação|verificar/i,
-        improvePerformance: /otimizar|melhorar|performance|velocidade/i
+        changeColor: /(?:mudar|alterar|trocar|modificar|mudar).{0,20}(?:cor|tema|estilo|visual|aparência|design)/i,
+        addFeature: /(?:adicionar|criar|implementar|fazer|incluir|colocar).{0,30}(?:campo|botão|funcionalidade|recurso|função|feature|input|select|textarea)/i,
+        fixBug: /(?:corrigir|consertar|resolver|arrumar|fix).{0,20}(?:bug|erro|problema|issue|falha)/i,
+        modifyLayout: /(?:mudar|alterar|modificar|ajustar|redimensionar).{0,30}(?:layout|posição|tamanho|estilo|largura|altura|margem|padding|espaçamento)/i,
+        generateReport: /(?:gerar|criar|fazer|mostrar|exibir).{0,30}(?:relatório|relatorio|gráfico|grafico|estatística|estatistica|análise|analise|dashboard|report)/i,
+        addValidation: /(?:validar|validação|validacao|verificar|checar).{0,20}(?:campo|input|formulário|formulario|dados)/i,
+        improvePerformance: /(?:otimizar|melhorar|acelerar|aumentar).{0,20}(?:performance|velocidade|rapidez|desempenho)/i,
+        removeElement: /(?:remover|deletar|excluir|tirar|apagar).{0,30}(?:elemento|componente|campo|botão|botao|div|section)/i,
+        showHideElement: /(?:mostrar|esconder|ocultar|exibir|hide|show).{0,30}(?:elemento|componente|campo|div)/i,
+        changeText: /(?:mudar|alterar|trocar|modificar).{0,30}(?:texto|title|título|titulo|label|nome|descrição|descricao)/i,
+        addAnimation: /(?:adicionar|criar|fazer|aplicar).{0,30}(?:animação|animacao|efeito|transição|transicao)/i,
+        exportData: /(?:exportar|baixar|salvar|download).{0,30}(?:dados|informações|informacoes|arquivo|csv|excel|pdf)/i
     };
     
+    // Verificar cada padrão
     for (const [intent, pattern] of Object.entries(intents)) {
-        if (pattern.test(message)) {
+        if (pattern.test(lowerMsg)) {
+            console.log(`[ai-assistant] Intenção detectada: ${intent}`);
             return intent;
         }
     }
     
+    // Verificar palavras-chave específicas como fallback
+    if (lowerMsg.includes('relatório') || lowerMsg.includes('relatorio')) return 'generateReport';
+    if (lowerMsg.includes('gráfico') || lowerMsg.includes('grafico')) return 'generateReport';
+    if (lowerMsg.includes('avaliados') || lowerMsg.includes('avaliação')) return 'generateReport';
+    if (lowerMsg.includes('top') && lowerMsg.includes('eventos')) return 'generateReport';
+    
+    console.log('[ai-assistant] Intenção não reconhecida, usando general');
     return 'general';
 }
 
@@ -552,7 +568,8 @@ function generateCodeFromIntent(intent, message, context) {
         addFeature: generateFeatureAddition,
         fixBug: generateBugFix,
         modifyLayout: generateLayoutModification,
-        addValidation: generateValidation
+        addValidation: generateValidation,
+        generateReport: generateReport
     };
     
     const generator = generators[intent] || generateGeneral;
@@ -713,6 +730,184 @@ function generateValidation(message, context) {
     return true;
 }`
     };
+}
+
+/**
+ * Gera relatório
+ */
+function generateReport(message, context) {
+    const lowerMsg = message.toLowerCase();
+    
+    // Detectar tipo de relatório
+    let reportType = 'eventos';
+    if (lowerMsg.includes('avaliados') || lowerMsg.includes('avaliação')) {
+        reportType = 'eventos-avaliados';
+    } else if (lowerMsg.includes('financeiro') || lowerMsg.includes('gasto')) {
+        reportType = 'financeiro';
+    } else if (lowerMsg.includes('usuário') || lowerMsg.includes('usuario')) {
+        reportType = 'usuarios';
+    }
+    
+    const reportCode = generateReportCode(reportType);
+    
+    return {
+        explanation: `📊 Perfeito! Vou gerar o relatório solicitado.<br><br>
+                     O código incluirá:
+                     <ul>
+                        <li>Coleta de dados do ${reportType}</li>
+                        <li>Processamento e análise</li>
+                        <li>Exibição formatada</li>
+                        <li>Opção de exportação</li>
+                     </ul>
+                     Veja o código no painel ao lado e aplique quando quiser!`,
+        files: [{
+            path: `js/reports-${reportType}.js`,
+            language: 'javascript',
+            code: reportCode
+        }],
+        code: reportCode
+    };
+}
+
+/**
+ * Gera código de relatório específico
+ */
+function generateReportCode(reportType) {
+    if (reportType === 'eventos-avaliados') {
+        return `/**
+ * Gera relatório de eventos mais bem avaliados
+ */
+function generateTopRatedEventsReport() {
+    console.log('[report] Gerando relatório de eventos mais bem avaliados');
+    
+    // Buscar eventos do localStorage
+    const events = JSON.parse(localStorage.getItem('events') || '[]');
+    
+    // Calcular média de avaliações para cada evento
+    const eventsWithRating = events.map(event => {
+        const ratings = event.ratings || [];
+        const avgRating = ratings.length > 0 
+            ? ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length 
+            : 0;
+        
+        return {
+            ...event,
+            avgRating: avgRating.toFixed(1),
+            totalRatings: ratings.length
+        };
+    });
+    
+    // Ordenar por avaliação (maior para menor)
+    const topEvents = eventsWithRating
+        .filter(e => e.totalRatings > 0)
+        .sort((a, b) => b.avgRating - a.avgRating)
+        .slice(0, 10); // Top 10
+    
+    // Gerar HTML do relatório
+    let html = \`
+        <div class="report-container">
+            <div class="report-header">
+                <h2>📊 Top 10 Eventos Mais Bem Avaliados</h2>
+                <p>Gerado em: \${new Date().toLocaleDateString('pt-BR')}</p>
+            </div>
+            
+            <div class="report-stats">
+                <div class="stat-card">
+                    <h3>\${events.length}</h3>
+                    <p>Total de Eventos</p>
+                </div>
+                <div class="stat-card">
+                    <h3>\${topEvents.length}</h3>
+                    <p>Eventos Avaliados</p>
+                </div>
+                <div class="stat-card">
+                    <h3>\${topEvents[0]?.avgRating || '0'} ⭐</h3>
+                    <p>Melhor Avaliação</p>
+                </div>
+            </div>
+            
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Evento</th>
+                        <th>Data</th>
+                        <th>Categoria</th>
+                        <th>Avaliação</th>
+                        <th>Nº Votos</th>
+                    </tr>
+                </thead>
+                <tbody>
+    \`;
+    
+    topEvents.forEach((event, index) => {
+        const category = categories.find(c => c.id === event.categoryId);
+        html += \`
+            <tr>
+                <td>\${index + 1}</td>
+                <td><strong>\${event.title}</strong></td>
+                <td>\${new Date(event.date).toLocaleDateString('pt-BR')}</td>
+                <td>
+                    <span class="category-badge" style="background: \${category?.color || '#ccc'}">
+                        \${category?.name || 'Sem categoria'}
+                    </span>
+                </td>
+                <td>
+                    <div class="rating-display">
+                        \${event.avgRating} ⭐
+                    </div>
+                </td>
+                <td>\${event.totalRatings}</td>
+            </tr>
+        \`;
+    });
+    
+    html += \`
+                </tbody>
+            </table>
+            
+            <div class="report-footer">
+                <button class="btn btn-primary" onclick="exportReportToPDF()">
+                    <i class="fas fa-download"></i> Exportar PDF
+                </button>
+                <button class="btn btn-outline" onclick="printReport()">
+                    <i class="fas fa-print"></i> Imprimir
+                </button>
+            </div>
+        </div>
+    \`;
+    
+    // Exibir relatório
+    const reportContainer = document.getElementById('reportOutput');
+    if (reportContainer) {
+        reportContainer.innerHTML = html;
+    } else {
+        // Criar container se não existir
+        const div = document.createElement('div');
+        div.id = 'reportOutput';
+        div.innerHTML = html;
+        document.querySelector('.content').appendChild(div);
+    }
+    
+    showNotification('✅ Relatório gerado com sucesso!', 'success');
+}
+
+// Funções auxiliares
+function exportReportToPDF() {
+    showNotification('📥 Funcionalidade de exportação PDF em desenvolvimento', 'info');
+}
+
+function printReport() {
+    window.print();
+}
+
+// Chamar automaticamente
+generateTopRatedEventsReport();`;
+    }
+    
+    // Outros tipos de relatório...
+    return `// Código de relatório para ${reportType}
+console.log('Gerando relatório de ${reportType}...');`;
 }
 
 /**
