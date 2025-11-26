@@ -645,13 +645,18 @@ function setupModals() {
         if (groupNameInput) groupNameInput.value = '';
         checkboxes.forEach(cb => cb.checked = false);
         
-        // Recarregar chat se a função existir
-        if (typeof loadChatUsers === 'function') {
-            console.log('[app] 🔄 Recarregando lista do chat...');
+        // Recarregar chat usando window.loadChatUsers
+        console.log('[app] 🔄 Recarregando lista do chat...');
+        console.log('[app] window.loadChatUsers existe?', typeof window.loadChatUsers);
+        
+        if (typeof window.loadChatUsers === 'function') {
             setTimeout(() => {
-                loadChatUsers();
+                console.log('[app] 📞 Chamando window.loadChatUsers()...');
+                window.loadChatUsers();
                 console.log('[app] ✅ Lista recarregada');
             }, 100);
+        } else {
+            console.error('[app] ❌ window.loadChatUsers não encontrada!');
         }
         
         console.log('[app] ═══════════════════════════════════');
