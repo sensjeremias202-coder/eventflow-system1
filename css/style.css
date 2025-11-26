@@ -116,6 +116,15 @@
     }
 }
 
+@keyframes floatPattern {
+    0% {
+        background-position: 0 0, 50px 80px, 120px 40px, 200px 150px;
+    }
+    100% {
+        background-position: 0 300px, 50px 380px, 120px 340px, 200px 450px;
+    }
+}
+
 @keyframes bibleFloat {
     0%, 100% {
         transform: translate(-50%, -50%) scale(1) rotate(0deg);
@@ -159,40 +168,41 @@
 /* ============================================ */
 /* BACKGROUND 3D COM BÍBLIA ANIMADA */
 /* ============================================ */
+/* Padrão de ícones cristãos no fundo */
 body::before {
     content: '';
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 60vw;
-    height: 60vh;
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="%236C63FF" d="M448 358.4V25.6c0-16-9.6-25.6-25.6-25.6H96C41.6 0 0 41.6 0 96v320c0 54.4 41.6 96 96 96h326.4c12.8 0 25.6-9.6 25.6-25.6v-16c0-6.4-3.2-12.8-9.6-19.2-3.2-16-3.2-60.8 0-73.6 6.4-3.2 9.6-9.6 9.6-19.2zM144 168c0-8.84 7.16-16 16-16h192c8.84 0 16 7.16 16 16v16c0 8.84-7.16 16-16 16H160c-8.84 0-16-7.16-16-16v-16zm0 96c0-8.84 7.16-16 16-16h192c8.84 0 16 7.16 16 16v16c0 8.84-7.16 16-16 16H160c-8.84 0-16-7.16-16-16v-16zm0 96c0-8.84 7.16-16 16-16h192c8.84 0 16 7.16 16 16v16c0 8.84-7.16 16-16 16H160c-8.84 0-16-7.16-16-16v-16z"/></svg>');
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    opacity: 0.08;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><text x="15" y="25" font-size="20" fill="%236C63FF" opacity="0.08">✝</text></svg>'),
+        url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path d="M 35,50 Q 30,40 25,45 Q 20,50 25,55 L 50,75 L 75,55 Q 80,50 75,45 Q 70,40 65,50 Q 60,60 50,65 Q 40,60 35,50 Z" fill="%236C63FF" opacity="0.06"/></svg>'),
+        url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path d="M 50,30 Q 60,25 65,35 L 55,50 L 70,60 Q 65,70 55,65 L 50,55 L 45,65 Q 35,70 30,60 L 45,50 L 35,35 Q 40,25 50,30 Z" fill="%236C63FF" opacity="0.06"/></svg>'),
+        url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path d="M 30,50 Q 30,35 40,35 Q 50,35 50,45 Q 50,35 60,35 Q 70,35 70,50 Q 70,70 50,85 Q 30,70 30,50 Z" fill="%236C63FF" opacity="0.06"/></svg>');
+    background-size: 150px 150px, 180px 180px, 200px 200px, 170px 170px;
+    background-position: 0 0, 50px 80px, 120px 40px, 200px 150px;
+    background-repeat: repeat;
+    opacity: 1;
     pointer-events: none;
     z-index: 0;
-    animation: bibleFloat 20s ease-in-out infinite, biblePulse 10s ease-in-out infinite;
-    mix-blend-mode: multiply;
-    filter: drop-shadow(0 10px 30px rgba(108, 99, 255, 0.3));
+    animation: floatPattern 60s linear infinite;
 }
 
+/* Cruz decorativa sutil no centro */
 body::after {
     content: '✝';
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 40vw;
+    font-size: 25vw;
     color: var(--primary);
-    opacity: 0.03;
+    opacity: 0.02;
     pointer-events: none;
     z-index: 0;
-    animation: rotate3d 60s linear infinite;
     font-weight: 100;
-    filter: drop-shadow(0 0 50px rgba(108, 99, 255, 0.5));
 }
 
 body {
@@ -225,7 +235,7 @@ body {
 }
 
 body {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf4 100%);
     color: var(--dark);
     line-height: 1.6;
     overflow-x: hidden;
