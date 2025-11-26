@@ -1,5 +1,6 @@
 let currentChatUser = null;
 let autoMessageInterval = null;
+let chatGroups = [];
 
 function loadChatUsers() {
     console.log('[chat] Carregando usuários do chat...');
@@ -10,6 +11,45 @@ function loadChatUsers() {
     }
     
     chatUsers.innerHTML = '';
+    
+    // Carregar grupos do localStorage
+    const savedGroups = localStorage.getItem('chatGroups');
+    if (savedGroups) {
+        chatGroups = JSON.parse(savedGroups);
+    }
+    
+    // Adicionar grupos primeiro
+    if (chatGroups.length > 0) {
+        const groupsHeader = document.createElement('div');
+        groupsHeader.className = 'chat-section-header';
+        groupsHeader.innerHTML = '<h4>Grupos</h4>';
+        chatUsers.appendChild(groupsHeader);
+        
+        chatGroups.forEach(group => {
+            const groupElement = document.createElement('div');
+            groupElement.className = 'chat-user chat-group';
+            groupElement.setAttribute('data-group-id', group.id);
+            groupElement.innerHTML = `
+                <div class="chat-user-avatar group-avatar"><i class="fas fa-users"></i></div>
+                <div>
+                    <div class="user-name">${group.name}</div>
+                    <div class="user-status">${group.members.length} membros</div>
+                </div>
+            `;
+            chatUsers.appendChild(groupElement);
+            
+            groupElement.addEventListener('click', function() {
+                const groupId = this.getAttribute('data-group-id');
+                selectChatGroup(groupId);
+            });
+        });
+        
+        // Adicionar separador
+        const separator = document.createElement('div');
+        separator.className = 'chat-section-header';
+        separator.innerHTML = '<h4>Usuários</h4>';
+        chatUsers.appendChild(separator);
+    }
     
     // Verificar se há usuário atual
     if (!currentUser) {
@@ -223,7 +263,7 @@ function sendMessage() {
     }
     
     if (!currentChatUser) {
-        showNotification('Selecione um usuário para enviar mensagem.', 'error');
+        showNotification('Selecione um usuário ou grupo para enviar mensagem.', 'error');
         return;
     }
     
@@ -232,17 +272,23 @@ function sendMessage() {
         return;
     }
     
-    console.log('[chat] Enviando mensagem para:', currentChatUser.name);
+    console.log('[chat] Enviando mensagem para:', currentChatUser.isGroup ? 'Grupo ' + currentChatUser.name : currentChatUser.name);
     
     // Criar nova mensagem
     const newMessage = {
         id: messages.length > 0 ? Math.max(...messages.map(m => m.id)) + 1 : 1,
         from: currentUser.id,
-        to: currentChatUser.id,
         content: message,
         timestamp: new Date().toISOString(),
         auto: false
     };
+    
+    // Se for grupo, adicionar groupId, senão adicionar to
+    if (currentChatUser.isGroup) {
+        newMessage.groupId = currentChatUser.id;
+    } else {
+        newMessage.to = currentChatUser.id;
+    }
     
     messages.push(newMessage);
     saveData();
@@ -260,7 +306,11 @@ function sendMessage() {
     }
     
     // Atualizar chat
-    loadChatMessages(currentChatUser.id);
+    if (currentChatUser.isGroup) {
+        loadGroupMessages(currentChatUser.id);
+    } else {
+        loadChatMessages(currentChatUser.id);
+    }
     
     // Limpar input
     input.value = '';
@@ -276,6 +326,271 @@ function initChat() {
     console.log('[chat] Inicializando chat...');
     setupChat();
     loadChatUsers();
+    setupCreateGroupButton();
+}
+
+/**
+ * Configurar botão de criar grupo
+ */
+function setupCreateGroupButton() {
+    const createGroupBtn = document.getElementById('createGroupBtn');
+    if (createGroupBtn) {
+        createGroupBtn.addEventListener('click', openCreateGroupModal);
+    }
+}
+
+/**
+ * Abrir modal de criar grupo
+ */
+function openCreateGroupModal() {
+    // Criar modal se não existir
+    let modal = document.getElementById('createGroupModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'createGroupModal';
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 600px;">
+                <div class="modal-header">
+                    <h3>Criar Novo Grupo</h3>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <form id="createGroupForm">
+                    <div class="form-group">
+                        <label class="form-label" for="groupName">Nome do Grupo</label>
+                        <input type="text" class="form-control" id="groupName" placeholder="Ex: Grupo de Oração" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Selecionar Membros</label>
+                        <div id="groupMembersList" style="max-height: 300px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px;">
+                            <!-- Membros serão listados aqui -->
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">
+                            <i class="fas fa-users"></i> Criar Grupo
+                        </button>
+                    </div>
+                </form>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        // Event listeners
+        const closeBtn = modal.querySelector('.modal-close');
+        closeBtn.addEventListener('click', () => {
+            modal.classList.remove('active');
+        });
+        
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+            }
+        });
+        
+        // Form submit
+        const form = modal.querySelector('#createGroupForm');
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            createGroup();
+        });
+    }
+    
+    // Carregar lista de usuários
+    loadGroupMembersList();
+    
+    // Mostrar modal
+    modal.classList.add('active');
+}
+
+/**
+ * Carregar lista de membros para seleção
+ */
+function loadGroupMembersList() {
+    const container = document.getElementById('groupMembersList');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    const otherUsers = users.filter(u => u.id !== currentUser.id);
+    
+    if (otherUsers.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 20px;">Nenhum usuário disponível</p>';
+        return;
+    }
+    
+    otherUsers.forEach(user => {
+        const memberItem = document.createElement('div');
+        memberItem.className = 'group-member-item';
+        memberItem.innerHTML = `
+            <label style="display: flex; align-items: center; gap: 12px; padding: 10px; cursor: pointer; border-radius: 8px; transition: all 0.2s;">
+                <input type="checkbox" class="group-member-checkbox" value="${user.id}" style="width: 20px; height: 20px; cursor: pointer;">
+                <div class="chat-user-avatar" style="width: 35px; height: 35px; font-size: 12px;">${user.name.split(' ').map(n => n[0]).join('').toUpperCase()}</div>
+                <div>
+                    <div style="font-weight: 500;">${user.name}</div>
+                    <div style="font-size: 12px; color: var(--gray);">${user.email}</div>
+                </div>
+            </label>
+        `;
+        
+        memberItem.addEventListener('mouseenter', function() {
+            this.style.background = 'var(--light)';
+        });
+        
+        memberItem.addEventListener('mouseleave', function() {
+            this.style.background = 'transparent';
+        });
+        
+        container.appendChild(memberItem);
+    });
+}
+
+/**
+ * Criar grupo
+ */
+function createGroup() {
+    const groupName = document.getElementById('groupName').value.trim();
+    const checkboxes = document.querySelectorAll('.group-member-checkbox:checked');
+    
+    if (!groupName) {
+        showNotification('Digite um nome para o grupo', 'error');
+        return;
+    }
+    
+    if (checkboxes.length === 0) {
+        showNotification('Selecione pelo menos um membro', 'error');
+        return;
+    }
+    
+    const memberIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+    
+    // Adicionar o criador do grupo
+    memberIds.push(currentUser.id);
+    
+    const newGroup = {
+        id: 'group_' + Date.now(),
+        name: groupName,
+        members: memberIds,
+        createdBy: currentUser.id,
+        createdAt: new Date().toISOString()
+    };
+    
+    chatGroups.push(newGroup);
+    localStorage.setItem('chatGroups', JSON.stringify(chatGroups));
+    
+    console.log('[chat] Grupo criado:', newGroup);
+    
+    showNotification('Grupo criado com sucesso!', 'success');
+    
+    // Fechar modal
+    document.getElementById('createGroupModal').classList.remove('active');
+    
+    // Recarregar lista de usuários/grupos
+    loadChatUsers();
+}
+
+/**
+ * Selecionar grupo de chat
+ */
+function selectChatGroup(groupId) {
+    const group = chatGroups.find(g => g.id === groupId);
+    if (!group) return;
+    
+    // Marcar como grupo selecionado
+    currentChatUser = { isGroup: true, ...group };
+    
+    // Atualizar interface
+    document.querySelectorAll('.chat-user').forEach(u => u.classList.remove('active'));
+    const selectedGroup = document.querySelector(`.chat-user[data-group-id="${groupId}"]`);
+    if (selectedGroup) {
+        selectedGroup.classList.add('active');
+    }
+    
+    const currentChatUserElement = document.getElementById('currentChatUser');
+    const currentChatStatusElement = document.getElementById('currentChatStatus');
+    
+    if (currentChatUserElement) {
+        currentChatUserElement.innerHTML = `<i class="fas fa-users"></i> ${group.name}`;
+    }
+    if (currentChatStatusElement) {
+        currentChatStatusElement.textContent = `${group.members.length} membros`;
+    }
+    
+    // Carregar mensagens do grupo
+    loadGroupMessages(groupId);
+    
+    // Ativar input de chat
+    const chatInput = document.getElementById('chatInput');
+    const sendMessageBtn = document.getElementById('sendMessageBtn');
+    
+    if (chatInput) chatInput.disabled = false;
+    if (sendMessageBtn) sendMessageBtn.disabled = false;
+}
+
+/**
+ * Carregar mensagens do grupo
+ */
+function loadGroupMessages(groupId) {
+    const chatMessages = document.getElementById('chatMessages');
+    if (!chatMessages) return;
+    
+    chatMessages.innerHTML = '';
+    
+    // Filtrar mensagens do grupo
+    const groupMessages = messages.filter(m => m.groupId === groupId)
+        .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    
+    if (groupMessages.length === 0) {
+        chatMessages.innerHTML = `
+            <div style="text-align: center; color: var(--gray); padding: 40px;">
+                <i class="fas fa-users fa-3x" style="margin-bottom: 20px; opacity: 0.5;"></i>
+                <p>Nenhuma mensagem no grupo ainda.</p>
+                <p>Seja o primeiro a enviar uma mensagem!</p>
+            </div>
+        `;
+        return;
+    }
+    
+    groupMessages.forEach(message => {
+        const sender = users.find(u => u.id === message.from);
+        const senderName = sender ? sender.name : 'Usuário desconhecido';
+        
+        const messageElement = document.createElement('div');
+        messageElement.className = `message ${message.from === currentUser.id ? 'sent' : 'received'}`;
+        
+        const messageContent = document.createElement('div');
+        messageContent.className = 'message-content';
+        
+        // Adicionar nome do remetente em mensagens de grupo
+        if (message.from !== currentUser.id) {
+            const senderLabel = document.createElement('div');
+            senderLabel.className = 'message-sender';
+            senderLabel.textContent = senderName;
+            senderLabel.style.fontWeight = '600';
+            senderLabel.style.fontSize = '12px';
+            senderLabel.style.color = 'var(--primary)';
+            senderLabel.style.marginBottom = '4px';
+            messageContent.appendChild(senderLabel);
+        }
+        
+        const textNode = document.createElement('div');
+        textNode.textContent = message.content;
+        messageContent.appendChild(textNode);
+        
+        const messageTime = document.createElement('div');
+        messageTime.className = 'message-time';
+        messageTime.textContent = formatTime(message.timestamp);
+        
+        messageElement.appendChild(messageContent);
+        messageElement.appendChild(messageTime);
+        
+        chatMessages.appendChild(messageElement);
+    });
+    
+    // Rolagem para baixo
+    chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
 // Inicializar chat quando o documento carregar

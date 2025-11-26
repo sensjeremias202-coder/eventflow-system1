@@ -736,6 +736,41 @@ header::before {
     font-weight: 600;
 }
 
+/* Estilos para grupos */
+.chat-group .chat-user-avatar {
+    background: var(--gradient-peace);
+}
+
+.group-avatar {
+    background: var(--gradient-peace) !important;
+}
+
+.chat-section-header {
+    padding: 10px 0 5px 0;
+    margin-bottom: 10px;
+    border-bottom: 2px solid var(--primary);
+}
+
+.chat-section-header h4 {
+    margin: 0;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: var(--primary);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.group-member-item {
+    transition: all 0.2s;
+}
+
+.message-sender {
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--primary);
+    margin-bottom: 4px;
+}
+
 .chat-main {
     flex: 1;
     display: flex;
