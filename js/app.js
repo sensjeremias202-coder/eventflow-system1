@@ -591,40 +591,30 @@ function setupModals() {
     
     // Função para criar grupo
     function createChatGroup() {
-        console.log('[app] createChatGroup() chamada');
+        console.log('[app] ═══════════════════════════════════');
+        console.log('[app] 📝 Criando novo grupo...');
         
         const groupNameInput = document.getElementById('groupName');
         const checkboxes = document.querySelectorAll('.group-member-checkbox:checked');
         
-        console.log('[app] Input groupName:', groupNameInput);
-        console.log('[app] Checkboxes selecionadas:', checkboxes.length);
-        
         const groupName = groupNameInput ? groupNameInput.value.trim() : '';
         
         if (!groupName) {
-            console.warn('[app] Nome do grupo vazio');
+            console.warn('[app] ❌ Nome do grupo vazio');
             showNotification('Digite um nome para o grupo', 'error');
             return;
         }
         
         if (checkboxes.length === 0) {
-            console.warn('[app] Nenhum membro selecionado');
+            console.warn('[app] ❌ Nenhum membro selecionado');
             showNotification('Selecione pelo menos um membro', 'error');
             return;
         }
         
         const memberIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+        memberIds.push(currentUser.id); // Adicionar criador
         
-        // Adicionar o criador do grupo
-        memberIds.push(currentUser.id);
-        
-        // Carregar grupos existentes
-        let chatGroups = [];
-        const savedGroups = localStorage.getItem('chatGroups');
-        if (savedGroups) {
-            chatGroups = JSON.parse(savedGroups);
-        }
-        
+        // Criar grupo
         const newGroup = {
             id: 'group_' + Date.now(),
             name: groupName,
@@ -633,12 +623,15 @@ function setupModals() {
             createdAt: new Date().toISOString()
         };
         
-        chatGroups.push(newGroup);
-        localStorage.setItem('chatGroups', JSON.stringify(chatGroups));
+        // Salvar usando setter que sincroniza com localStorage
+        const groups = window.chatGroups || [];
+        groups.push(newGroup);
+        window.chatGroups = groups;
         
-        console.log('[app] Grupo criado:', newGroup);
-        console.log('[app] Total de grupos:', chatGroups.length);
-        console.log('[app] Grupos no localStorage:', localStorage.getItem('chatGroups'));
+        console.log('[app] ✅ Grupo criado:', newGroup.name);
+        console.log('[app]    ID:', newGroup.id);
+        console.log('[app]    Membros:', newGroup.members.length);
+        console.log('[app]    Total de grupos:', groups.length);
         
         showNotification('Grupo criado com sucesso!', 'success');
         
@@ -646,37 +639,22 @@ function setupModals() {
         const modal = document.getElementById('createGroupModal');
         if (modal) {
             modal.classList.remove('active');
-            console.log('[app] Modal fechado');
         }
         
         // Limpar form
         if (groupNameInput) groupNameInput.value = '';
         checkboxes.forEach(cb => cb.checked = false);
         
-        // Forçar recarregamento dos grupos na variável global do chat.js
-        if (window.chatGroups) {
-            window.chatGroups = chatGroups;
-            console.log('[app] Variável global chatGroups atualizada');
-        }
-        
-        // Recarregar lista de usuários/grupos - tentar múltiplas formas
-        console.log('[app] Tentando recarregar lista de chat...');
-        
-        // Método 1: Chamar loadChatUsers se existir
+        // Recarregar chat se a função existir
         if (typeof loadChatUsers === 'function') {
-            console.log('[app] Chamando loadChatUsers()');
-            loadChatUsers();
-        } else {
-            console.warn('[app] loadChatUsers não está disponível');
+            console.log('[app] 🔄 Recarregando lista do chat...');
+            setTimeout(() => {
+                loadChatUsers();
+                console.log('[app] ✅ Lista recarregada');
+            }, 100);
         }
         
-        // Método 2: Recarregar a página de chat
-        setTimeout(() => {
-            if (typeof initChat === 'function') {
-                console.log('[app] Chamando initChat()');
-                initChat();
-            }
-        }, 100);
+        console.log('[app] ═══════════════════════════════════');
     }
     
     // Modal de usuário (delegação configurada acima, mantido para compatibilidade)

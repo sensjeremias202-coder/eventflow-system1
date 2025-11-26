@@ -1,120 +1,188 @@
+// ============================================
+// VARIÁVEIS GLOBAIS DO CHAT
+// ============================================
 let currentChatUser = null;
 let autoMessageInterval = null;
-let chatGroups = [];
 
-// Exportar variável para acesso global
-window.chatGroups = chatGroups;
+// Getter e Setter para grupos (sempre sincronizado com localStorage)
+Object.defineProperty(window, 'chatGroups', {
+    get: function() {
+        const saved = localStorage.getItem('chatGroups');
+        return saved ? JSON.parse(saved) : [];
+    },
+    set: function(value) {
+        localStorage.setItem('chatGroups', JSON.stringify(value));
+    }
+});
 
+// ============================================
+// INICIALIZAÇÃO DO CHAT
+// ============================================
+function initChat() {
+    console.log('[chat] ═══════════════════════════════════');
+    console.log('[chat] Inicializando chat...');
+    loadChatUsers();
+    setupChat();
+    setupChatEventDelegation();
+    console.log('[chat] ✅ Chat inicializado com sucesso');
+    console.log('[chat] ═══════════════════════════════════');
+}
+
+// ============================================
+// DELEGAÇÃO DE EVENTOS - UMA VEZ APENAS
+// ============================================
+let chatEventDelegationSetup = false;
+
+function setupChatEventDelegation() {
+    if (chatEventDelegationSetup) {
+        console.log('[chat] Event delegation já configurada');
+        return;
+    }
+    
+    console.log('[chat] Configurando event delegation...');
+    
+    // Delegação para cliques em usuários e grupos
+    document.body.addEventListener('click', function(e) {
+        // Clicar em usuário individual
+        const chatUser = e.target.closest('.chat-user:not(.chat-group)');
+        if (chatUser && chatUser.hasAttribute('data-id')) {
+            const userId = parseInt(chatUser.getAttribute('data-id'));
+            selectChatUser(userId);
+            return;
+        }
+        
+        // Clicar em grupo
+        const chatGroup = e.target.closest('.chat-group');
+        if (chatGroup && chatGroup.hasAttribute('data-group-id')) {
+            const groupId = chatGroup.getAttribute('data-group-id');
+            selectChatGroup(groupId);
+            return;
+        }
+        
+        // Botão de opções do grupo
+        if (e.target.closest('#groupOptionsBtn')) {
+            e.stopPropagation();
+            const group = window.chatGroups.find(g => g.id === currentChatUser.id);
+            if (group) showGroupOptionsMenu(group);
+            return;
+        }
+        
+        // Fechar menu de opções ao clicar fora
+        const menu = document.getElementById('groupOptionsMenu');
+        if (menu && !e.target.closest('#groupOptionsMenu')) {
+            menu.remove();
+        }
+    });
+    
+    chatEventDelegationSetup = true;
+    console.log('[chat] ✅ Event delegation configurada');
+}
+
+// ============================================
+// CARREGAR LISTA DE USUÁRIOS E GRUPOS
+// ============================================
 function loadChatUsers() {
-    console.log('[chat] Carregando usuários do chat...');
+    console.log('[chat] ─────────────────────────────────');
+    console.log('[chat] 📋 Carregando lista de chat...');
+    
     const chatUsers = document.getElementById('chatUsers');
     if (!chatUsers) {
-        console.warn('[chat] Elemento chatUsers não encontrado');
+        console.error('[chat] ❌ Elemento chatUsers não encontrado!');
         return;
     }
     
     chatUsers.innerHTML = '';
     
-    // Carregar grupos do localStorage
-    const savedGroups = localStorage.getItem('chatGroups');
-    console.log('[chat] Grupos salvos no localStorage:', savedGroups);
-    if (savedGroups) {
-        chatGroups = JSON.parse(savedGroups);
-        window.chatGroups = chatGroups; // Atualizar global
-        console.log('[chat] Total de grupos carregados:', chatGroups.length);
-    } else {
-        console.log('[chat] Nenhum grupo encontrado no localStorage');
-    }
+    // Carregar grupos - sempre do localStorage via getter
+    const groups = window.chatGroups;
+    console.log('[chat] 📊 Grupos encontrados:', groups.length);
     
-    // Adicionar grupos primeiro
-    if (chatGroups.length > 0) {
-        console.log('[chat] Adicionando seção de grupos com', chatGroups.length, 'grupo(s)');
+    // Adicionar seção de grupos
+    if (groups.length > 0) {
+        console.log('[chat] 📁 Criando seção de grupos...');
+        
         const groupsHeader = document.createElement('div');
         groupsHeader.className = 'chat-section-header';
-        groupsHeader.innerHTML = '<h4>Grupos</h4>';
+        groupsHeader.innerHTML = '<h4><i class="fas fa-users"></i> Grupos</h4>';
         chatUsers.appendChild(groupsHeader);
         
-        chatGroups.forEach((group, index) => {
-            console.log('[chat] Adicionando grupo', index + 1, ':', group.name);
+        groups.forEach((group, index) => {
+            console.log(`[chat]   └─ Grupo ${index + 1}: "${group.name}" (${group.members.length} membros)`);
+            
             const groupElement = document.createElement('div');
             groupElement.className = 'chat-user chat-group';
             groupElement.setAttribute('data-group-id', group.id);
             groupElement.innerHTML = `
-                <div class="chat-user-avatar group-avatar"><i class="fas fa-users"></i></div>
-                <div>
+                <div class="chat-user-avatar group-avatar">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div style="flex: 1;">
                     <div class="user-name">${group.name}</div>
                     <div class="user-status">${group.members.length} membros</div>
                 </div>
             `;
             chatUsers.appendChild(groupElement);
-            
-            groupElement.addEventListener('click', function() {
-                const groupId = this.getAttribute('data-group-id');
-                console.log('[chat] Grupo clicado:', groupId);
-                selectChatGroup(groupId);
-            });
         });
         
-        // Adicionar separador
+        // Separador
         const separator = document.createElement('div');
         separator.className = 'chat-section-header';
-        separator.innerHTML = '<h4>Usuários</h4>';
+        separator.innerHTML = '<h4><i class="fas fa-user"></i> Usuários</h4>';
         chatUsers.appendChild(separator);
-    } else {
-        console.log('[chat] Nenhum grupo para exibir');
     }
     
-    // Verificar se há usuário atual
+    // Verificar usuário atual
     if (!currentUser) {
-        console.warn('[chat] Nenhum usuário logado');
+        console.error('[chat] ❌ Nenhum usuário logado');
         chatUsers.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 20px;">Faça login para usar o chat</p>';
         return;
     }
     
-    // Verificar se há array de usuários
+    // Verificar array de usuários
     if (!users || users.length === 0) {
-        console.warn('[chat] Nenhum usuário disponível');
+        console.error('[chat] ❌ Nenhum usuário disponível');
         chatUsers.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 20px;">Nenhum usuário disponível</p>';
         return;
     }
     
-    // Mostrar todos os outros usuários (não apenas admin/user)
+    // Listar outros usuários
     const chatPartners = users.filter(user => user.id !== currentUser.id);
-    
-    console.log('[chat] Usuários disponíveis:', chatPartners.length);
+    console.log('[chat] 👥 Usuários disponíveis:', chatPartners.length);
     
     if (chatPartners.length === 0) {
-        chatUsers.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 20px;">Nenhum outro usuário disponível para chat</p>';
+        chatUsers.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 20px;">Nenhum outro usuário disponível</p>';
         return;
     }
     
-    chatPartners.forEach(user => {
+    chatPartners.forEach((user, index) => {
+        console.log(`[chat]   └─ Usuário ${index + 1}: ${user.name}`);
+        
         const userElement = document.createElement('div');
         userElement.className = 'chat-user';
         userElement.setAttribute('data-id', user.id);
         userElement.innerHTML = `
-            <div class="chat-user-avatar">${user.name.split(' ').map(n => n[0]).join('').toUpperCase()}</div>
-            <div>
+            <div class="chat-user-avatar">
+                ${user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+            </div>
+            <div style="flex: 1;">
                 <div class="user-name">${user.name}</div>
                 <div class="user-status">${isUserOnline(user.id) ? 'Online' : 'Offline'}</div>
             </div>
         `;
-        
         chatUsers.appendChild(userElement);
-        
-        // Adicionar evento de clique
-        userElement.addEventListener('click', function() {
-            const userId = parseInt(this.getAttribute('data-id'));
-            selectChatUser(userId);
-        });
     });
     
-    // Selecionar o primeiro usuário por padrão, se houver
-    if (chatPartners.length > 0) {
-        selectChatUser(chatPartners[0].id);
+    // Selecionar primeiro item se nada estiver selecionado
+    if (!currentChatUser) {
+        if (groups.length > 0) {
+            selectChatGroup(groups[0].id);
+        } else if (chatPartners.length > 0) {
+            selectChatUser(chatPartners[0].id);
+        }
     }
     
-    console.log('[chat] ✅ Usuários carregados com sucesso');
+    console.log('[chat] ✅ Lista de chat carregada');
+    console.log('[chat] ─────────────────────────────────');
 }
 
 function isUserOnline(userId) {
@@ -530,40 +598,43 @@ function createGroup() {
  * Selecionar grupo de chat
  */
 function selectChatGroup(groupId) {
-    const group = chatGroups.find(g => g.id === groupId);
-    if (!group) return;
+    console.log('[chat] 🔵 Selecionando grupo:', groupId);
+    
+    const group = window.chatGroups.find(g => g.id === groupId);
+    if (!group) {
+        console.error('[chat] ❌ Grupo não encontrado:', groupId);
+        return;
+    }
     
     // Marcar como grupo selecionado
     currentChatUser = { isGroup: true, ...group };
+    console.log('[chat] ✅ Grupo selecionado:', group.name);
     
-    // Atualizar interface
+    // Atualizar UI - remover seleção anterior
     document.querySelectorAll('.chat-user').forEach(u => u.classList.remove('active'));
+    
+    // Adicionar seleção ao grupo
     const selectedGroup = document.querySelector(`.chat-user[data-group-id="${groupId}"]`);
     if (selectedGroup) {
         selectedGroup.classList.add('active');
     }
     
+    // Atualizar cabeçalho do chat
     const currentChatUserElement = document.getElementById('currentChatUser');
     const currentChatStatusElement = document.getElementById('currentChatStatus');
     
     if (currentChatUserElement) {
-        // Adicionar menu de opções do grupo
         currentChatUserElement.innerHTML = `
             <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
                 <i class="fas fa-users"></i> 
-                <span>${group.name}</span>
+                <span style="flex: 1;">${group.name}</span>
                 <button class="btn btn-sm" id="groupOptionsBtn" style="margin-left: auto;" title="Opções do grupo">
                     <i class="fas fa-ellipsis-v"></i>
                 </button>
             </div>
         `;
-        
-        // Adicionar menu dropdown
-        document.getElementById('groupOptionsBtn').addEventListener('click', function(e) {
-            e.stopPropagation();
-            showGroupOptionsMenu(group);
-        });
     }
+    
     if (currentChatStatusElement) {
         currentChatStatusElement.textContent = `${group.members.length} membros`;
     }
@@ -817,6 +888,8 @@ function addGroupMembers(group) {
  * Confirmar adição de membros
  */
 function confirmAddMembers(groupId) {
+    console.log('[chat] 👥 Adicionando membros ao grupo:', groupId);
+    
     const checkboxes = document.querySelectorAll('.add-member-checkbox:checked');
     
     if (checkboxes.length === 0) {
@@ -826,18 +899,22 @@ function confirmAddMembers(groupId) {
     
     const newMemberIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
     
-    // Atualizar grupo
-    const groupIndex = chatGroups.findIndex(g => g.id === groupId);
+    // Atualizar grupo usando getter/setter
+    const groups = window.chatGroups;
+    const groupIndex = groups.findIndex(g => g.id === groupId);
+    
     if (groupIndex !== -1) {
-        chatGroups[groupIndex].members.push(...newMemberIds);
-        localStorage.setItem('chatGroups', JSON.stringify(chatGroups));
+        groups[groupIndex].members.push(...newMemberIds);
+        window.chatGroups = groups; // Trigger setter
         
-        showNotification(`${newMemberIds.length} membro(s) adicionado(s) ao grupo`, 'success');
+        console.log('[chat] ✅ Membros adicionados:', newMemberIds);
+        showNotification(`${newMemberIds.length} membro(s) adicionado(s)`, 'success');
         
         // Fechar modal
-        document.getElementById('customModal').classList.remove('active');
+        const modal = document.getElementById('customModal');
+        if (modal) modal.classList.remove('active');
         
-        // Recarregar chat
+        // Recarregar e reselecionar
         loadChatUsers();
         selectChatGroup(groupId);
     }
@@ -847,24 +924,31 @@ function confirmAddMembers(groupId) {
  * Sair do grupo
  */
 function leaveGroup(group) {
+    console.log('[chat] 🚪 Saindo do grupo:', group.name);
+    
     if (!confirm(`Deseja realmente sair do grupo "${group.name}"?`)) {
         return;
     }
     
-    const groupIndex = chatGroups.findIndex(g => g.id === group.id);
+    const groups = window.chatGroups;
+    const groupIndex = groups.findIndex(g => g.id === group.id);
+    
     if (groupIndex !== -1) {
-        // Remover usuário da lista de membros
-        chatGroups[groupIndex].members = chatGroups[groupIndex].members.filter(id => id !== currentUser.id);
+        // Remover usuário
+        groups[groupIndex].members = groups[groupIndex].members.filter(id => id !== currentUser.id);
         
-        // Se o grupo ficar sem membros ou só com o criador, excluir
-        if (chatGroups[groupIndex].members.length === 0) {
-            chatGroups.splice(groupIndex, 1);
+        // Se ficar vazio, excluir
+        if (groups[groupIndex].members.length === 0) {
+            groups.splice(groupIndex, 1);
+            console.log('[chat] 🗑️ Grupo vazio - excluído');
         }
         
-        localStorage.setItem('chatGroups', JSON.stringify(chatGroups));
+        window.chatGroups = groups; // Trigger setter
+        
+        console.log('[chat] ✅ Você saiu do grupo');
         showNotification('Você saiu do grupo', 'success');
         
-        // Recarregar lista
+        // Recarregar
         currentChatUser = null;
         loadChatUsers();
     }
@@ -874,17 +958,23 @@ function leaveGroup(group) {
  * Excluir grupo
  */
 function deleteGroup(group) {
+    console.log('[chat] 🗑️ Excluindo grupo:', group.name);
+    
     if (!confirm(`Deseja realmente excluir o grupo "${group.name}"? Esta ação não pode ser desfeita.`)) {
         return;
     }
     
-    const groupIndex = chatGroups.findIndex(g => g.id === group.id);
+    const groups = window.chatGroups;
+    const groupIndex = groups.findIndex(g => g.id === group.id);
+    
     if (groupIndex !== -1) {
-        chatGroups.splice(groupIndex, 1);
-        localStorage.setItem('chatGroups', JSON.stringify(chatGroups));
+        groups.splice(groupIndex, 1);
+        window.chatGroups = groups; // Trigger setter
+        
+        console.log('[chat] ✅ Grupo excluído');
         showNotification('Grupo excluído', 'success');
         
-        // Recarregar lista
+        // Recarregar
         currentChatUser = null;
         loadChatUsers();
     }
