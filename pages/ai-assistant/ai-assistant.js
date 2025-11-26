@@ -891,15 +891,51 @@ Agora analise a solicitação e gere a solução COMPLETA e FUNCIONAL.`;
 }
 
 /**
- * Analisa intenção do usuário
+ * Analisa intenção do usuário (EXPANDIDO - 7 PILARES)
  */
 function analyzeIntent(message) {
     const lowerMsg = message.toLowerCase();
     
     const intents = {
+        // PILAR 1: Compreensão Linguística
+        conversation: /(?:conversar|bater papo|me ajude|explique|o que é|como funciona)/i,
+        summarize: /(?:resumir|resumo|sintetizar|principais pontos)/i,
+        translate: /(?:traduzir|tradução|translate|translation)/i,
+        explain: /(?:explicar|explique|como|por que|porque)/i,
+        
+        // PILAR 2: Raciocínio Lógico
         changeColor: /(?:mudar|alterar|trocar|modificar|mudar).{0,20}(?:cor|tema|estilo|visual|aparência|design)/i,
         addFeature: /(?:adicionar|criar|implementar|fazer|incluir|colocar).{0,30}(?:campo|botão|funcionalidade|recurso|função|feature|input|select|textarea)/i,
-        fixBug: /(?:corrigir|consertar|resolver|arrumar|fix).{0,20}(?:bug|erro|problema|issue|falha)/i,
+        fixBug: /(?:corrigir|consertar|resolver|arrumar|fix|debug|depurar).{0,20}(?:bug|erro|problema|issue|falha)/i,
+        refactorCode: /(?:refatorar|otimizar código|melhorar código|reestruturar)/i,
+        createArchitecture: /(?:arquitetura|estrutura|design pattern|padrão)/i,
+        
+        // PILAR 3: Gerenciamento de Dados
+        generateDocument: /(?:gerar|criar|fazer).{0,30}(?:pdf|docx|xlsx|documento|planilha|word|excel)/i,
+        exportData: /(?:exportar|baixar|salvar|download).{0,30}(?:dados|informações|informacoes|arquivo|csv|excel|pdf)/i,
+        manipulateData: /(?:processar|manipular|transformar|converter).{0,20}(?:dados|data|informação)/i,
+        
+        // PILAR 4: Percepção Visual (simulado)
+        generateDiagram: /(?:gerar|criar|fazer).{0,30}(?:diagrama|fluxograma|gráfico|chart|visualização)/i,
+        generateImage: /(?:gerar|criar|fazer).{0,30}(?:imagem|logo|ícone|icon|ilustração)/i,
+        editVisual: /(?:editar|modificar|ajustar).{0,30}(?:imagem|visual|gráfico)/i,
+        
+        // PILAR 5: Acesso à Informação
+        searchWeb: /(?:buscar|pesquisar|procurar).{0,30}(?:na internet|online|web|google)/i,
+        getLatestInfo: /(?:último|última|recente|atual|atualizado|novidade)/i,
+        research: /(?:pesquisa|estudo|investigação|análise).{0,20}(?:sobre|de)/i,
+        
+        // PILAR 6: Auxílio Cognitivo
+        createPlan: /(?:criar|fazer|gerar).{0,30}(?:plano|planejamento|cronograma|agenda)/i,
+        studyHelp: /(?:estudar|aprender|ensinar|ajuda para estudar)/i,
+        organizeTasks: /(?:organizar|estruturar|planejar).{0,20}(?:tarefas|atividades|projetos)/i,
+        productivity: /(?:produtividade|eficiência|otimizar tempo|gestão)/i,
+        
+        // PILAR 7: Ética e Segurança (análise passiva)
+        securityCheck: /(?:segurança|vulnerabilidade|proteção|privacidade)/i,
+        validateData: /(?:validar|verificar|checar).{0,20}(?:segurança|dados|permissão)/i,
+        
+        // Pilares existentes mantidos
         modifyLayout: /(?:mudar|alterar|modificar|ajustar|redimensionar).{0,30}(?:layout|posição|tamanho|estilo|largura|altura|margem|padding|espaçamento)/i,
         generateReport: /(?:gerar|criar|fazer|mostrar|exibir).{0,30}(?:relatório|relatorio|gráfico|grafico|estatística|estatistica|análise|analise|dashboard|report)/i,
         addValidation: /(?:validar|validação|validacao|verificar|checar).{0,20}(?:campo|input|formulário|formulario|dados)/i,
@@ -907,8 +943,7 @@ function analyzeIntent(message) {
         removeElement: /(?:remover|deletar|excluir|tirar|apagar).{0,30}(?:elemento|componente|campo|botão|botao|div|section)/i,
         showHideElement: /(?:mostrar|esconder|ocultar|exibir|hide|show).{0,30}(?:elemento|componente|campo|div)/i,
         changeText: /(?:mudar|alterar|trocar|modificar).{0,30}(?:texto|title|título|titulo|label|nome|descrição|descricao)/i,
-        addAnimation: /(?:adicionar|criar|fazer|aplicar).{0,30}(?:animação|animacao|efeito|transição|transicao)/i,
-        exportData: /(?:exportar|baixar|salvar|download).{0,30}(?:dados|informações|informacoes|arquivo|csv|excel|pdf)/i
+        addAnimation: /(?:adicionar|criar|fazer|aplicar).{0,30}(?:animação|animacao|efeito|transição|transicao)/i
     };
     
     // Verificar cada padrão
@@ -922,8 +957,8 @@ function analyzeIntent(message) {
     // Verificar palavras-chave específicas como fallback
     if (lowerMsg.includes('relatório') || lowerMsg.includes('relatorio')) return 'generateReport';
     if (lowerMsg.includes('gráfico') || lowerMsg.includes('grafico')) return 'generateReport';
-    if (lowerMsg.includes('avaliados') || lowerMsg.includes('avaliação')) return 'generateReport';
-    if (lowerMsg.includes('top') && lowerMsg.includes('eventos')) return 'generateReport';
+    if (lowerMsg.includes('pdf') || lowerMsg.includes('excel')) return 'generateDocument';
+    if (lowerMsg.includes('plano') || lowerMsg.includes('planejamento')) return 'createPlan';
     
     console.log('[ai-assistant] Intenção não reconhecida, usando general');
     return 'general';
@@ -934,17 +969,53 @@ function analyzeIntent(message) {
  */
 function generateCodeFromIntent(intent, message, context, entities = {}) {
     const generators = {
+        // PILAR 1: Compreensão Linguística
+        conversation: generateConversation,
+        summarize: generateSummary,
+        translate: generateTranslation,
+        explain: generateExplanation,
+        
+        // PILAR 2: Raciocínio Lógico
         changeColor: generateColorChange,
         addFeature: generateFeatureAddition,
         fixBug: generateBugFix,
+        refactorCode: generateRefactoring,
+        createArchitecture: generateArchitecture,
         modifyLayout: generateLayoutModification,
+        
+        // PILAR 3: Gerenciamento de Dados
+        generateDocument: generateDocument,
+        exportData: generateExport,
+        manipulateData: generateDataManipulation,
+        
+        // PILAR 4: Percepção Visual
+        generateDiagram: generateDiagram,
+        generateImage: generateImagePlaceholder,
+        editVisual: generateVisualEdit,
+        
+        // PILAR 5: Acesso à Informação
+        searchWeb: generateWebSearch,
+        getLatestInfo: generateLatestInfo,
+        research: generateResearch,
+        
+        // PILAR 6: Auxílio Cognitivo
+        createPlan: generatePlan,
+        studyHelp: generateStudyHelp,
+        organizeTasks: generateTaskOrganization,
+        productivity: generateProductivityTips,
+        
+        // PILAR 7: Ética e Segurança
+        securityCheck: generateSecurityCheck,
+        validateData: generateDataValidation,
+        
+        // Existentes
         addValidation: generateValidation,
         generateReport: generateReport,
         removeElement: generateRemoveElement,
         showHideElement: generateShowHide,
         changeText: generateTextChange,
         addAnimation: generateAnimation,
-        exportData: generateExport
+        improvePerformance: generatePerformanceImprovement
     };
     
     const generator = generators[intent] || generateGeneral;
@@ -1706,6 +1777,291 @@ exportarDados();`
 }
 
 /**
+ * ==================== GERADORES - PILAR 1: COMPREENSÃO LINGUÍSTICA ====================
+ */
+
+/**
+ * Gera resposta conversacional contextual
+ */
+function generateConversation(message, context, entities) {
+    const isGreeting = /(?:oi|olá|hey|bom dia|boa tarde|boa noite)/i.test(message);
+    const isQuestion = /(?:\?|como|o que|qual|quando|onde|por que|porque)/i.test(message);
+    const isHelp = /(?:ajuda|ajude|me ajude|socorro|help)/i.test(message);
+    
+    let response = '';
+    
+    if (isGreeting) {
+        response = `👋 Olá! Sou o AI Assistant do EventFlow System.\n\nEstou aqui para ajudar você com:\n• Modificar cores e estilos\n• Adicionar novos recursos\n• Corrigir bugs e problemas\n• Gerar relatórios e documentos\n• Organizar tarefas e planos\n• Validar segurança\n• E muito mais!\n\n💡 O que você gostaria de fazer hoje?`;
+    } else if (isHelp) {
+        response = `🆘 **Comandos Disponíveis:**\n\n**Design & UI:**\n• "Mudar a cor principal para azul"\n• "Adicionar animação no botão salvar"\n• "Remover o campo descrição"\n\n**Dados & Relatórios:**\n• "Gerar relatório dos eventos mais avaliados"\n• "Exportar dados de usuários em PDF"\n• "Criar gráfico de participação"\n\n**Desenvolvimento:**\n• "Corrigir bug no formulário"\n• "Refatorar código da página de eventos"\n• "Adicionar validação de email"\n\n**Produtividade:**\n• "Criar um plano de estudos"\n• "Organizar minhas tarefas"\n• "Pesquisar sobre Firebase"\n\n**Segurança:**\n• "Verificar vulnerabilidades"\n• "Validar dados de entrada"\n\n💬 Digite seu comando naturalmente!`;
+    } else if (isQuestion) {
+        if (/quantos|quantidade|total/i.test(message)) {
+            const stats = context.statistics || {};
+            response = `📊 **Estatísticas do Projeto:**\n\n`;
+            response += `• **Eventos:** ${stats.totalEvents || 0} (${stats.activeEvents || 0} ativos)\n`;
+            response += `• **Usuários:** ${stats.totalUsers || 0}\n`;
+            response += `• **Categorias:** ${stats.totalCategories || 0}\n`;
+            response += `• **Avaliação Média:** ${stats.averageRating ? stats.averageRating.toFixed(1) : 'N/A'} ⭐`;
+        } else {
+            response = `🤔 Entendi sua pergunta: "${message}"\n\nPara responder melhor, seja mais específico:\n• O que você quer saber?\n• Qual funcionalidade?\n• Que tipo de ajuda precisa?\n\n💡 Exemplos:\n• "Como funciona a autenticação?"\n• "O que é a página de eventos?"\n• "Explique o sistema de categorias"`;
+        }
+    } else {
+        response = `💬 Entendi! Você disse: "${message}"\n\nSou um assistente AI focado em desenvolvimento. Posso:\n• Modificar o código do sistema\n• Gerar relatórios e documentos\n• Ajudar com planejamento\n• Pesquisar informações técnicas\n• Verificar segurança\n\n❓ Como posso ajudar especificamente?`;
+    }
+    
+    return {
+        html: '',
+        css: '',
+        js: '',
+        explanation: response,
+        suggestion: 'Digite um comando específico para executar ações no sistema.'
+    };
+}
+
+/**
+ * Gera resumo de conteúdo
+ */
+function generateSummary(message, context, entities) {
+    const target = entities.targets[0] || 'projeto';
+    let summary = `📝 **Resumo: ${target}**\n\n`;
+    
+    if (/eventos?/i.test(target)) {
+        const events = context.events || [];
+        const activeEvents = events.filter(e => e.status === 'ativo');
+        const topRated = events.sort((a, b) => (b.rating || 0) - (a.rating || 0))[0];
+        
+        summary += `**Total:** ${events.length} eventos\n`;
+        summary += `**Ativos:** ${activeEvents.length}\n`;
+        summary += `**Melhor:** ${topRated ? topRated.name + ' (' + topRated.rating + '⭐)' : 'N/A'}\n\n`;
+        
+        const categoryCount = {};
+        events.forEach(e => {
+            const cat = e.category || 'Sem categoria';
+            categoryCount[cat] = (categoryCount[cat] || 0) + 1;
+        });
+        
+        summary += `📊 **Top Categorias:**\n`;
+        Object.entries(categoryCount).sort((a, b) => b[1] - a[1]).slice(0, 5).forEach(([cat, count]) => {
+            summary += `• ${cat}: ${count}\n`;
+        });
+    } else {
+        const stats = context.statistics || {};
+        summary += `🎯 **EventFlow System**\n\n`;
+        summary += `**Eventos:** ${stats.totalEvents || 0}\n`;
+        summary += `**Usuários:** ${stats.totalUsers || 0}\n`;
+        summary += `**Categorias:** ${stats.totalCategories || 0}\n`;
+        summary += `**Média:** ${stats.averageRating ? stats.averageRating.toFixed(1) : 'N/A'} ⭐`;
+    }
+    
+    return {
+        html: '',
+        css: '',
+        js: '',
+        explanation: summary,
+        suggestion: 'Posso gerar um relatório completo em PDF. Quer que eu faça?'
+    };
+}
+
+/**
+ * Gera tradução (sugere ferramenta externa)
+ */
+function generateTranslation(message, context, entities) {
+    const js = `// Sistema i18n que posso criar:
+const translations = {
+    'pt-br': {
+        'dashboard': 'Painel',
+        'events': 'Eventos',
+        'users': 'Usuários'
+    },
+    'en': {
+        'dashboard': 'Dashboard',
+        'events': 'Events',
+        'users': 'Users'
+    }
+};
+
+function t(key, lang = 'pt-br') {
+    return translations[lang]?.[key] || key;
+}`;
+    
+    return {
+        html: '',
+        css: '',
+        js: js,
+        explanation: `🌍 **Tradução**\n\nNão tenho tradução em tempo real, mas posso:\n• Adicionar suporte multi-idioma\n• Criar arquivos i18n\n• Estruturar internacionalização\n\n💡 APIs sugeridas:\n• Google Translate\n• DeepL\n• Microsoft Translator`,
+        suggestion: 'Quer que eu implemente sistema multi-idioma?'
+    };
+}
+
+/**
+ * Gera explicação detalhada
+ */
+function generateExplanation(message, context, entities) {
+    const topic = entities.targets[0] || message.toLowerCase();
+    let explanation = '';
+    
+    if (/autenticação|auth|login/i.test(topic)) {
+        explanation = `🔐 **Autenticação**\n\n**Roles:**\n1️⃣ **Admin** - Acesso total\n2️⃣ **Treasurer** - Financeiro + eventos\n3️⃣ **Jovens** - Visualização\n\n🔧 Arquivo: \`js/auth.js\``;
+    } else if (/eventos?/i.test(topic)) {
+        explanation = `📅 **Eventos**\n\nCriar e gerenciar eventos:\n• Nome, data, hora, local\n• Categorias\n• Avaliações (1-5⭐)\n• Upload de imagens\n\n🔧 Arquivo: \`js/events.js\``;
+    } else if (/ai|assistente/i.test(topic)) {
+        explanation = `🤖 **AI Assistant**\n\n7 Pilares:\n1. Compreensão Linguística\n2. Raciocínio Lógico\n3. Gerenciamento de Dados\n4. Percepção Visual\n5. Acesso à Informação\n6. Auxílio Cognitivo\n7. Ética e Segurança\n\n🔧 Arquivo: \`pages/ai-assistant/ai-assistant.js\``;
+    } else {
+        explanation = `💡 **Tópicos:**\n• Autenticação\n• Eventos\n• Categorias\n• AI Assistant\n• Firebase\n• Chat\n\n**Exemplo:** "Explique autenticação"`;
+    }
+    
+    return {
+        html: '',
+        css: '',
+        js: '',
+        explanation: explanation,
+        suggestion: 'Quer saber mais sobre algo específico?'
+    };
+}
+
+/**
+ * ==================== GERADORES - PILAR 2: RACIOCÍNIO LÓGICO ====================
+ */
+
+/**
+ * Gera refatoração de código
+ */
+function generateRefactoring(message, context, entities) {
+    const target = entities.targets[0] || entities.pages[0] || 'código';
+    
+    return {
+        html: '',
+        css: '',
+        js: `// Exemplo de refatoração sugerida para ${target}:
+
+// ANTES (código duplicado):
+function saveEvent() {
+    if (!eventName) {
+        alert('Nome obrigatório');
+        return;
+    }
+    if (!eventDate) {
+        alert('Data obrigatória');
+        return;
+    }
+    firebase.database().ref('events').push(data);
+}
+
+// DEPOIS (refatorado):
+function validateField(value, fieldName) {
+    if (!value) {
+        showError(\`\${fieldName} é obrigatório\`);
+        return false;
+    }
+    return true;
+}
+
+function saveEvent() {
+    const validations = [
+        validateField(eventName, 'Nome'),
+        validateField(eventDate, 'Data')
+    ];
+    
+    if (validations.every(v => v)) {
+        saveToDatabase('events', data);
+    }
+}
+
+function saveToDatabase(collection, data) {
+    return firebase.database().ref(collection).push(data);
+}
+
+// ✅ Benefícios:
+// • Código mais limpo e legível
+// • Reutilização de funções
+// • Mais fácil de testar
+// • Manutenção simplificada`,
+        explanation: `♻️ **Refatoração de Código**\n\nIdentifiquei oportunidades de melhoria:\n\n✅ **Melhorias:**\n• Extrair funções duplicadas\n• Criar validações reutilizáveis\n• Separar responsabilidades\n• Simplificar lógica condicional\n\n📊 **Impacto:**\n• Redução de ~40% de código\n• Melhor manutenibilidade\n• Menos bugs\n• Mais testável`,
+        suggestion: 'Quer que eu aplique estas refatorações no código real?'
+    };
+}
+
+/**
+ * Gera arquitetura de software
+ */
+function generateArchitecture(message, context, entities) {
+    const diagramCode = `\`\`\`mermaid
+graph TB
+    A[Cliente/Browser] --> B[index.html]
+    B --> C[page-loader.js]
+    C --> D{Autenticação}
+    D -->|Admin| E[AI Assistant]
+    D -->|Treasurer| F[Financeiro]
+    D -->|Todos| G[Dashboard]
+    G --> H[Firebase]
+    E --> H
+    F --> H
+    H --> I[(Realtime Database)]
+    
+    style A fill:#e1f5ff
+    style H fill:#ffeb3b
+    style I fill:#4caf50
+\`\`\``;
+    
+    return {
+        html: `<div class="architecture-diagram">
+    ${diagramCode}
+    <div class="architecture-description">
+        <h3>📐 Arquitetura do EventFlow System</h3>
+        <h4>Camadas:</h4>
+        <ul>
+            <li><strong>Apresentação:</strong> HTML/CSS/JavaScript vanilla</li>
+            <li><strong>Roteamento:</strong> Sistema modular (page-loader.js)</li>
+            <li><strong>Autenticação:</strong> Role-based access control</li>
+            <li><strong>Lógica:</strong> Módulos independentes por funcionalidade</li>
+            <li><strong>Dados:</strong> Firebase Realtime Database</li>
+        </ul>
+        <h4>Padrões Utilizados:</h4>
+        <ul>
+            <li>✅ Modular Architecture</li>
+            <li>✅ Separation of Concerns</li>
+            <li>✅ Observer Pattern (Firebase listeners)</li>
+            <li>✅ Factory Pattern (page templates)</li>
+        </ul>
+    </div>
+</div>`,
+        css: `.architecture-diagram {
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+.architecture-description {
+    margin-top: 20px;
+}
+
+.architecture-description h3 {
+    color: var(--primary-color);
+    margin-bottom: 15px;
+}
+
+.architecture-description h4 {
+    color: #666;
+    margin: 15px 0 10px 0;
+}
+
+.architecture-description ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.architecture-description li {
+    padding: 5px 0;
+    border-bottom: 1px solid #f0f0f0;
+}`,
+        js: '',
+        explanation: `🏗️ **Arquitetura do Sistema**\n\n**Estrutura Atual:**\n• **Frontend:** SPA com carregamento modular\n• **Backend:** Firebase Realtime Database\n• **Autenticação:** Sistema de roles\n• **Módulos:** Independentes e desacoplados\n\n**Pontos Fortes:**\n✅ Escalável\n✅ Manutenível\n✅ Modular\n✅ Real-time\n\n**Sugestões de Melhoria:**\n💡 State management (Redux/Vuex)\n💡 TypeScript para type safety\n💡 Service Workers (PWA)\n💡 Code splitting avançado`,
+        suggestion: 'Quer que eu implemente alguma destas melhorias?'
+    };
+}
+
+/**
  * Geração geral
  */
 function generateGeneral(message, context) {
@@ -1725,6 +2081,1157 @@ function generateGeneral(message, context) {
                      </ul>`,
         files: [],
         code: null
+    };
+}
+
+/**
+ * ==================== GERADORES - PILAR 3: GERENCIAMENTO DE DADOS ====================
+ */
+
+/**
+ * Gera documento (PDF, DOCX, XLSX)
+ */
+function generateDocument(message, context, entities) {
+    const format = /pdf/i.test(message) ? 'PDF' : /docx|word/i.test(message) ? 'DOCX' : /xlsx|excel/i.test(message) ? 'XLSX' : 'PDF';
+    
+    const js = `// Geração de ${format}
+function generateDocument${format}() {
+    ${format === 'PDF' ? `
+    // Usando jsPDF
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    // Cabeçalho
+    doc.setFontSize(20);
+    doc.text('EventFlow System - Relatório', 20, 20);
+    
+    // Dados
+    doc.setFontSize(12);
+    doc.text(\`Data: \${new Date().toLocaleDateString()}\`, 20, 30);
+    
+    // Estatísticas
+    doc.text('Estatísticas:', 20, 45);
+    doc.text(\`Total de Eventos: \${events.length}\`, 30, 55);
+    doc.text(\`Eventos Ativos: \${activeEvents.length}\`, 30, 65);
+    
+    // Salvar
+    doc.save('relatorio-eventflow.pdf');
+    ` : format === 'DOCX' ? `
+    // Usando docx.js
+    const doc = new docx.Document({
+        sections: [{
+            properties: {},
+            children: [
+                new docx.Paragraph({
+                    text: "EventFlow System - Relatório",
+                    heading: docx.HeadingLevel.HEADING_1
+                }),
+                new docx.Paragraph({
+                    text: \`Data: \${new Date().toLocaleDateString()}\`
+                }),
+                new docx.Paragraph({
+                    text: "Estatísticas",
+                    heading: docx.HeadingLevel.HEADING_2
+                }),
+                new docx.Paragraph({
+                    text: \`Total de Eventos: \${events.length}\`
+                })
+            ]
+        }]
+    });
+    
+    docx.Packer.toBlob(doc).then(blob => {
+        saveAs(blob, 'relatorio-eventflow.docx');
+    });
+    ` : `
+    // Usando xlsx
+    const ws = XLSX.utils.json_to_sheet(events);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Eventos');
+    XLSX.writeFile(wb, 'relatorio-eventflow.xlsx');
+    `}
+}
+
+// Adicionar script necessário
+const script = document.createElement('script');
+script.src = '${format === 'PDF' ? 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js' : 
+              format === 'DOCX' ? 'https://cdnjs.cloudflare.com/ajax/libs/docx/7.8.2/docx.min.js' : 
+              'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'}';
+document.head.appendChild(script);
+
+script.onload = () => {
+    generateDocument${format}();
+};`;
+    
+    return {
+        html: '',
+        css: '',
+        js: js,
+        explanation: `📄 **Gerar Documento ${format}**\n\nCriando código para exportar dados em ${format}.\n\n✅ **Recursos:**\n• Formatação profissional\n• Dados do Firebase\n• Download automático\n• Totalmente customizável\n\n📚 **Bibliotecas:**\n${format === 'PDF' ? '• jsPDF' : format === 'DOCX' ? '• docx.js' : '• SheetJS (xlsx)'}`,
+        suggestion: 'Clique em "Aplicar Código" para gerar o documento'
+    };
+}
+
+/**
+ * Gera manipulação de dados
+ */
+function generateDataManipulation(message, context, entities) {
+    const action = /filtrar/i.test(message) ? 'filter' : 
+                   /ordenar|organizar/i.test(message) ? 'sort' : 
+                   /agrupar/i.test(message) ? 'group' : 'transform';
+    
+    const js = `// Manipulação de dados: ${action}
+${action === 'filter' ? `
+// Filtrar eventos ativos com rating > 4
+const filteredEvents = events.filter(event => {
+    return event.status === 'ativo' && event.rating >= 4;
+});
+
+console.log('Eventos filtrados:', filteredEvents);
+` : action === 'sort' ? `
+// Ordenar eventos por rating (maior para menor)
+const sortedEvents = events.sort((a, b) => {
+    return (b.rating || 0) - (a.rating || 0);
+});
+
+// Ou por data (mais recente primeiro)
+const sortedByDate = events.sort((a, b) => {
+    return new Date(b.date) - new Date(a.date);
+});
+` : action === 'group' ? `
+// Agrupar eventos por categoria
+const groupedEvents = events.reduce((acc, event) => {
+    const category = event.category || 'Sem categoria';
+    if (!acc[category]) {
+        acc[category] = [];
+    }
+    acc[category].push(event);
+    return acc;
+}, {});
+
+// Contar por categoria
+const categoryCount = Object.entries(groupedEvents).map(([cat, evts]) => ({
+    category: cat,
+    count: evts.length,
+    avgRating: evts.reduce((sum, e) => sum + (e.rating || 0), 0) / evts.length
+}));
+` : `
+// Transformar dados (ex: adicionar campos calculados)
+const transformedEvents = events.map(event => ({
+    ...event,
+    isHighRated: event.rating >= 4,
+    daysUntil: Math.ceil((new Date(event.date) - new Date()) / (1000 * 60 * 60 * 24)),
+    isPast: new Date(event.date) < new Date()
+}));
+`}
+
+// Atualizar UI
+displayResults(${action === 'filter' ? 'filteredEvents' : action === 'sort' ? 'sortedEvents' : action === 'group' ? 'categoryCount' : 'transformedEvents'});`;
+    
+    return {
+        html: '',
+        css: '',
+        js: js,
+        explanation: `🔄 **Manipular Dados**\n\nOperação: **${action === 'filter' ? 'Filtrar' : action === 'sort' ? 'Ordenar' : action === 'group' ? 'Agrupar' : 'Transformar'}**\n\n✅ Código otimizado para:\n• Performance\n• Legibilidade\n• Manutenibilidade`,
+        suggestion: 'Dados manipulados com sucesso!'
+    };
+}
+
+/**
+ * ==================== GERADORES - PILAR 4: PERCEPÇÃO VISUAL ====================
+ */
+
+/**
+ * Gera diagrama com Mermaid
+ */
+function generateDiagram(message, context, entities) {
+    const type = /fluxo|workflow/i.test(message) ? 'flowchart' : 
+                 /sequência|sequence/i.test(message) ? 'sequence' : 
+                 /classe|class/i.test(message) ? 'class' : 'flowchart';
+    
+    const mermaidCode = type === 'flowchart' ? `
+graph TD
+    A[Início] --> B{Login?}
+    B -->|Sim| C[Dashboard]
+    B -->|Não| D[Página de Login]
+    C --> E{Papel do Usuário}
+    E -->|Admin| F[Todas as Páginas]
+    E -->|Treasurer| G[Financeiro + Eventos]
+    E -->|Jovens| H[Eventos + Chat]
+    F --> I[Fim]
+    G --> I
+    H --> I
+` : type === 'sequence' ? `
+sequenceDiagram
+    participant U as Usuário
+    participant F as Frontend
+    participant A as Auth
+    participant D as Firebase
+    
+    U->>F: Acessa sistema
+    F->>A: Verifica autenticação
+    A->>D: Busca dados do usuário
+    D-->>A: Retorna role
+    A-->>F: Autoriza/Nega acesso
+    F-->>U: Exibe interface
+` : `
+classDiagram
+    class Event {
+        +String id
+        +String name
+        +Date date
+        +String location
+        +Number rating
+        +String status
+        +save()
+        +delete()
+        +rate()
+    }
+    
+    class Category {
+        +String id
+        +String name
+        +String color
+        +save()
+    }
+    
+    class User {
+        +String id
+        +String name
+        +String role
+        +login()
+        +logout()
+    }
+    
+    Event --> Category
+    Event --> User
+`;
+    
+    const html = `<div class="mermaid-diagram">
+    <pre class="mermaid">
+${mermaidCode.trim()}
+    </pre>
+</div>`;
+    
+    const js = `// Carregar biblioteca Mermaid
+if (!window.mermaid) {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js';
+    document.head.appendChild(script);
+    
+    script.onload = () => {
+        mermaid.initialize({ startOnLoad: true, theme: 'default' });
+        mermaid.contentLoaded();
+    };
+} else {
+    mermaid.contentLoaded();
+}`;
+    
+    return {
+        html: html,
+        css: `.mermaid-diagram {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    margin: 20px 0;
+}
+
+.mermaid {
+    text-align: center;
+}`,
+        js: js,
+        explanation: `📊 **Diagrama Gerado**\n\nTipo: **${type === 'flowchart' ? 'Fluxograma' : type === 'sequence' ? 'Sequência' : 'Classes'}**\n\n✅ Usando Mermaid.js\n• Renderização automática\n• Interativo\n• Exportável`,
+        suggestion: 'Diagrama pronto! Você pode editá-lo no código.'
+    };
+}
+
+/**
+ * Gera placeholder para imagens (sugere APIs)
+ */
+function generateImagePlaceholder(message, context, entities) {
+    return {
+        html: '',
+        css: '',
+        js: '',
+        explanation: `🎨 **Gerar Imagens**\n\nNão tenho capacidade de gerar imagens diretamente.\n\n💡 **APIs Sugeridas:**\n• **DALL-E (OpenAI)** - IA criativa\n• **Stable Diffusion** - Open source\n• **Midjourney** - Alta qualidade\n• **Canva API** - Templates\n\n🔧 **Posso Ajudar Com:**\n• Integrar API de imagens\n• Criar galeria de imagens\n• Otimizar imagens existentes\n• Adicionar filtros CSS`,
+        suggestion: 'Quer que eu integre uma API de geração de imagens?'
+    };
+}
+
+/**
+ * Gera edição visual (filtros CSS)
+ */
+function generateVisualEdit(message, context, entities) {
+    const css = `.visual-filter-grayscale {
+    filter: grayscale(100%);
+}
+
+.visual-filter-sepia {
+    filter: sepia(80%);
+}
+
+.visual-filter-blur {
+    filter: blur(5px);
+}
+
+.visual-filter-brightness {
+    filter: brightness(1.2);
+}
+
+.visual-filter-contrast {
+    filter: contrast(150%);
+}
+
+.visual-filter-vintage {
+    filter: sepia(50%) contrast(1.2) brightness(0.9);
+}
+
+.visual-filter-dramatic {
+    filter: grayscale(100%) contrast(1.5) brightness(0.8);
+}`;
+    
+    const js = `// Aplicar filtro visual
+function applyVisualFilter(element, filterClass) {
+    // Remover filtros existentes
+    element.classList.remove(
+        'visual-filter-grayscale',
+        'visual-filter-sepia',
+        'visual-filter-blur',
+        'visual-filter-brightness',
+        'visual-filter-contrast',
+        'visual-filter-vintage',
+        'visual-filter-dramatic'
+    );
+    
+    // Adicionar novo filtro
+    if (filterClass) {
+        element.classList.add(filterClass);
+    }
+}
+
+// Exemplo de uso
+const image = document.querySelector('.event-image');
+applyVisualFilter(image, 'visual-filter-vintage');`;
+    
+    return {
+        html: '',
+        css: css,
+        js: js,
+        explanation: `👁️ **Edição Visual**\n\n✅ **Filtros CSS Disponíveis:**\n• Grayscale (preto e branco)\n• Sepia (vintage)\n• Blur (desfoque)\n• Brightness (brilho)\n• Contrast (contraste)\n• Vintage (estilo antigo)\n• Dramatic (dramático)\n\n🎨 Aplique em imagens ou elementos visuais`,
+        suggestion: 'Filtros prontos para usar! Teste com suas imagens.'
+    };
+}
+
+/**
+ * ==================== GERADORES - PILAR 5: ACESSO À INFORMAÇÃO ====================
+ */
+
+/**
+ * Gera busca na web (simulada)
+ */
+function generateWebSearch(message, context, entities) {
+    return {
+        html: '',
+        css: '',
+        js: '',
+        explanation: `🔍 **Busca na Web**\n\nNão tenho acesso direto à internet no momento.\n\n💡 **Como Posso Ajudar:**\n\n**1. Busca Local:**\n• Pesquisar no código do projeto\n• Buscar em documentação offline\n• Consultar dados do Firebase\n\n**2. Sugestões de APIs:**\n• **Google Custom Search API**\n• **Bing Search API**\n• **DuckDuckGo API**\n\n**3. Documentação Técnica:**\n• Firebase: firebase.google.com/docs\n• MDN Web Docs: developer.mozilla.org\n• Stack Overflow: stackoverflow.com\n\n🔧 Posso criar um sistema de busca integrado no projeto!`,
+        suggestion: 'Quer que eu implemente busca local no código?'
+    };
+}
+
+/**
+ * Gera informações mais recentes (sugere fontes)
+ */
+function generateLatestInfo(message, context, entities) {
+    const stats = context.statistics || {};
+    const recentEvents = (context.events || [])
+        .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+        .slice(0, 5);
+    
+    let info = `📰 **Informações Mais Recentes**\n\n`;
+    info += `**Últimos Eventos Criados:**\n`;
+    
+    if (recentEvents.length > 0) {
+        recentEvents.forEach((event, i) => {
+            info += `${i + 1}. ${event.name} - ${event.date}\n`;
+        });
+    } else {
+        info += `Nenhum evento recente.\n`;
+    }
+    
+    info += `\n📊 **Estatísticas Atuais:**\n`;
+    info += `• Total de Eventos: ${stats.totalEvents || 0}\n`;
+    info += `• Usuários Ativos: ${stats.totalUsers || 0}\n`;
+    info += `• Última Atualização: ${new Date().toLocaleString()}\n`;
+    
+    return {
+        html: '',
+        css: '',
+        js: '',
+        explanation: info,
+        suggestion: 'Dados atualizados em tempo real via Firebase!'
+    };
+}
+
+/**
+ * Gera pesquisa (busca interna)
+ */
+function generateResearch(message, context, entities) {
+    const searchTerm = entities.targets[0] || message.replace(/pesquis(ar|a)|sobre/gi, '').trim();
+    
+    let results = `🔬 **Pesquisa: "${searchTerm}"**\n\n`;
+    
+    // Busca em eventos
+    const matchingEvents = (context.events || []).filter(e => 
+        e.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (e.description || '').toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    
+    if (matchingEvents.length > 0) {
+        results += `📅 **Eventos Encontrados (${matchingEvents.length}):**\n`;
+        matchingEvents.slice(0, 5).forEach(e => {
+            results += `• ${e.name} - ${e.date}\n`;
+        });
+    }
+    
+    // Busca em categorias
+    const matchingCategories = (context.categories || []).filter(c =>
+        c.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    
+    if (matchingCategories.length > 0) {
+        results += `\n🏷️ **Categorias Encontradas (${matchingCategories.length}):**\n`;
+        matchingCategories.forEach(c => {
+            results += `• ${c.name}\n`;
+        });
+    }
+    
+    if (matchingEvents.length === 0 && matchingCategories.length === 0) {
+        results += `❌ Nenhum resultado encontrado para "${searchTerm}"\n\n`;
+        results += `💡 Tente:\n• Termos mais gerais\n• Verificar ortografia\n• Buscar por categoria`;
+    }
+    
+    return {
+        html: '',
+        css: '',
+        js: '',
+        explanation: results,
+        suggestion: 'Pesquisa concluída! Quer refinar a busca?'
+    };
+}
+
+/**
+ * ==================== GERADORES - PILAR 6: AUXÍLIO COGNITIVO ====================
+ */
+
+/**
+ * Gera plano de ação
+ */
+function generatePlan(message, context, entities) {
+    const topic = entities.targets[0] || 'desenvolvimento';
+    
+    const html = `<div class="action-plan">
+    <h2>📋 Plano de Ação: ${topic}</h2>
+    
+    <div class="plan-section">
+        <h3>🎯 Objetivos</h3>
+        <ul>
+            <li>Definir escopo e metas claras</li>
+            <li>Estabelecer métricas de sucesso</li>
+            <li>Identificar recursos necessários</li>
+        </ul>
+    </div>
+    
+    <div class="plan-section">
+        <h3>📅 Cronograma</h3>
+        <table class="plan-timeline">
+            <tr>
+                <th>Fase</th>
+                <th>Atividades</th>
+                <th>Prazo</th>
+            </tr>
+            <tr>
+                <td>Semana 1</td>
+                <td>Planejamento e design</td>
+                <td>7 dias</td>
+            </tr>
+            <tr>
+                <td>Semana 2-3</td>
+                <td>Desenvolvimento</td>
+                <td>14 dias</td>
+            </tr>
+            <tr>
+                <td>Semana 4</td>
+                <td>Testes e ajustes</td>
+                <td>7 dias</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="plan-section">
+        <h3>✅ Checklist</h3>
+        <ul class="checklist">
+            <li><input type="checkbox"> Requisitos documentados</li>
+            <li><input type="checkbox"> Protótipo aprovado</li>
+            <li><input type="checkbox"> Código revisado</li>
+            <li><input type="checkbox"> Testes realizados</li>
+            <li><input type="checkbox"> Deploy em produção</li>
+        </ul>
+    </div>
+</div>`;
+    
+    const css = `.action-plan {
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.action-plan h2 {
+    color: var(--primary-color);
+    margin-bottom: 25px;
+}
+
+.plan-section {
+    margin: 20px 0;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+.plan-section h3 {
+    color: #555;
+    margin-bottom: 10px;
+}
+
+.plan-timeline {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.plan-timeline th,
+.plan-timeline td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.plan-timeline th {
+    background: var(--primary-color);
+    color: white;
+}
+
+.checklist {
+    list-style: none;
+    padding: 0;
+}
+
+.checklist li {
+    padding: 8px 0;
+}
+
+.checklist input[type="checkbox"] {
+    margin-right: 10px;
+}`;
+    
+    return {
+        html: html,
+        css: css,
+        js: '',
+        explanation: `📋 **Plano Criado!**\n\nPlano estruturado para: **${topic}**\n\n✅ Inclui:\n• Objetivos claros\n• Cronograma detalhado\n• Checklist de atividades\n\n💡 Customize conforme necessário!`,
+        suggestion: 'Plano pronto! Quer ajustar algo?'
+    };
+}
+
+/**
+ * Gera ajuda para estudos
+ */
+function generateStudyHelp(message, context, entities) {
+    const topic = entities.targets[0] || 'JavaScript';
+    
+    const html = `<div class="study-guide">
+    <h2>📚 Guia de Estudos: ${topic}</h2>
+    
+    <div class="study-level">
+        <h3>🌱 Iniciante</h3>
+        <ul>
+            <li>Conceitos básicos e fundamentos</li>
+            <li>Sintaxe e estruturas principais</li>
+            <li>Exercícios práticos simples</li>
+        </ul>
+    </div>
+    
+    <div class="study-level">
+        <h3>🌿 Intermediário</h3>
+        <ul>
+            <li>Padrões e boas práticas</li>
+            <li>Estruturas de dados e algoritmos</li>
+            <li>Projetos práticos</li>
+        </ul>
+    </div>
+    
+    <div class="study-level">
+        <h3>🌳 Avançado</h3>
+        <ul>
+            <li>Arquitetura e design patterns</li>
+            <li>Performance e otimização</li>
+            <li>Projetos complexos</li>
+        </ul>
+    </div>
+    
+    <div class="study-resources">
+        <h3>🔗 Recursos Recomendados</h3>
+        <ul>
+            <li>📖 Documentação oficial</li>
+            <li>🎥 Video tutoriais</li>
+            <li>💻 Projetos práticos</li>
+            <li>👥 Comunidades e fóruns</li>
+        </ul>
+    </div>
+</div>`;
+    
+    const css = `.study-guide {
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+}
+
+.study-level {
+    margin: 20px 0;
+    padding: 15px;
+    border-left: 4px solid var(--primary-color);
+    background: #f0f8ff;
+}
+
+.study-level h3 {
+    color: var(--primary-color);
+    margin-bottom: 10px;
+}
+
+.study-resources {
+    margin-top: 25px;
+    padding: 15px;
+    background: #fffdf0;
+    border-radius: 8px;
+}`;
+    
+    return {
+        html: html,
+        css: css,
+        js: '',
+        explanation: `📚 **Guia de Estudos Criado!**\n\nTópico: **${topic}**\n\n✅ Organizado por níveis:\n• Iniciante\n• Intermediário\n• Avançado\n\n💡 Com recursos recomendados!`,
+        suggestion: 'Quer adicionar tópicos específicos ao guia?'
+    };
+}
+
+/**
+ * Gera organização de tarefas
+ */
+function generateTaskOrganization(message, context, entities) {
+    const html = `<div class="task-organizer">
+    <h2>✅ Organizador de Tarefas</h2>
+    
+    <div class="task-matrix">
+        <div class="task-quadrant urgent-important">
+            <h3>🔥 Urgente e Importante</h3>
+            <ul class="task-list">
+                <li>Corrigir bugs críticos</li>
+                <li>Deploy de produção</li>
+            </ul>
+            <button onclick="addTask('urgent-important')">+ Adicionar</button>
+        </div>
+        
+        <div class="task-quadrant not-urgent-important">
+            <h3>📅 Importante (Não Urgente)</h3>
+            <ul class="task-list">
+                <li>Refatoração de código</li>
+                <li>Documentação</li>
+            </ul>
+            <button onclick="addTask('not-urgent-important')">+ Adicionar</button>
+        </div>
+        
+        <div class="task-quadrant urgent-not-important">
+            <h3>⚡ Urgente (Não Importante)</h3>
+            <ul class="task-list">
+                <li>Responder emails</li>
+                <li>Reuniões rápidas</li>
+            </ul>
+            <button onclick="addTask('urgent-not-important')">+ Adicionar</button>
+        </div>
+        
+        <div class="task-quadrant not-urgent-not-important">
+            <h3>📝 Nem Urgente Nem Importante</h3>
+            <ul class="task-list">
+                <li>Organizar arquivos</li>
+                <li>Limpar código antigo</li>
+            </ul>
+            <button onclick="addTask('not-urgent-not-important')">+ Adicionar</button>
+        </div>
+    </div>
+</div>`;
+    
+    const css = `.task-organizer {
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+}
+
+.task-matrix {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.task-quadrant {
+    padding: 15px;
+    border-radius: 8px;
+    border: 2px solid #ddd;
+}
+
+.urgent-important {
+    background: #ffe6e6;
+    border-color: #ff4444;
+}
+
+.not-urgent-important {
+    background: #e6f7ff;
+    border-color: #0088cc;
+}
+
+.urgent-not-important {
+    background: #fff4e6;
+    border-color: #ff9800;
+}
+
+.not-urgent-not-important {
+    background: #f0f0f0;
+    border-color: #999;
+}
+
+.task-list {
+    min-height: 100px;
+    list-style: none;
+    padding: 0;
+    margin: 10px 0;
+}
+
+.task-list li {
+    padding: 8px;
+    margin: 5px 0;
+    background: white;
+    border-radius: 4px;
+    cursor: move;
+}
+
+.task-quadrant button {
+    width: 100%;
+    padding: 8px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}`;
+    
+    const js = `// Sistema de organização de tarefas
+function addTask(quadrant) {
+    const task = prompt('Digite a tarefa:');
+    if (task) {
+        const list = document.querySelector(\`.\${quadrant} .task-list\`);
+        const li = document.createElement('li');
+        li.textContent = task;
+        li.draggable = true;
+        list.appendChild(li);
+        
+        // Salvar no localStorage
+        saveTasks();
+    }
+}
+
+function saveTasks() {
+    const tasks = {};
+    document.querySelectorAll('.task-quadrant').forEach(quadrant => {
+        const className = quadrant.className.split(' ')[1];
+        tasks[className] = Array.from(quadrant.querySelectorAll('.task-list li'))
+            .map(li => li.textContent);
+    });
+    localStorage.setItem('organizerTasks', JSON.stringify(tasks));
+}
+
+// Carregar tarefas salvas
+function loadTasks() {
+    const saved = localStorage.getItem('organizerTasks');
+    if (saved) {
+        const tasks = JSON.parse(saved);
+        Object.entries(tasks).forEach(([quadrant, taskList]) => {
+            const list = document.querySelector(\`.\${quadrant} .task-list\`);
+            list.innerHTML = taskList.map(task => \`<li draggable="true">\${task}</li>\`).join('');
+        });
+    }
+}
+
+loadTasks();`;
+    
+    return {
+        html: html,
+        css: css,
+        js: js,
+        explanation: `✅ **Organizador Criado!**\n\nMatriz de Eisenhower implementada:\n\n1️⃣ Urgente e Importante\n2️⃣ Importante (não urgente)\n3️⃣ Urgente (não importante)\n4️⃣ Nem urgente nem importante\n\n💡 Arraste tarefas entre quadrantes!`,
+        suggestion: 'Comece organizando suas tarefas por prioridade!'
+    };
+}
+
+/**
+ * Gera dicas de produtividade
+ */
+function generateProductivityTips(message, context, entities) {
+    return {
+        html: '',
+        css: '',
+        js: '',
+        explanation: `⚡ **Dicas de Produtividade**\n\n**Técnica Pomodoro:**\n🍅 25 min trabalho + 5 min pausa\n🍅 4 pomodoros = pausa longa (15-30 min)\n\n**Método GTD (Getting Things Done):**\n📥 Capturar tudo\n🤔 Processar\n📋 Organizar\n✅ Revisar\n⚡ Fazer\n\n**Code Flow:**\n• Desative notificações\n• Use música focus\n• Blocos de 90 minutos\n• Breaks regulares\n\n**Ferramentas Sugeridas:**\n• Trello/Notion (organização)\n• RescueTime (monitoramento)\n• Forest (foco)\n• Todoist (tarefas)\n\n💡 **Implemente:**\n• Matriz de Eisenhower (use o organizador)\n• Time blocking no calendário\n• Review semanal`,
+        suggestion: 'Quer que eu crie um timer Pomodoro no sistema?'
+    };
+}
+
+/**
+ * ==================== GERADORES - PILAR 7: ÉTICA E SEGURANÇA ====================
+ */
+
+/**
+ * Gera verificação de segurança
+ */
+function generateSecurityCheck(message, context, entities) {
+    const js = `// Verificação de Segurança do Código
+
+// 1. Validação de Inputs
+function validateInput(input, type) {
+    switch(type) {
+        case 'email':
+            const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+            return emailRegex.test(input);
+        case 'password':
+            // Mínimo 8 caracteres, 1 maiúscula, 1 minúscula, 1 número
+            return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$/.test(input);
+        case 'phone':
+            return /^\\(\\d{2}\\)\\s?\\d{4,5}-?\\d{4}$/.test(input);
+        default:
+            return input.length > 0;
+    }
+}
+
+// 2. Sanitização de dados
+function sanitizeHTML(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+// 3. Proteção contra XSS
+function escapeHTML(text) {
+    return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+// 4. Verificar permissões antes de ações críticas
+function checkPermission(action) {
+    const user = firebase.auth().currentUser;
+    const userRole = localStorage.getItem('userRole');
+    
+    const permissions = {
+        'delete': ['admin'],
+        'edit': ['admin', 'treasurer'],
+        'view': ['admin', 'treasurer', 'jovens']
+    };
+    
+    return permissions[action]?.includes(userRole) || false;
+}
+
+// 5. Rate limiting (prevenir spam)
+const rateLimiter = {
+    attempts: {},
+    check(action, limit = 5, timeWindow = 60000) {
+        const now = Date.now();
+        if (!this.attempts[action]) {
+            this.attempts[action] = [];
+        }
+        
+        // Limpar tentativas antigas
+        this.attempts[action] = this.attempts[action]
+            .filter(time => now - time < timeWindow);
+        
+        if (this.attempts[action].length >= limit) {
+            return false; // Bloqueado
+        }
+        
+        this.attempts[action].push(now);
+        return true; // Permitido
+    }
+};
+
+// 6. Logs de segurança
+function logSecurityEvent(event, details) {
+    const log = {
+        timestamp: new Date().toISOString(),
+        event: event,
+        user: firebase.auth().currentUser?.uid,
+        details: details
+    };
+    
+    firebase.database().ref('security-logs').push(log);
+}
+
+// Exemplo de uso:
+function secureDeleteEvent(eventId) {
+    // 1. Verificar permissão
+    if (!checkPermission('delete')) {
+        alert('Sem permissão para deletar');
+        logSecurityEvent('unauthorized_delete_attempt', { eventId });
+        return;
+    }
+    
+    // 2. Rate limiting
+    if (!rateLimiter.check('delete', 5, 60000)) {
+        alert('Muitas tentativas. Aguarde.');
+        return;
+    }
+    
+    // 3. Confirmar ação
+    if (!confirm('Tem certeza que deseja deletar?')) {
+        return;
+    }
+    
+    // 4. Executar com log
+    firebase.database().ref(\`events/\${eventId}\`).remove()
+        .then(() => {
+            logSecurityEvent('event_deleted', { eventId });
+            alert('Evento deletado com sucesso');
+        })
+        .catch(error => {
+            logSecurityEvent('delete_error', { eventId, error });
+            alert('Erro ao deletar: ' + error.message);
+        });
+}`;
+    
+    return {
+        html: '',
+        css: '',
+        js: js,
+        explanation: `🔒 **Verificação de Segurança**\n\n✅ **Implementações Sugeridas:**\n\n1️⃣ **Validação de Inputs**\n• Email, senha, telefone\n• Proteção contra SQL injection\n\n2️⃣ **Sanitização**\n• Escape de HTML\n• Proteção XSS\n\n3️⃣ **Controle de Acesso**\n• Verificação de roles\n• Permissões granulares\n\n4️⃣ **Rate Limiting**\n• Prevenir spam\n• Proteção contra brute force\n\n5️⃣ **Logs de Auditoria**\n• Rastreamento de ações\n• Detecção de anomalias\n\n⚠️ **Vulnerabilidades Comuns:**\n• XSS (Cross-Site Scripting)\n• Injection attacks\n• Broken authentication\n• Sensitive data exposure`,
+        suggestion: 'Aplicar estas proteções agora?'
+    };
+}
+
+/**
+ * Gera validação de dados com segurança
+ */
+function generateDataValidation(message, context, entities) {
+    const js = `// Sistema Completo de Validação de Dados
+
+class DataValidator {
+    constructor() {
+        this.rules = {
+            required: (value) => value !== null && value !== undefined && value !== '',
+            email: (value) => /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(value),
+            minLength: (value, min) => value.length >= min,
+            maxLength: (value, max) => value.length <= max,
+            number: (value) => !isNaN(value),
+            positive: (value) => Number(value) > 0,
+            url: (value) => /^https?:\\/\\/.+/.test(value),
+            phone: (value) => /^\\(?\\d{2}\\)?\\s?\\d{4,5}-?\\d{4}$/.test(value),
+            cpf: (value) => this.validateCPF(value),
+            date: (value) => !isNaN(Date.parse(value)),
+            futureDate: (value) => new Date(value) > new Date()
+        };
+        
+        this.errors = [];
+    }
+    
+    validate(data, schema) {
+        this.errors = [];
+        
+        for (const [field, rules] of Object.entries(schema)) {
+            const value = data[field];
+            
+            for (const [ruleName, ruleParam] of Object.entries(rules)) {
+                const ruleFunc = this.rules[ruleName];
+                
+                if (!ruleFunc) {
+                    console.warn(\`Regra desconhecida: \${ruleName}\`);
+                    continue;
+                }
+                
+                const isValid = ruleParam === true 
+                    ? ruleFunc(value)
+                    : ruleFunc(value, ruleParam);
+                
+                if (!isValid) {
+                    this.errors.push({
+                        field: field,
+                        rule: ruleName,
+                        message: this.getErrorMessage(field, ruleName, ruleParam)
+                    });
+                }
+            }
+        }
+        
+        return this.errors.length === 0;
+    }
+    
+    getErrors() {
+        return this.errors;
+    }
+    
+    getErrorMessage(field, rule, param) {
+        const messages = {
+            required: \`\${field} é obrigatório\`,
+            email: \`\${field} deve ser um email válido\`,
+            minLength: \`\${field} deve ter no mínimo \${param} caracteres\`,
+            maxLength: \`\${field} deve ter no máximo \${param} caracteres\`,
+            number: \`\${field} deve ser um número\`,
+            positive: \`\${field} deve ser positivo\`,
+            url: \`\${field} deve ser uma URL válida\`,
+            phone: \`\${field} deve ser um telefone válido\`,
+            cpf: \`\${field} deve ser um CPF válido\`,
+            date: \`\${field} deve ser uma data válida\`,
+            futureDate: \`\${field} deve ser uma data futura\`
+        };
+        
+        return messages[rule] || \`\${field} é inválido\`;
+    }
+    
+    validateCPF(cpf) {
+        cpf = cpf.replace(/[^\\d]/g, '');
+        
+        if (cpf.length !== 11) return false;
+        if (/^(\\d)\\1+$/.test(cpf)) return false;
+        
+        let sum = 0;
+        for (let i = 0; i < 9; i++) {
+            sum += parseInt(cpf.charAt(i)) * (10 - i);
+        }
+        let digit = 11 - (sum % 11);
+        if (digit >= 10) digit = 0;
+        if (digit !== parseInt(cpf.charAt(9))) return false;
+        
+        sum = 0;
+        for (let i = 0; i < 10; i++) {
+            sum += parseInt(cpf.charAt(i)) * (11 - i);
+        }
+        digit = 11 - (sum % 11);
+        if (digit >= 10) digit = 0;
+        if (digit !== parseInt(cpf.charAt(10))) return false;
+        
+        return true;
+    }
+    
+    displayErrors(containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        if (this.errors.length > 0) {
+            const errorList = document.createElement('ul');
+            errorList.className = 'validation-errors';
+            
+            this.errors.forEach(error => {
+                const li = document.createElement('li');
+                li.textContent = error.message;
+                errorList.appendChild(li);
+            });
+            
+            container.appendChild(errorList);
+        }
+    }
+}
+
+// Exemplo de uso:
+const validator = new DataValidator();
+
+// Schema de validação para evento
+const eventSchema = {
+    name: {
+        required: true,
+        minLength: 3,
+        maxLength: 100
+    },
+    date: {
+        required: true,
+        date: true,
+        futureDate: true
+    },
+    email: {
+        required: true,
+        email: true
+    },
+    participants: {
+        required: true,
+        number: true,
+        positive: true
+    }
+};
+
+// Validar formulário
+function validateEventForm() {
+    const data = {
+        name: document.getElementById('event-name').value,
+        date: document.getElementById('event-date').value,
+        email: document.getElementById('event-email').value,
+        participants: document.getElementById('event-participants').value
+    };
+    
+    if (validator.validate(data, eventSchema)) {
+        // Dados válidos, pode salvar
+        saveEvent(data);
+    } else {
+        // Exibir erros
+        validator.displayErrors('validation-errors-container');
+    }
+}`;
+    
+    const css = `.validation-errors {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 4px;
+    padding: 15px;
+    margin: 15px 0;
+    list-style: none;
+}
+
+.validation-errors li {
+    color: #856404;
+    padding: 5px 0;
+    padding-left: 20px;
+    position: relative;
+}
+
+.validation-errors li::before {
+    content: "⚠️";
+    position: absolute;
+    left: 0;
+}
+
+.field-error {
+    border-color: #dc3545 !important;
+}
+
+.field-success {
+    border-color: #28a745 !important;
+}`;
+    
+    return {
+        html: `<div id="validation-errors-container"></div>`,
+        css: css,
+        js: js,
+        explanation: `✅ **Sistema de Validação Completo**\n\n**Regras Disponíveis:**\n• required, email, phone\n• minLength, maxLength\n• number, positive\n• url, date, futureDate\n• CPF (validação brasileira)\n\n**Recursos:**\n• Validação em tempo real\n• Mensagens personalizadas\n• Display de erros\n• Fácil extensão\n\n🛡️ **Segurança:**\n• Sanitização automática\n• Proteção contra injection\n• Validação no client e server`,
+        suggestion: 'Sistema pronto para proteger seus formulários!'
     };
 }
 
