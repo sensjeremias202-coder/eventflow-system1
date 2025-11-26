@@ -55,6 +55,7 @@ const defaultCategories = [
 const defaultEvents = [
     {
         id: 1,
+        name: 'Festival de Música',
         title: 'Festival de Música',
         date: '2024-12-15',
         time: '18:00',
@@ -62,6 +63,10 @@ const defaultEvents = [
         description: 'Um festival com as melhores bandas da região. Traga sua família e amigos!',
         category: 1,
         createdBy: 1,
+        enrolled: [2, 3],
+        maxParticipants: 100,
+        price: null,
+        image: 'https://via.placeholder.com/400x200/4361ee/ffffff?text=Festival+de+Musica',
         ratings: [
             { userId: 2, rating: 4, comment: 'Ótimo evento, adoramos a apresentação!', date: '2023-10-16' },
             { userId: 3, rating: 5, comment: 'Incrível! Já estou ansioso para a próxima edição.', date: '2023-10-16' }
@@ -69,6 +74,7 @@ const defaultEvents = [
     },
     {
         id: 2,
+        name: 'Workshop de Marketing Digital',
         title: 'Workshop de Marketing Digital',
         date: '2024-12-20',
         time: '14:00',
@@ -76,9 +82,29 @@ const defaultEvents = [
         description: 'Aprenda as melhores estratégias de marketing digital com especialistas.',
         category: 2,
         createdBy: 1,
+        enrolled: [2],
+        maxParticipants: 50,
+        price: 49.90,
+        image: 'https://via.placeholder.com/400x200/3f37c9/ffffff?text=Workshop+Digital',
         ratings: [
             { userId: 2, rating: 4, comment: 'Conteúdo muito relevante para meu negócio.', date: '2023-10-21' }
         ]
+    },
+    {
+        id: 3,
+        name: 'Retiro Espiritual',
+        title: 'Retiro Espiritual',
+        date: '2025-01-10',
+        time: '08:00',
+        location: 'Sítio Vale da Paz',
+        description: 'Um final de semana de renovação espiritual, reflexão e comunhão com Deus.',
+        category: 1,
+        createdBy: 1,
+        enrolled: [],
+        maxParticipants: 30,
+        price: 120.00,
+        image: 'https://via.placeholder.com/400x200/43e97b/ffffff?text=Retiro+Espiritual',
+        ratings: []
     }
 ];
 
@@ -440,12 +466,9 @@ function showApp() {
     console.log(`[auth] ⚡ Carregando página inicial: ${initialPage}`);
     if (typeof showModularPage === 'function') {
         // Sistema modular - carrega dinamicamente
-        showModularPage(initialPage).catch(err => {
-            console.error(`[auth] Erro ao carregar ${initialPage}:`, err);
-            // Fallback: tentar carregar da forma antiga
-            if (initialPage === 'dashboard' && typeof loadDashboard === 'function') loadDashboard();
-            if (initialPage === 'events' && typeof loadEvents === 'function') loadEvents();
-        });
+        setTimeout(() => {
+            showModularPage(initialPage);
+        }, 100);
     } else {
         // Fallback: sistema antigo
         console.warn('[auth] ⚠️ Sistema modular não disponível, usando carregamento tradicional');

@@ -1,3 +1,53 @@
+// ============================================
+// SISTEMA DE NOTIFICAÇÕES
+// ============================================
+
+// Sistema de notificações toast
+function showNotification(message, type = 'info', duration = 3000) {
+    // Tipos: success, error, warning, info
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#43e97b' : type === 'error' ? '#f72585' : type === 'warning' ? '#ffa726' : '#4361ee'};
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        max-width: 400px;
+        animation: slideInRight 0.3s ease;
+    `;
+    
+    const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : type === 'warning' ? '⚠' : 'ℹ';
+    notification.innerHTML = `
+        <span style="font-size: 1.2em; font-weight: bold;">${icon}</span>
+        <span>${message}</span>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(() => {
+            notification.remove();
+        }, 300);
+    }, duration);
+}
+
+// Alias para compatibilidade
+window.showNotification = showNotification;
+window.showNotificationToast = showNotification;
+
+// ============================================
+// SISTEMA DE CONFIRMAÇÃO
+// ============================================
+
 // Modal de confirmação genérico que retorna uma Promise
 function showConfirm(message, title = 'Confirmação', options = {}) {
     // options: { type: 'primary'|'danger'|'warning' }
