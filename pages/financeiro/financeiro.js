@@ -23,16 +23,20 @@ function loadFinanceiro() {
     }
     
     // Mostrar/ocultar elementos baseado no tipo de usuário
+    // APENAS dentro da página financeira (não afetar sidebar)
     const isTreasurer = currentUser.role === 'treasurer' || currentUser.role === 'admin';
     const isAdmin = currentUser.role === 'admin';
     
-    document.querySelectorAll('.treasurer-only').forEach(el => {
-        el.style.display = isTreasurer ? '' : 'none';
-    });
-    
-    document.querySelectorAll('.admin-only').forEach(el => {
-        el.style.display = isAdmin ? '' : 'none';
-    });
+    const financeiroPage = document.getElementById('financeiro-page');
+    if (financeiroPage) {
+        financeiroPage.querySelectorAll('.treasurer-only').forEach(el => {
+            el.style.display = isTreasurer ? '' : 'none';
+        });
+        
+        financeiroPage.querySelectorAll('.admin-only').forEach(el => {
+            el.style.display = isAdmin ? '' : 'none';
+        });
+    }
     
     // Carregar eventos no select
     loadEventsList();
