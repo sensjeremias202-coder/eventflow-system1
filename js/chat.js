@@ -534,7 +534,22 @@ function selectChatGroup(groupId) {
     const currentChatStatusElement = document.getElementById('currentChatStatus');
     
     if (currentChatUserElement) {
-        currentChatUserElement.innerHTML = `<i class="fas fa-users"></i> ${group.name}`;
+        // Adicionar menu de opções do grupo
+        currentChatUserElement.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
+                <i class="fas fa-users"></i> 
+                <span>${group.name}</span>
+                <button class="btn btn-sm" id="groupOptionsBtn" style="margin-left: auto;" title="Opções do grupo">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+            </div>
+        `;
+        
+        // Adicionar menu dropdown
+        document.getElementById('groupOptionsBtn').addEventListener('click', function(e) {
+            e.stopPropagation();
+            showGroupOptionsMenu(group);
+        });
     }
     if (currentChatStatusElement) {
         currentChatStatusElement.textContent = `${group.members.length} membros`;
@@ -629,3 +644,274 @@ window.loadChatUsers = loadChatUsers;
 window.setupChat = setupChat;
 window.stopAutoMessages = stopAutoMessages;
 window.openCreateGroupModal = openCreateGroupModal;
+
+/**
+ * Mostrar menu de opções do grupo
+ */
+function showGroupOptionsMenu(group) {
+    // Remover menu anterior se existir
+    const existingMenu = document.getElementById('groupOptionsMenu');
+    if (existingMenu) {
+        existingMenu.remove();
+        return;
+    }
+    
+    const menu = document.createElement('div');
+    menu.id = 'groupOptionsMenu';
+    menu.className = 'dropdown-menu';
+    menu.style.cssText = `
+        position: absolute;
+        top: 60px;
+        right: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        padding: 8px 0;
+        min-width: 200px;
+        z-index: 1000;
+    `;
+    
+    const isCreator = group.createdBy === currentUser.id;
+    const isMember = group.members.includes(currentUser.id);
+    
+    menu.innerHTML = `
+        <div class="menu-item" data-action="viewMembers" style="padding: 12px 16px; cursor: pointer; transition: background 0.2s;">
+            <i class="fas fa-users" style="margin-right: 8px; width: 20px;"></i> Ver Membros
+        </div>
+        ${isCreator ? `
+        <div class="menu-item" data-action="addMembers" style="padding: 12px 16px; cursor: pointer; transition: background 0.2s;">
+            <i class="fas fa-user-plus" style="margin-right: 8px; width: 20px;"></i> Adicionar Membros
+        </div>
+        ` : ''}
+        <div class="menu-item" data-action="leaveGroup" style="padding: 12px 16px; cursor: pointer; transition: background 0.2s;">
+            <i class="fas fa-sign-out-alt" style="margin-right: 8px; width: 20px;"></i> Sair do Grupo
+        </div>
+        ${isCreator ? `
+        <div style="height: 1px; background: var(--border-color); margin: 4px 0;"></div>
+        <div class="menu-item" data-action="deleteGroup" style="padding: 12px 16px; cursor: pointer; transition: background 0.2s; color: var(--danger);">
+            <i class="fas fa-trash" style="margin-right: 8px; width: 20px;"></i> Excluir Grupo
+        </div>
+        ` : ''}
+    `;
+    
+    document.body.appendChild(menu);
+    
+    // Adicionar hover effects
+    menu.querySelectorAll('.menu-item').forEach(item => {
+        item.addEventListener('mouseenter', function() {
+            this.style.background = 'var(--light)';
+        });
+        item.addEventListener('mouseleave', function() {
+            this.style.background = 'transparent';
+        });
+        
+        item.addEventListener('click', function() {
+            const action = this.getAttribute('data-action');
+            menu.remove();
+            handleGroupAction(action, group);
+        });
+    });
+    
+    // Fechar ao clicar fora
+    setTimeout(() => {
+        document.addEventListener('click', function closeMenu() {
+            menu.remove();
+            document.removeEventListener('click', closeMenu);
+        });
+    }, 100);
+}
+
+/**
+ * Executar ação do grupo
+ */
+function handleGroupAction(action, group) {
+    switch(action) {
+        case 'viewMembers':
+            viewGroupMembers(group);
+            break;
+        case 'addMembers':
+            addGroupMembers(group);
+            break;
+        case 'leaveGroup':
+            leaveGroup(group);
+            break;
+        case 'deleteGroup':
+            deleteGroup(group);
+            break;
+    }
+}
+
+/**
+ * Ver membros do grupo
+ */
+function viewGroupMembers(group) {
+    const membersList = group.members.map(memberId => {
+        const user = users.find(u => u.id === memberId);
+        return user ? `
+            <div style="display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid var(--border-color);">
+                <div class="chat-user-avatar" style="width: 40px; height: 40px;">${user.name.split(' ').map(n => n[0]).join('').toUpperCase()}</div>
+                <div style="flex: 1;">
+                    <div style="font-weight: 500;">${user.name}</div>
+                    <div style="font-size: 12px; color: var(--gray);">${user.email}</div>
+                </div>
+                ${group.createdBy === user.id ? '<span style="background: var(--primary); color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px;">Admin</span>' : ''}
+            </div>
+        ` : '';
+    }).join('');
+    
+    showModal('Membros do Grupo', `
+        <div style="max-height: 400px; overflow-y: auto;">
+            ${membersList}
+        </div>
+    `);
+}
+
+/**
+ * Adicionar membros ao grupo
+ */
+function addGroupMembers(group) {
+    const availableUsers = users.filter(u => 
+        !group.members.includes(u.id) && u.id !== currentUser.id
+    );
+    
+    if (availableUsers.length === 0) {
+        showNotification('Todos os usuários já estão no grupo', 'info');
+        return;
+    }
+    
+    const usersList = availableUsers.map(user => `
+        <label style="display: flex; align-items: center; gap: 12px; padding: 10px; cursor: pointer; border-radius: 8px; transition: all 0.2s;" onmouseenter="this.style.background='var(--light)'" onmouseleave="this.style.background='transparent'">
+            <input type="checkbox" class="add-member-checkbox" value="${user.id}" style="width: 20px; height: 20px; cursor: pointer;">
+            <div class="chat-user-avatar" style="width: 35px; height: 35px;">${user.name.split(' ').map(n => n[0]).join('').toUpperCase()}</div>
+            <div>
+                <div style="font-weight: 500;">${user.name}</div>
+                <div style="font-size: 12px; color: var(--gray);">${user.email}</div>
+            </div>
+        </label>
+    `).join('');
+    
+    showModal('Adicionar Membros', `
+        <div style="max-height: 300px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; margin-bottom: 15px;">
+            ${usersList}
+        </div>
+        <button class="btn btn-primary" onclick="confirmAddMembers('${group.id}')" style="width: 100%;">
+            <i class="fas fa-user-plus"></i> Adicionar Selecionados
+        </button>
+    `);
+}
+
+/**
+ * Confirmar adição de membros
+ */
+function confirmAddMembers(groupId) {
+    const checkboxes = document.querySelectorAll('.add-member-checkbox:checked');
+    
+    if (checkboxes.length === 0) {
+        showNotification('Selecione pelo menos um membro', 'error');
+        return;
+    }
+    
+    const newMemberIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+    
+    // Atualizar grupo
+    const groupIndex = chatGroups.findIndex(g => g.id === groupId);
+    if (groupIndex !== -1) {
+        chatGroups[groupIndex].members.push(...newMemberIds);
+        localStorage.setItem('chatGroups', JSON.stringify(chatGroups));
+        
+        showNotification(`${newMemberIds.length} membro(s) adicionado(s) ao grupo`, 'success');
+        
+        // Fechar modal
+        document.getElementById('customModal').classList.remove('active');
+        
+        // Recarregar chat
+        loadChatUsers();
+        selectChatGroup(groupId);
+    }
+}
+
+/**
+ * Sair do grupo
+ */
+function leaveGroup(group) {
+    if (!confirm(`Deseja realmente sair do grupo "${group.name}"?`)) {
+        return;
+    }
+    
+    const groupIndex = chatGroups.findIndex(g => g.id === group.id);
+    if (groupIndex !== -1) {
+        // Remover usuário da lista de membros
+        chatGroups[groupIndex].members = chatGroups[groupIndex].members.filter(id => id !== currentUser.id);
+        
+        // Se o grupo ficar sem membros ou só com o criador, excluir
+        if (chatGroups[groupIndex].members.length === 0) {
+            chatGroups.splice(groupIndex, 1);
+        }
+        
+        localStorage.setItem('chatGroups', JSON.stringify(chatGroups));
+        showNotification('Você saiu do grupo', 'success');
+        
+        // Recarregar lista
+        currentChatUser = null;
+        loadChatUsers();
+    }
+}
+
+/**
+ * Excluir grupo
+ */
+function deleteGroup(group) {
+    if (!confirm(`Deseja realmente excluir o grupo "${group.name}"? Esta ação não pode ser desfeita.`)) {
+        return;
+    }
+    
+    const groupIndex = chatGroups.findIndex(g => g.id === group.id);
+    if (groupIndex !== -1) {
+        chatGroups.splice(groupIndex, 1);
+        localStorage.setItem('chatGroups', JSON.stringify(chatGroups));
+        showNotification('Grupo excluído', 'success');
+        
+        // Recarregar lista
+        currentChatUser = null;
+        loadChatUsers();
+    }
+}
+
+/**
+ * Mostrar modal customizado
+ */
+function showModal(title, content) {
+    let modal = document.getElementById('customModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'customModal';
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="customModalTitle">${title}</h3>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div id="customModalBody"></div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        modal.querySelector('.modal-close').addEventListener('click', () => {
+            modal.classList.remove('active');
+        });
+        
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+            }
+        });
+    }
+    
+    document.getElementById('customModalTitle').textContent = title;
+    document.getElementById('customModalBody').innerHTML = content;
+    modal.classList.add('active');
+}
+
+// Exportar funções para uso global
+window.confirmAddMembers = confirmAddMembers;
