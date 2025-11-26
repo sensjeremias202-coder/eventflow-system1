@@ -375,8 +375,11 @@ function showApp() {
     // Mostrar/ocultar funcionalidades baseado no role
     if (currentUser.role === 'admin') {
         // Admin: acesso total
-        document.querySelectorAll('.admin-only').forEach(el => {
+        const adminElements = document.querySelectorAll('.admin-only');
+        console.log('[auth] 🔍 Total de elementos admin-only encontrados:', adminElements.length);
+        adminElements.forEach(el => {
             el.style.display = 'flex';
+            console.log('[auth] ✅ Exibindo elemento admin-only:', el.textContent?.trim() || el.innerHTML.substring(0, 50));
         });
         document.querySelectorAll('.admin-treasurer-only').forEach(el => {
             el.style.display = 'flex';
