@@ -83,20 +83,29 @@ async function loadHTML(path) {
     const pageName = path.match(/pages\/([^\/]+)\//)?.[1];
     
     if (pageName) {
-        // Tentar usar template inline primeiro
+        // SEMPRE usar template inline
         const template = document.getElementById(`template-${pageName}`);
         if (template) {
             console.log(`[loader] ✅ Usando template inline: ${pageName}`);
             return template.innerHTML;
+        } else {
+            console.warn(`[loader] ⚠️ Template não encontrado: template-${pageName}`);
+            // Retornar HTML básico como fallback
+            return `
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">${pageName.charAt(0).toUpperCase() + pageName.slice(1)}</div>
+                    </div>
+                    <div class="card-body">
+                        <p>Conteúdo da página ${pageName}</p>
+                    </div>
+                </div>
+            `;
         }
     }
     
-    // Fallback para fetch (requer servidor HTTP)
-    const response = await fetch(path);
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return await response.text();
+    // Se não conseguir extrair o nome da página, retornar erro
+    throw new Error(`Não foi possível carregar: ${path}`);
 }
 
 /**

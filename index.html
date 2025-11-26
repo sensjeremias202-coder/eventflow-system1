@@ -628,106 +628,28 @@
     </template>
     
     <template id="template-ai-assistant">
-        <div class="card">
-            <div class="card-header">
-                <div class="card-title"><i class="fas fa-user"></i> Meu Perfil</div>
-            </div>
-            <div class="card-body">
-                <div class="profile-info">
-                    <div class="profile-avatar"><i class="fas fa-user-circle"></i></div>
-                    <div class="form-group">
-                        <label class="form-label">Nome Completo</label>
-                        <input type="text" class="form-control" id="profileName" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">E-mail</label>
-                        <input type="email" class="form-control" id="profileEmail" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Tipo de Conta</label>
-                        <input type="text" class="form-control" id="profileRole" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Membro desde</label>
-                        <input type="text" class="form-control" id="profileRegistered" readonly>
-                    </div>
-                    <div class="form-group">
-                        <button class="btn btn-primary" id="editProfileBtn">
-                            <i class="fas fa-edit"></i> Editar Perfil
-                        </button>
-                        <button class="btn btn-danger" id="deleteAccountBtn" style="margin-left: 10px;">
-                            <i class="fas fa-trash"></i> Excluir Conta
+        <div class="ai-assistant-container">
+            <div class="ai-chat-panel">
+                <div class="ai-header">
+                    <h2>🤖 Assistente AI - EventFlow</h2>
+                    <p>Seu assistente inteligente para gerenciamento de eventos</p>
+                </div>
+                <div class="ai-messages" id="aiMessages"></div>
+                <div class="chat-input-container-ai">
+                    <div class="chat-input-wrapper">
+                        <textarea class="chat-input-ai" id="aiInput" placeholder="Pergunte algo..."></textarea>
+                        <button class="btn btn-primary btn-icon-ai" id="sendAiBtn">
+                            <i class="fas fa-paper-plane"></i>
                         </button>
                     </div>
                 </div>
-                <div class="card" style="margin-top: 20px;">
-                    <div class="card-header">
-                        <div class="card-title"><i class="fas fa-calendar-check"></i> Meus Eventos</div>
-                    </div>
-                    <div class="card-body" id="myEventsProfile"></div>
-                </div>
-                <div class="card" style="margin-top: 20px;">
-                    <div class="card-header">
-                        <div class="card-title"><i class="fas fa-star"></i> Minhas Avaliações</div>
-                    </div>
-                    <div class="card-body" id="myRatingsProfile"></div>
-                </div>
             </div>
         </div>
     </template>
-    
-    <template id="template-users">
-        <div class="card">
-            <div class="card-header">
-                <div class="card-title">Gerenciar Usuários</div>
-                <button class="btn btn-primary" id="addUserBtn">
-                    <i class="fas fa-plus"></i> Adicionar Usuário
-                </button>
-            </div>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Nome</th>
-                        <th>E-mail</th>
-                        <th>Tipo</th>
-                        <th>Data de Registro</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody id="usersTable"></tbody>
-            </table>
-        </div>
-    </template>
-    
-    <template id="template-categories">
-        <div class="card">
-            <div class="card-header">
-                <div class="card-title">Gerenciar Categorias</div>
-                <button class="btn btn-primary" id="addCategoryBtn">
-                    <i class="fas fa-plus"></i> Adicionar Categoria
-                </button>
-            </div>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Nome</th>
-                        <th>Cor</th>
-                        <th>Ícone</th>
-                        <th>Eventos</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody id="categoriesTable"></tbody>
-            </table>
-        </div>
-    </template>
-    
-    <template id="template-financeiro">
-        <div class="card">
-            <div class="card-header">
-                <div class="card-title">
-                    <i class="fas fa-coins"></i> Gestão Financeira de Eventos
-                </div>
+
+    <!-- ============================================ -->
+    <!-- MODALS -->
+    <!-- ============================================ -->
                 <div>
                     <button class="btn btn-primary treasurer-only" id="addExpenseBtn" style="display: none;">
                         <i class="fas fa-plus"></i> Adicionar Gasto
@@ -914,15 +836,12 @@
     </template>
     
     <!-- ============================================ -->
-    <!-- ASSISTENTE AI PAGE -->
+    <!-- MODALS -->
     <!-- ============================================ -->
-    <template id="template-ai-assistant">
-        <div class="page-header">
-            <h1><i class="fas fa-robot"></i> Assistente AI</h1>
-            <p>Faça alterações no site conversando com o assistente inteligente</p>
-        </div>
-
-        <div class="ai-assistant-container">
+    
+    <!-- Add Event Modal -->
+    <div class="modal" id="addEventModal">
+        <div class="modal-content">
             <!-- Chat Interface -->
             <div class="ai-chat-panel">
                 <div class="chat-header-ai">
