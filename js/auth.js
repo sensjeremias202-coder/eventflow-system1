@@ -416,6 +416,9 @@ function showApp() {
     // Configurar navegação
     setupNavigation();
     
+    // Mostrar dica de scroll se necessário
+    checkSidebarScroll();
+    
     // Configurar botões
     setupButtons();
     
@@ -616,4 +619,26 @@ function generateStarRating(rating) {
         console.error('Erro ao gerar estrelas:', error);
         return '<i class="far fa-star"></i>'.repeat(5);
     }
+}
+
+// Verificar se sidebar precisa de scroll e mostrar dica
+function checkSidebarScroll() {
+    setTimeout(() => {
+        const sidebar = document.querySelector('.sidebar');
+        const scrollHint = document.querySelector('.sidebar-scroll-hint');
+        
+        if (sidebar && scrollHint) {
+            const hasScroll = sidebar.scrollHeight > sidebar.clientHeight;
+            
+            if (hasScroll) {
+                scrollHint.style.display = 'block';
+                scrollHint.style.animation = 'bounce 2s infinite';
+                
+                // Ocultar dica quando usuário rolar
+                sidebar.addEventListener('scroll', function() {
+                    scrollHint.style.display = 'none';
+                }, { once: true });
+            }
+        }
+    }, 1000);
 }
