@@ -485,6 +485,15 @@ async function processLocally(userMessage, context) {
     console.log('[ai-assistant] Intenção:', intent);
     console.log('[ai-assistant] Entidades:', entities);
     
+    // Se não identificou intenção clara, tentar entender o contexto
+    if (!intent) {
+        return {
+            response: `🤔 Entendi que você quer fazer algo, mas preciso de mais detalhes.\n\n**Sua solicitação:** "${userMessage}"\n\n**Posso ajudar com:**\n• Modificar cores e estilos\n• Adicionar ou remover funcionalidades\n• Corrigir bugs\n• Gerar relatórios\n• Criar documentos\n• Organizar tarefas\n• Validar segurança\n\n💡 **Exemplos:**\n• "Mudar cor principal para azul"\n• "Adicionar campo de telefone"\n• "Gerar relatório dos eventos"\n• "Criar plano de estudos"`,
+            code: null,
+            files: []
+        };
+    }
+    
     // Verificar se é um comando complexo que precisa de análise profunda
     if (isComplexCommand(userMessage, intent)) {
         return await processComplexCommand(userMessage, context, intent, entities);
@@ -493,10 +502,42 @@ async function processLocally(userMessage, context) {
     // Gerar código baseado em templates e análise
     const codeGeneration = generateCodeFromIntent(intent, userMessage, context, entities);
     
+    // Estruturar resposta de forma mais clara
+    let response = codeGeneration.explanation || '';
+    
+    // Adicionar sugestão se disponível
+    if (codeGeneration.suggestion) {
+        response += `\n\n💡 **Sugestão:** ${codeGeneration.suggestion}`;
+    }
+    
+    // Construir array de arquivos modificados
+    const files = [];
+    if (codeGeneration.html) {
+        files.push({
+            path: 'pages/' + (entities.pages[0] || context.currentPage || 'custom') + '/index.html',
+            language: 'html',
+            code: codeGeneration.html
+        });
+    }
+    if (codeGeneration.css) {
+        files.push({
+            path: 'pages/' + (entities.pages[0] || context.currentPage || 'custom') + '/style.css',
+            language: 'css',
+            code: codeGeneration.css
+        });
+    }
+    if (codeGeneration.js) {
+        files.push({
+            path: 'pages/' + (entities.pages[0] || context.currentPage || 'custom') + '/script.js',
+            language: 'javascript',
+            code: codeGeneration.js
+        });
+    }
+    
     return {
-        response: codeGeneration.explanation,
-        code: codeGeneration.code,
-        files: codeGeneration.files
+        response: response,
+        code: codeGeneration.js || codeGeneration.html || codeGeneration.css || null,
+        files: files
     };
 }
 
@@ -1014,8 +1055,7 @@ function generateCodeFromIntent(intent, message, context, entities = {}) {
         removeElement: generateRemoveElement,
         showHideElement: generateShowHide,
         changeText: generateTextChange,
-        addAnimation: generateAnimation,
-        improvePerformance: generatePerformanceImprovement
+        addAnimation: generateAnimation
     };
     
     const generator = generators[intent] || generateGeneral;
