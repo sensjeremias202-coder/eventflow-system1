@@ -333,9 +333,24 @@ function initChat() {
  * Configurar botão de criar grupo
  */
 function setupCreateGroupButton() {
+    console.log('[chat] Configurando botão de criar grupo...');
     const createGroupBtn = document.getElementById('createGroupBtn');
+    console.log('[chat] Botão encontrado:', createGroupBtn);
+    
     if (createGroupBtn) {
-        createGroupBtn.addEventListener('click', openCreateGroupModal);
+        // Remover listener anterior se existir
+        createGroupBtn.replaceWith(createGroupBtn.cloneNode(true));
+        const newBtn = document.getElementById('createGroupBtn');
+        
+        newBtn.addEventListener('click', function(e) {
+            console.log('[chat] Botão criar grupo clicado!');
+            e.preventDefault();
+            openCreateGroupModal();
+        });
+        
+        console.log('[chat] Event listener adicionado ao botão');
+    } else {
+        console.warn('[chat] Botão createGroupBtn não encontrado no DOM');
     }
 }
 
@@ -343,6 +358,8 @@ function setupCreateGroupButton() {
  * Abrir modal de criar grupo
  */
 function openCreateGroupModal() {
+    console.log('[chat] Abrindo modal de criar grupo...');
+    
     // Criar modal se não existir
     let modal = document.getElementById('createGroupModal');
     if (!modal) {
@@ -600,3 +617,9 @@ function stopAutoMessages() {
         autoMessageInterval = null;
     }
 }
+
+// Exportar funções para uso global
+window.initChat = initChat;
+window.loadChatUsers = loadChatUsers;
+window.setupChat = setupChat;
+window.stopAutoMessages = stopAutoMessages;
