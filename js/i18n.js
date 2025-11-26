@@ -14,7 +14,8 @@ class InternationalizationSystem {
     }
 
     detectLanguage() {
-        const browserLang = navigator.language.split('-')[0];
+        const navLang = navigator.language || navigator.userLanguage || 'pt-BR';
+        const browserLang = navLang.split('-')[0];
         return this.supportedLanguages.includes(browserLang) ? browserLang : 'pt';
     }
 

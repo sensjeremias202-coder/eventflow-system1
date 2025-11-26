@@ -289,11 +289,13 @@ function monitorNewMessages() {
             msg.from !== currentUser.id) {
             
             const sender = users.find(u => u.id === msg.from);
+            const messageText = msg.text || '';
+            const preview = messageText.length > 50 ? messageText.substring(0, 50) + '...' : messageText;
             
             createNotification(
                 'message',
                 '💬 Nova Mensagem',
-                `${sender ? sender.name : 'Alguém'}: ${msg.text.substring(0, 50)}${msg.text.length > 50 ? '...' : ''}`,
+                `${sender ? sender.name : 'Alguém'}: ${preview}`,
                 { senderId: msg.from, messageId: msg.id }
             );
         }

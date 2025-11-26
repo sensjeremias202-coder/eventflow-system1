@@ -468,6 +468,168 @@
     <template id="template-profile">
         <div class="card">
             <div class="card-header">
+                <div class="card-title">Meu Perfil</div>
+            </div>
+            <div class="card-body">
+                <p>Perfil do usuário</p>
+            </div>
+        </div>
+    </template>
+    
+    <template id="template-calendar">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Calendário de Eventos</div>
+                <div>
+                    <button class="btn btn-outline" onclick="window.calendarInstance?.changeView('month')">
+                        <i class="fas fa-calendar"></i> Mês
+                    </button>
+                    <button class="btn btn-outline" onclick="window.calendarInstance?.changeView('week')">
+                        <i class="fas fa-calendar-week"></i> Semana
+                    </button>
+                    <button class="btn btn-outline" onclick="window.calendarInstance?.changeView('day')">
+                        <i class="fas fa-calendar-day"></i> Dia
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="calendar-container"></div>
+            </div>
+        </div>
+    </template>
+    
+    <template id="template-volunteers">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Sistema de Voluntários</div>
+                <button class="btn btn-primary admin-only" onclick="showNotification('Adicionar voluntário em desenvolvimento', 'info')">
+                    <i class="fas fa-user-plus"></i> Adicionar Voluntário
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="volunteers-container"></div>
+            </div>
+        </div>
+    </template>
+    
+    <template id="template-analytics">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Analytics Avançado</div>
+            </div>
+            <div class="card-body">
+                <div id="analytics-container"></div>
+            </div>
+        </div>
+    </template>
+    
+    <template id="template-payments">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Sistema de Pagamentos</div>
+            </div>
+            <div class="card-body">
+                <div id="transactions-list"></div>
+                <div id="financial-report"></div>
+            </div>
+        </div>
+    </template>
+    
+    <template id="template-streaming">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Transmissões ao Vivo</div>
+                <button class="btn btn-primary admin-only" onclick="createNewStream()">
+                    <i class="fas fa-plus"></i> Nova Transmissão
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="streams-list"></div>
+            </div>
+        </div>
+    </template>
+    
+    <template id="template-settings">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Configurações do Sistema</div>
+            </div>
+            <div class="card-body">
+                <div class="settings-section">
+                    <h3>Tema</h3>
+                    <div id="theme-customizer"></div>
+                </div>
+                <div class="settings-section">
+                    <h3>Idioma</h3>
+                    <select id="languageSelect" class="form-control">
+                        <option value="pt-BR">Português (Brasil)</option>
+                        <option value="en-US">English (US)</option>
+                        <option value="es-ES">Español</option>
+                    </select>
+                </div>
+                <div class="settings-section">
+                    <h3>Sincronização</h3>
+                    <button class="btn btn-primary" onclick="forceSyncData()">
+                        <i class="fas fa-sync"></i> Forçar Sincronização
+                    </button>
+                    <button class="btn btn-danger" onclick="clearLocalData()">
+                        <i class="fas fa-trash"></i> Limpar Dados Locais
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
+    
+    <template id="template-users">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Gerenciar Usuários</div>
+            </div>
+            <div class="card-body">
+                <div id="usersTable"></div>
+            </div>
+        </div>
+    </template>
+    
+    <template id="template-categories">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Gerenciar Categorias</div>
+                <button class="btn btn-primary" id="addCategoryBtn">
+                    <i class="fas fa-plus"></i> Nova Categoria
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="categoriesTable"></div>
+            </div>
+        </div>
+    </template>
+    
+    <template id="template-financeiro">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Módulo Financeiro</div>
+            </div>
+            <div class="card-body">
+                <p>Módulo financeiro em desenvolvimento</p>
+            </div>
+        </div>
+    </template>
+    
+    <template id="template-graficos">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Gráficos e Relatórios</div>
+            </div>
+            <div class="card-body">
+                <p>Gráficos em desenvolvimento</p>
+            </div>
+        </div>
+    </template>
+    
+    <template id="template-ai-assistant">
+        <div class="card">
+            <div class="card-header">
                 <div class="card-title"><i class="fas fa-user"></i> Meu Perfil</div>
             </div>
             <div class="card-body">
