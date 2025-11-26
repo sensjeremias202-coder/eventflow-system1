@@ -18,6 +18,188 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- AI Assistant Styles -->
+    <style>
+        .ai-assistant-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(1rem, 2vw, 2rem);
+            min-height: 600px;
+        }
+        .ai-chat-panel, .ai-preview-panel {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .chat-header-ai, .preview-header-ai {
+            padding: clamp(1rem, 2vw, 1.5rem);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--primary);
+            color: white;
+        }
+        .preview-header-ai h3 { margin: 0; font-size: clamp(1rem, 1.5vw, 1.2rem); }
+        .ai-status { display: flex; align-items: center; gap: 0.5rem; }
+        .status-indicator {
+            font-size: 0.6rem;
+            color: #4cc9f0;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: clamp(1rem, 2vw, 1.5rem);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .ai-message {
+            display: flex;
+            gap: 0.75rem;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .ai-message.user { flex-direction: row-reverse; }
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        .ai-message.assistant .message-avatar {
+            background: linear-gradient(135deg, var(--primary), var(--info));
+            color: white;
+        }
+        .ai-message.user .message-avatar { background: var(--success); color: white; }
+        .message-content { max-width: 80%; }
+        .ai-message.user .message-content { text-align: right; }
+        .message-text {
+            background: var(--bg-secondary);
+            padding: clamp(0.75rem, 1.5vw, 1rem);
+            border-radius: 12px;
+            line-height: 1.6;
+        }
+        .ai-message.user .message-text { background: var(--primary); color: white; }
+        .message-text ul { margin: 0.5rem 0; padding-left: 1.5rem; }
+        .message-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+            padding: 0 0.5rem;
+        }
+        .chat-input-container-ai {
+            padding: clamp(1rem, 2vw, 1.5rem);
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+        }
+        .chat-input-wrapper { display: flex; gap: 0.75rem; align-items: flex-end; }
+        .chat-input-ai {
+            flex: 1;
+            padding: clamp(0.75rem, 1.5vw, 1rem);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: clamp(0.875rem, 1.2vw, 1rem);
+            resize: none;
+            min-height: 44px;
+            max-height: 120px;
+            transition: border-color 0.3s;
+        }
+        .chat-input-ai:focus { outline: none; border-color: var(--primary); }
+        .btn-icon-ai {
+            width: 44px;
+            height: 44px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        .input-suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+        .suggestion-chip {
+            background: white;
+            border: 1px solid var(--border-color);
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .suggestion-chip:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+        .preview-content-ai {
+            flex: 1;
+            overflow-y: auto;
+            padding: clamp(1rem, 2vw, 1.5rem);
+        }
+        .preview-placeholder {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            text-align: center;
+            gap: 1rem;
+        }
+        .preview-placeholder i { color: var(--border-color); }
+        .preview-info-ai {
+            padding: clamp(1rem, 2vw, 1.5rem);
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+        }
+        .preview-info-ai h4 {
+            margin: 0 0 0.75rem 0;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        .preview-info-ai ul { list-style: none; padding: 0; margin: 0; }
+        .preview-info-ai li {
+            padding: 0.5rem;
+            background: white;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            font-family: monospace;
+            font-size: 0.85rem;
+        }
+        .preview-actions { display: flex; gap: 0.5rem; }
+        .loading-message { display: flex; align-items: center; gap: 0.5rem; }
+        .loading-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border-color);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 1024px) {
+            .ai-assistant-container {
+                grid-template-columns: 1fr;
+            }
+            .ai-preview-panel { min-height: 400px; }
+        }
+    </style>
 </head>
 <body>
     <!-- ============================================ -->
@@ -528,6 +710,111 @@
                     <div class="card-body">
                         <canvas id="expensesDistributionChart" height="300"></canvas>
                     </div>
+                </div>
+            </div>
+        </div>
+    </template>
+    
+    <!-- ============================================ -->
+    <!-- ASSISTENTE AI PAGE -->
+    <!-- ============================================ -->
+    <template id="template-ai-assistant">
+        <div class="page-header">
+            <h1><i class="fas fa-robot"></i> Assistente AI</h1>
+            <p>Faça alterações no site conversando com o assistente inteligente</p>
+        </div>
+
+        <div class="ai-assistant-container">
+            <!-- Chat Interface -->
+            <div class="ai-chat-panel">
+                <div class="chat-header-ai">
+                    <div class="ai-status">
+                        <i class="fas fa-circle status-indicator"></i>
+                        <span id="aiStatus">Pronto para ajudar</span>
+                    </div>
+                    <button class="btn btn-sm btn-outline" id="clearChatBtn">
+                        <i class="fas fa-trash"></i> Limpar Conversa
+                    </button>
+                </div>
+
+                <div class="chat-messages" id="aiChatMessages">
+                    <div class="ai-message assistant">
+                        <div class="message-avatar">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="message-content">
+                            <div class="message-text">
+                                Olá! 👋 Sou seu assistente AI integrado ao EventFlow System.<br><br>
+                                Posso ajudar você a:
+                                <ul>
+                                    <li>🎨 Alterar cores e estilos do site</li>
+                                    <li>✨ Adicionar ou modificar funcionalidades</li>
+                                    <li>🐛 Corrigir bugs e problemas</li>
+                                    <li>📊 Analisar dados e gerar relatórios</li>
+                                    <li>⚙️ Configurar permissões e ajustes</li>
+                                </ul>
+                                Basta descrever o que você precisa!
+                            </div>
+                            <div class="message-time">Agora</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-input-container-ai">
+                    <form id="aiChatForm">
+                        <div class="chat-input-wrapper">
+                            <textarea 
+                                id="aiChatInput" 
+                                class="chat-input-ai" 
+                                placeholder="Digite sua solicitação... Ex: 'Mude a cor do cabeçalho para azul escuro'"
+                                rows="1"
+                            ></textarea>
+                            <button type="submit" class="btn btn-primary btn-icon-ai" id="sendAiMessageBtn">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        <div class="input-suggestions">
+                            <button type="button" class="suggestion-chip" data-prompt="Ajuste a cor primária do sistema para um tom mais moderno">
+                                🎨 Mudar tema de cores
+                            </button>
+                            <button type="button" class="suggestion-chip" data-prompt="Adicione um campo de telefone no cadastro de usuários">
+                                ✨ Adicionar funcionalidade
+                            </button>
+                            <button type="button" class="suggestion-chip" data-prompt="Corrija o bug no sistema de notificações">
+                                🐛 Corrigir bug
+                            </button>
+                            <button type="button" class="suggestion-chip" data-prompt="Gere um relatório dos eventos mais bem avaliados">
+                                📊 Gerar relatório
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Preview Panel -->
+            <div class="ai-preview-panel">
+                <div class="preview-header-ai">
+                    <h3><i class="fas fa-code"></i> Pré-visualização de Alterações</h3>
+                    <div class="preview-actions">
+                        <button class="btn btn-sm btn-success" id="applyChangesBtn" style="display: none;">
+                            <i class="fas fa-check"></i> Aplicar Alterações
+                        </button>
+                        <button class="btn btn-sm btn-danger" id="rejectChangesBtn" style="display: none;">
+                            <i class="fas fa-times"></i> Cancelar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="preview-content-ai" id="aiPreviewContent">
+                    <div class="preview-placeholder">
+                        <i class="fas fa-eye fa-3x"></i>
+                        <p>As alterações aparecerão aqui para sua aprovação</p>
+                    </div>
+                </div>
+
+                <div class="preview-info-ai" id="aiPreviewInfo" style="display: none;">
+                    <h4>Arquivos a serem modificados:</h4>
+                    <ul id="modifiedFilesList"></ul>
                 </div>
             </div>
         </div>
