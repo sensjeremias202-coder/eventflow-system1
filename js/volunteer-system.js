@@ -374,3 +374,26 @@ document.addEventListener('DOMContentLoaded', () => {
     volunteerSystem = new VolunteerSystem();
     window.volunteerSystem = volunteerSystem;
 });
+
+// Função de inicialização global
+function initVolunteers() {
+    console.log('[volunteers] 🤝 Inicializando sistema de voluntários...');
+    
+    if (!window.volunteerInstance) {
+        window.volunteerInstance = new VolunteerSystem();
+    }
+    
+    // Adicionar listener para botão de adicionar voluntário
+    const addVolunteerBtn = document.getElementById('addVolunteerBtn');
+    if (addVolunteerBtn && !addVolunteerBtn.dataset.volunteerListenerAdded) {
+        addVolunteerBtn.dataset.volunteerListenerAdded = 'true';
+        addVolunteerBtn.addEventListener('click', () => {
+            showNotification('Sistema de cadastro de voluntários em desenvolvimento', 'info');
+        });
+    }
+    
+    console.log('[volunteers] ✅ Sistema de voluntários inicializado');
+}
+
+window.initVolunteers = initVolunteers;
+window.VolunteerSystem = VolunteerSystem;

@@ -136,10 +136,16 @@ async function deleteCategory(categoryId) {
 function setupCategoryHandlers() {
     // Botão de adicionar categoria
     const addCategoryBtn = document.getElementById('addCategoryBtn');
-    if (addCategoryBtn) {
-        addCategoryBtn.onclick = () => {
-            showNotification('Modal de criação de categoria em desenvolvimento', 'info');
-        };
+    if (addCategoryBtn && !addCategoryBtn.dataset.categoriesListenerAdded) {
+        addCategoryBtn.dataset.categoriesListenerAdded = 'true';
+        addCategoryBtn.addEventListener('click', () => {
+            const addCategoryModal = document.getElementById('addCategoryModal');
+            if (addCategoryModal) {
+                addCategoryModal.classList.add('active');
+            } else {
+                showNotification('Modal de categoria não encontrado', 'error');
+            }
+        });
     }
 }
 

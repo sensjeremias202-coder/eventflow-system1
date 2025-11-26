@@ -313,3 +313,34 @@ document.addEventListener('DOMContentLoaded', () => {
     advancedAnalytics = new AdvancedAnalytics();
     window.advancedAnalytics = advancedAnalytics;
 });
+
+// Função de inicialização global
+function initAdvancedAnalytics() {
+    console.log('[analytics] 📊 Inicializando analytics avançado...');
+    
+    if (!window.analyticsInstance) {
+        window.analyticsInstance = new AdvancedAnalytics();
+    } else {
+        // Recarregar dashboard se já existe
+        if (window.analyticsInstance.renderDashboard) {
+            window.analyticsInstance.renderDashboard();
+        }
+    }
+    
+    // Configurar listener para seletor de período
+    const timeRangeSelect = document.getElementById('analyticsTimeRange');
+    if (timeRangeSelect && !timeRangeSelect.dataset.analyticsListenerAdded) {
+        timeRangeSelect.dataset.analyticsListenerAdded = 'true';
+        timeRangeSelect.addEventListener('change', (e) => {
+            const days = parseInt(e.target.value);
+            if (window.analyticsInstance && window.analyticsInstance.renderDashboard) {
+                window.analyticsInstance.renderDashboard(days);
+            }
+        });
+    }
+    
+    console.log('[analytics] ✅ Analytics avançado inicializado');
+}
+
+window.initAdvancedAnalytics = initAdvancedAnalytics;
+window.AdvancedAnalytics = AdvancedAnalytics;

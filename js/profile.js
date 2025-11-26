@@ -164,13 +164,15 @@ function changePassword() {
 // Configurar event handlers
 function setupProfileHandlers() {
     const saveBtn = document.getElementById('saveProfileBtn');
-    if (saveBtn) {
-        saveBtn.onclick = saveProfile;
+    if (saveBtn && !saveBtn.dataset.profileListenerAdded) {
+        saveBtn.dataset.profileListenerAdded = 'true';
+        saveBtn.addEventListener('click', saveProfile);
     }
     
     const changePasswordBtn = document.getElementById('changePasswordBtn');
-    if (changePasswordBtn) {
-        changePasswordBtn.onclick = changePassword;
+    if (changePasswordBtn && !changePasswordBtn.dataset.profileListenerAdded) {
+        changePasswordBtn.dataset.profileListenerAdded = 'true';
+        changePasswordBtn.addEventListener('click', changePassword);
     }
 }
 

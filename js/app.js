@@ -180,13 +180,10 @@ function setupNavigation() {
     
     // Botão de logout
     const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        // Remover listeners anteriores duplicados
-        const newLogoutBtn = logoutBtn.cloneNode(true);
-        logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
+    if (logoutBtn && !logoutBtn.dataset.listenerAdded) {
+        logoutBtn.dataset.listenerAdded = 'true';
         
-        // Adicionar novo listener
-        document.getElementById('logoutBtn').addEventListener('click', function(e) {
+        logoutBtn.addEventListener('click', function(e) {
             e.preventDefault();
             if (confirm('Tem certeza que deseja sair?')) {
                 // Parar atualizações automáticas se existirem
@@ -215,7 +212,8 @@ function setupNavigation() {
 function setupButtons() {
     // Configurar botão "Meus Eventos" para usuários comuns
     const myEventsBtn = document.getElementById('myEventsBtn');
-    if (myEventsBtn && currentUser && currentUser.role === 'user') {
+    if (myEventsBtn && currentUser && currentUser.role === 'user' && !myEventsBtn.dataset.listenerAdded) {
+        myEventsBtn.dataset.listenerAdded = 'true';
         myEventsBtn.style.display = 'block';
         myEventsBtn.addEventListener('click', function() {
             loadMyEvents();
@@ -225,7 +223,8 @@ function setupButtons() {
     // Botão visível para criar evento (todos os usuários logados)
     const createEventBtn = document.getElementById('createEventBtn');
     const addEventModal = document.getElementById('addEventModal');
-    if (createEventBtn && currentUser) {
+    if (createEventBtn && currentUser && !createEventBtn.dataset.listenerAdded) {
+        createEventBtn.dataset.listenerAdded = 'true';
         // Mostrar botão para usuários logados; administradores já têm botão admin-only
         createEventBtn.style.display = 'inline-block';
         createEventBtn.addEventListener('click', function() {
@@ -237,7 +236,8 @@ function setupButtons() {
 
     // Botão para gerenciamento de usuários (apenas admins)
     const manageUsersBtn = document.getElementById('manageUsersBtn');
-    if (manageUsersBtn && currentUser && currentUser.role === 'admin') {
+    if (manageUsersBtn && currentUser && currentUser.role === 'admin' && !manageUsersBtn.dataset.listenerAdded) {
+        manageUsersBtn.dataset.listenerAdded = 'true';
         manageUsersBtn.style.display = 'inline-block';
         manageUsersBtn.addEventListener('click', function() {
             // Mostrar a página de usuários e carregar a tabela
@@ -252,14 +252,16 @@ function setupButtons() {
 
     // Botão de restaurar dados de demonstração
     const resetBtn = document.getElementById('resetDataBtn');
-    if (resetBtn && currentUser && currentUser.role === 'admin') {
+    if (resetBtn && currentUser && currentUser.role === 'admin' && !resetBtn.dataset.listenerAdded) {
+        resetBtn.dataset.listenerAdded = 'true';
         resetBtn.style.display = 'inline-block';
         resetBtn.addEventListener('click', resetDemoData);
     }
     
     // Botão de limpar cache local
     const clearCacheBtn = document.getElementById('clearCacheBtn');
-    if (clearCacheBtn && currentUser) {
+    if (clearCacheBtn && currentUser && !clearCacheBtn.dataset.listenerAdded) {
+        clearCacheBtn.dataset.listenerAdded = 'true';
         clearCacheBtn.style.display = 'inline-block';
         clearCacheBtn.addEventListener('click', function() {
             if (confirm('⚠️ Isso vai limpar todos os dados locais e recarregar do Firebase.\n\nContinuar?')) {
@@ -288,7 +290,8 @@ function setupButtons() {
     
     // Botão de forçar sincronização
     const forceSyncBtn = document.getElementById('forceSyncBtn');
-    if (forceSyncBtn && window.firebaseInitialized && window.firebaseDatabase) {
+    if (forceSyncBtn && window.firebaseInitialized && window.firebaseDatabase && !forceSyncBtn.dataset.listenerAdded) {
+        forceSyncBtn.dataset.listenerAdded = 'true';
         forceSyncBtn.style.display = 'inline-block';
         forceSyncBtn.addEventListener('click', function(e) {
             e.preventDefault();
@@ -527,13 +530,15 @@ function setupModals() {
     const addCategoryBtn = document.getElementById('addCategoryBtn');
     const addCategoryModal = document.getElementById('addCategoryModal');
     
-    if (addCategoryBtn && addCategoryModal) {
+    if (addCategoryBtn && addCategoryModal && !addCategoryBtn.dataset.listenerAdded) {
+        addCategoryBtn.dataset.listenerAdded = 'true';
         addCategoryBtn.addEventListener('click', () => {
             addCategoryModal.classList.add('active');
         });
         
         const categoryModalClose = addCategoryModal.querySelector('.modal-close');
-        if (categoryModalClose) {
+        if (categoryModalClose && !categoryModalClose.dataset.listenerAdded) {
+            categoryModalClose.dataset.listenerAdded = 'true';
             categoryModalClose.addEventListener('click', () => {
                 addCategoryModal.classList.remove('active');
                 const form = document.getElementById('addCategoryForm');
@@ -546,7 +551,8 @@ function setupModals() {
     const eventDetailsModal = document.getElementById('eventDetailsModal');
     if (eventDetailsModal) {
         const eventDetailsClose = eventDetailsModal.querySelector('.modal-close');
-        if (eventDetailsClose) {
+        if (eventDetailsClose && !eventDetailsClose.dataset.listenerAdded) {
+            eventDetailsClose.dataset.listenerAdded = 'true';
             eventDetailsClose.addEventListener('click', () => {
                 eventDetailsModal.classList.remove('active');
             });

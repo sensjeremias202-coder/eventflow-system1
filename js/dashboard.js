@@ -76,6 +76,9 @@ function loadDashboardStats() {
 
 // Carregar gráficos
 function loadDashboardCharts() {
+    // Configurar tabs
+    setupDashboardTabs();
+    
     // Gráfico de sentimento (exemplo)
     const sentimentCanvas = document.getElementById('sentimentChart');
     if (sentimentCanvas && typeof Chart !== 'undefined') {
@@ -131,6 +134,31 @@ function loadDashboardCharts() {
             }
         });
     }
+}
+
+// Configurar tabs do dashboard
+function setupDashboardTabs() {
+    const tabs = document.querySelectorAll('.tab[data-tab]');
+    tabs.forEach(tab => {
+        if (!tab.dataset.dashboardTabListener) {
+            tab.dataset.dashboardTabListener = 'true';
+            tab.addEventListener('click', function() {
+                // Remover ativo de todas as tabs
+                tabs.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Mostrar conteúdo correspondente
+                const tabName = this.dataset.tab;
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                const targetContent = document.getElementById(tabName);
+                if (targetContent) {
+                    targetContent.classList.add('active');
+                }
+            });
+        }
+    });
 }
 
 // Exportar funções globalmente

@@ -184,27 +184,24 @@ function setupChat() {
     
     if (!sendMessageBtn) {
         console.warn('[chat] Botão sendMessageBtn não encontrado');
+        return;
     }
     
     if (!chatInput) {
         console.warn('[chat] Input chatInput não encontrado');
+        return;
     }
     
-    if (sendMessageBtn) {
-        // Remover listeners antigos clonando o elemento
-        const newBtn = sendMessageBtn.cloneNode(true);
-        sendMessageBtn.parentNode.replaceChild(newBtn, sendMessageBtn);
-        
-        newBtn.addEventListener('click', sendMessage);
+    // Usar flag para evitar duplicação
+    if (sendMessageBtn && !sendMessageBtn.dataset.chatListenerAdded) {
+        sendMessageBtn.dataset.chatListenerAdded = 'true';
+        sendMessageBtn.addEventListener('click', sendMessage);
         console.log('[chat] ✅ Evento de clique adicionado ao botão');
     }
     
-    if (chatInput) {
-        // Remover listeners antigos clonando o elemento
-        const newInput = chatInput.cloneNode(true);
-        chatInput.parentNode.replaceChild(newInput, chatInput);
-        
-        newInput.addEventListener('keypress', function(e) {
+    if (chatInput && !chatInput.dataset.chatListenerAdded) {
+        chatInput.dataset.chatListenerAdded = 'true';
+        chatInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 sendMessage();
@@ -212,13 +209,12 @@ function setupChat() {
         });
         
         // Desativar inicialmente
-        newInput.disabled = !currentChatUser;
+        chatInput.disabled = !currentChatUser;
         console.log('[chat] ✅ Evento de Enter adicionado ao input');
     }
     
-    const finalBtn = document.getElementById('sendMessageBtn');
-    if (finalBtn) {
-        finalBtn.disabled = !currentChatUser;
+    if (sendMessageBtn) {
+        sendMessageBtn.disabled = !currentChatUser;
     }
     
     console.log('[chat] ✅ Chat configurado');

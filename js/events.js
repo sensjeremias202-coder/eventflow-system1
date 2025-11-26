@@ -203,18 +203,32 @@ async function deleteEvent(eventId) {
 function setupEventHandlers() {
     // Botão de adicionar evento
     const addEventBtn = document.getElementById('addEventBtn');
-    if (addEventBtn) {
-        addEventBtn.onclick = () => {
-            showNotification('Modal de criação de evento em desenvolvimento', 'info');
-        };
+    if (addEventBtn && !addEventBtn.dataset.eventsListenerAdded) {
+        addEventBtn.dataset.eventsListenerAdded = 'true';
+        addEventBtn.addEventListener('click', () => {
+            const addEventModal = document.getElementById('addEventModal');
+            if (addEventModal) {
+                // Carregar categorias antes de abrir
+                if (typeof loadCategoryOptions === 'function') loadCategoryOptions();
+                addEventModal.classList.add('active');
+            }
+        });
     }
     
     // Botão meus eventos
     const myEventsBtn = document.getElementById('myEventsBtn');
-    if (myEventsBtn) {
-        myEventsBtn.onclick = () => {
-            showNotification('Filtro "Meus Eventos" em desenvolvimento', 'info');
-        };
+    if (myEventsBtn && !myEventsBtn.dataset.eventsListenerAdded) {
+        myEventsBtn.dataset.eventsListenerAdded = 'true';
+        myEventsBtn.addEventListener('click', () => {
+            // Filtrar eventos do usuário atual
+            if (window.currentUser) {
+                const userEvents = events.filter(e => 
+                    e.enrolled && e.enrolled.includes(window.currentUser.email)
+                );
+                renderEventsList(userEvents);
+                showNotification(`Mostrando ${userEvents.length} eventos inscritos`, 'info');
+            }
+        });
     }
 }
 

@@ -1,36 +1,36 @@
 /* ============================================ */
-/* TEMA CRISTÃO JUVENIL 3D - CORES E VARIÁVEIS */
+/* TEMA PROFISSIONAL CORPORATIVO - CORES E VARIÁVEIS */
 /* ============================================ */
 :root {
-    /* Paleta Cristã Moderna - Tons suaves e vibrantes */
-    --primary: #6C63FF;        /* Roxo celestial */
-    --secondary: #FF6B9D;      /* Rosa jovem */
-    --accent: #FFC837;         /* Dourado esperança */
-    --success: #4ECDC4;        /* Turquesa fé */
-    --danger: #FF6B6B;         /* Coral amor */
-    --warning: #FFD93D;        /* Amarelo luz */
-    --info: #95E1D3;           /* Verde água paz */
-    --light: #F8F9FA;
-    --dark: #2D3436;
-    --gray: #636E72;
+    /* Paleta Profissional - Tons sóbrios e elegantes */
+    --primary: #2C3E50;        /* Azul escuro corporativo */
+    --secondary: #34495E;      /* Cinza azulado */
+    --accent: #3498DB;         /* Azul informação */
+    --success: #27AE60;        /* Verde sucesso */
+    --danger: #E74C3C;         /* Vermelho alerta */
+    --warning: #F39C12;        /* Laranja aviso */
+    --info: #3498DB;           /* Azul informação */
+    --light: #ECF0F1;
+    --dark: #2C3E50;
+    --gray: #7F8C8D;
     
-    /* Gradientes Inspiradores */
-    --gradient-heaven: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --gradient-hope: linear-gradient(135deg, #FFC837 0%, #FF8008 100%);
-    --gradient-love: linear-gradient(135deg, #FF6B9D 0%, #C44569 100%);
-    --gradient-peace: linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%);
+    /* Gradientes Discretos */
+    --gradient-heaven: linear-gradient(135deg, #2C3E50 0%, #34495E 100%);
+    --gradient-hope: linear-gradient(135deg, #3498DB 0%, #2980B9 100%);
+    --gradient-love: linear-gradient(135deg, #34495E 0%, #2C3E50 100%);
+    --gradient-peace: linear-gradient(135deg, #27AE60 0%, #229954 100%);
     
-    /* Sombras 3D */
-    --shadow-sm: 0 2px 8px rgba(108, 99, 255, 0.1);
-    --shadow-md: 0 4px 16px rgba(108, 99, 255, 0.15);
-    --shadow-lg: 0 8px 32px rgba(108, 99, 255, 0.2);
-    --shadow-3d: 0 10px 30px rgba(0, 0, 0, 0.3), 0 5px 15px rgba(108, 99, 255, 0.2);
-    --shadow-3d-hover: 0 20px 50px rgba(0, 0, 0, 0.4), 0 10px 25px rgba(108, 99, 255, 0.3);
+    /* Sombras Sutis */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.12);
+    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.16);
+    --shadow-3d: 0 4px 12px rgba(0, 0, 0, 0.15);
+    --shadow-3d-hover: 0 6px 20px rgba(0, 0, 0, 0.2);
     
     /* Animações */
-    --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-bounce: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    --transition-3d: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    --transition-smooth: all 0.3s ease;
+    --transition-bounce: all 0.4s ease;
+    --transition-3d: all 0.3s ease;
 }
 
 /* ============================================ */
@@ -279,10 +279,7 @@ body::after {
     pointer-events: none;
     z-index: 2;
     transform-style: preserve-3d;
-    box-shadow: 
-        0 0 10px rgba(108, 99, 255, 0.8),
-        0 0 20px rgba(108, 99, 255, 0.5),
-        0 0 30px rgba(108, 99, 255, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .container {
@@ -348,6 +345,7 @@ header::before {
     font-size: 2rem;
     background: var(--gradient-heaven);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     animation: float 3s ease-in-out infinite;
 }
@@ -456,25 +454,22 @@ header::before {
 }
 
 .btn:active {
-    transform: perspective(800px) translateZ(10px) translateY(-2px) scale(1.02);
+    transform: translateY(-1px);
 }
 
 .btn-primary {
-    background: var(--gradient-heaven);
+    background: var(--primary);
     color: white;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .btn-secondary {
-    background: var(--gradient-love);
+    background: var(--secondary);
     color: white;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .btn-success {
-    background: var(--gradient-peace);
+    background: var(--success);
     color: white;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .btn-outline {
@@ -484,10 +479,16 @@ header::before {
 }
 
 .btn-outline:hover {
-    background: var(--gradient-heaven);
+    background: var(--primary);
     color: white;
     border-color: transparent;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn-outline.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
 }
 
 .btn-danger {
@@ -584,6 +585,7 @@ header::before {
     font-size: 1.3rem;
     background: var(--gradient-heaven);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     display: flex;
     align-items: center;
@@ -650,36 +652,27 @@ header::before {
     top: 0;
     bottom: 0;
     width: 4px;
-    background: var(--gradient-heaven);
-    transform: scaleY(0) translateZ(5px);
+    background: var(--primary);
+    transform: scaleY(0);
     transition: var(--transition-smooth);
 }
 
 .sidebar-menu a:hover::before,
 .sidebar-menu a.active::before {
-    transform: scaleY(1) translateZ(5px);
+    transform: scaleY(1);
 }
 
 .sidebar-menu a:hover,
 .sidebar-menu a.active {
-    background: linear-gradient(135deg, rgba(108, 99, 255, 0.1) 0%, rgba(255, 107, 157, 0.1) 100%);
+    background: rgba(44, 62, 80, 0.08);
     color: var(--primary);
-    transform: perspective(600px) translateZ(15px) translateX(8px);
-    box-shadow: var(--shadow-3d);
 }
 
 /* Destaque especial para Assistente AI */
 .sidebar-menu a[data-page="ai-assistant"] {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    background: var(--primary) !important;
     color: white !important;
     font-weight: 600 !important;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-    animation: pulse-glow 2s infinite;
-}
-
-@keyframes pulse-glow {
-    0%, 100% { box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); }
-    50% { box-shadow: 0 4px 25px rgba(102, 126, 234, 0.8); }
 }
 
 .sidebar-menu a[data-page="ai-assistant"]:hover {
@@ -710,14 +703,12 @@ header::before {
     background: white;
     border-radius: clamp(15px, 3vw, 25px);
     padding: clamp(15px, 4vw, 30px);
-    box-shadow: var(--shadow-3d);
+    box-shadow: var(--shadow-sm);
     margin-bottom: clamp(15px, 3vh, 25px);
     position: relative;
     overflow: hidden;
-    transition: var(--transition-3d);
+    transition: var(--transition-smooth);
     animation: fadeInUp 0.6s ease-out both;
-    transform-style: preserve-3d;
-    transform: perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0);
 }
 
 .card::before {
@@ -726,14 +717,12 @@ header::before {
     top: 0;
     left: 0;
     right: 0;
-    height: 4px;
-    background: var(--gradient-heaven);
-    transform: translateZ(20px);
+    height: 3px;
+    background: var(--primary);
 }
 
 .card:hover {
-    transform: perspective(1000px) rotateX(-8deg) rotateY(8deg) translateZ(50px) translateY(-15px) scale(1.02);
-    box-shadow: var(--shadow-3d-hover);
+    box-shadow: var(--shadow-md);
 }
 
 .card-header {
@@ -791,12 +780,12 @@ header::before {
     box-shadow: var(--shadow-3d);
     transition: var(--transition-3d);
     transform-style: preserve-3d;
-    transform: perspective(1000px) rotateX(0deg) translateZ(0);
+    transform: translateZ(0);
 }
 
 .event-card:hover {
-    transform: perspective(1000px) rotateX(-10deg) rotateY(10deg) translateZ(60px) translateY(-20px) scale(1.05);
-    box-shadow: var(--shadow-3d-hover);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
 }
 
 .event-image {
@@ -880,36 +869,31 @@ header::before {
     padding: 10px;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.3) 100%);
     backdrop-filter: blur(10px);
-    border-radius: 15px;
+    border-radius: 8px;
     overflow-x: auto;
 }
 
 .tab {
     padding: 12px 24px;
     cursor: pointer;
-    border-radius: 10px;
+    border-radius: 6px;
     border: 2px solid transparent;
     background: rgba(255, 255, 255, 0.4);
     color: var(--dark);
     font-weight: 600;
-    transition: var(--transition-3d);
+    transition: var(--transition-smooth);
     white-space: nowrap;
-    transform-style: preserve-3d;
-    transform: perspective(800px) translateZ(0);
 }
 
 .tab:hover {
     background: rgba(255, 255, 255, 0.7);
-    transform: perspective(800px) translateZ(10px) translateY(-3px);
-    box-shadow: 0 8px 20px rgba(108, 99, 255, 0.3);
 }
 
 .tab.active {
     border: 2px solid var(--primary);
-    background: linear-gradient(135deg, var(--primary) 0%, #764ba2 100%);
+    background: var(--primary);
     color: white;
     font-weight: 700;
-    transform: perspective(800px) translateZ(15px);
     box-shadow: 0 10px 30px rgba(108, 99, 255, 0.5);
 }
 

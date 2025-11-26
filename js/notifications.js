@@ -67,7 +67,16 @@ function createNotification(type, title, message, data = {}) {
 }
 
 // Mostrar toast de notificação
-function showNotificationToast(notification) {
+function showNotificationToast(notification, type) {
+    // Se receber dois parâmetros (string, string), converter para objeto
+    if (typeof notification === 'string' && typeof type === 'string') {
+        notification = {
+            title: type === 'success' ? 'Sucesso' : type === 'error' ? 'Erro' : type === 'warning' ? 'Aviso' : 'Informação',
+            message: notification,
+            type: type
+        };
+    }
+    
     const toast = document.createElement('div');
     toast.className = `notification-toast notification-${notification.type}`;
     toast.innerHTML = `
