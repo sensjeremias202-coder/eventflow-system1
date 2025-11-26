@@ -236,6 +236,74 @@ async function initializePage(pageName) {
                 initAiAssistant();
             }
             break;
+            
+        case 'calendar':
+            // Inicializar calendário
+            if (typeof initCalendar === 'function') {
+                initCalendar();
+            } else if (window.CalendarSystem) {
+                // Fallback para instância global
+                window.calendarInstance = window.calendarInstance || new CalendarSystem();
+            }
+            break;
+            
+        case 'volunteers':
+            // Inicializar sistema de voluntários
+            if (typeof initVolunteers === 'function') {
+                initVolunteers();
+            } else if (window.VolunteerSystem) {
+                // Fallback para instância global
+                window.volunteerInstance = window.volunteerInstance || new VolunteerSystem();
+            }
+            break;
+            
+        case 'analytics':
+            // Inicializar analytics avançado
+            if (typeof initAdvancedAnalytics === 'function') {
+                initAdvancedAnalytics();
+            } else if (window.AdvancedAnalytics) {
+                // Fallback para instância global
+                window.analyticsInstance = window.analyticsInstance || new AdvancedAnalytics();
+                if (window.analyticsInstance.init) {
+                    window.analyticsInstance.init();
+                }
+            }
+            break;
+            
+        case 'payments':
+            // Inicializar sistema de pagamentos
+            if (typeof initPayments === 'function') {
+                initPayments();
+            } else if (window.PaymentSystem) {
+                // Fallback para instância global
+                window.paymentInstance = window.paymentInstance || new PaymentSystem();
+            }
+            break;
+            
+        case 'streaming':
+            // Inicializar sistema de transmissões ao vivo
+            if (typeof initStreaming === 'function') {
+                initStreaming();
+            } else if (window.LiveStreamingSystem) {
+                // Fallback para instância global
+                window.streamingInstance = window.streamingInstance || new LiveStreamingSystem();
+            }
+            break;
+            
+        case 'settings':
+            // Inicializar página de configurações
+            if (typeof initSettings === 'function') {
+                initSettings();
+            } else {
+                // Inicializar sub-sistemas de configurações
+                if (window.ThemeCustomizer && typeof window.themeCustomizer === 'undefined') {
+                    window.themeCustomizer = new ThemeCustomizer();
+                }
+                if (window.I18nSystem && typeof window.i18nSystem === 'undefined') {
+                    window.i18nSystem = new I18nSystem();
+                }
+            }
+            break;
     }
 }
 

@@ -59,9 +59,9 @@ function showConfirm(message, title = 'Confirmação', options = {}) {
 function setupNavigation() {
     // Definir páginas permitidas por role
     const allowedPages = {
-        'admin': ['dashboard', 'events', 'profile', 'chat', 'financeiro', 'graficos', 'users', 'categories', 'ai-assistant'],
-        'treasurer': ['dashboard', 'events', 'profile', 'chat', 'financeiro', 'graficos', 'users', 'categories'],
-        'jovens': ['events', 'chat', 'profile'] // Jovens: Eventos, Chat e Perfil
+        'admin': ['dashboard', 'events', 'profile', 'chat', 'calendar', 'volunteers', 'financeiro', 'graficos', 'analytics', 'payments', 'streaming', 'settings', 'users', 'categories', 'ai-assistant'],
+        'treasurer': ['dashboard', 'events', 'profile', 'chat', 'calendar', 'volunteers', 'financeiro', 'graficos', 'analytics', 'payments', 'users', 'categories'],
+        'jovens': ['events', 'chat', 'profile', 'calendar', 'volunteers'] // Jovens: Eventos, Chat, Perfil, Calendário e Voluntários
     };
     
     // Navegação principal

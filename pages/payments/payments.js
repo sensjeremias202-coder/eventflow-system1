@@ -1,9 +1,41 @@
+/**
+ * Inicialização da página de pagamentos
+ */
+
+function initPayments() {
+    console.log('[payments-page] Inicializando página de pagamentos...');
+    
+    // Verificar se o sistema de pagamentos está disponível
+    if (typeof PaymentSystem !== 'undefined') {
+        // Criar instância se não existir
+        if (!window.paymentInstance) {
+            window.paymentInstance = new PaymentSystem();
+            console.log('[payments-page] ✅ PaymentSystem instanciado');
+        } else {
+            // Recarregar transações se já existe
+            if (window.paymentInstance.loadTransactions) {
+                window.paymentInstance.loadTransactions();
+            }
+            console.log('[payments-page] ✅ Sistema de pagamentos recarregado');
+        }
+        
+        // Carregar transações na interface
+        loadTransactions();
+    } else {
+        console.error('[payments-page] ❌ PaymentSystem não encontrado!');
+        showNotification('Erro ao carregar sistema de pagamentos', 'error');
+    }
+}
+
 // Carregar transações
 function loadTransactions() {
     const container = document.getElementById('transactions-list');
-    if (!container || !window.paymentSystem) return;
+    if (!container) return;
     
-    const transactions = window.paymentSystem.transactions.slice(-20);
+    const paymentSystem = window.paymentInstance || window.paymentSystem;
+    if (!paymentSystem) return;
+    
+    const transactions = paymentSystem.transactions.slice(-20);
     
     if (transactions.length === 0) {
         container.innerHTML = '<p class="text-muted">Nenhuma transação registrada</p>';
@@ -26,9 +58,10 @@ function generateFinancialReport() {
     const startDate = new Date(document.getElementById('startDate').value);
     const endDate = new Date(document.getElementById('endDate').value);
     
-    if (!window.paymentSystem) return;
+    const paymentSystem = window.paymentInstance || window.paymentSystem;
+    if (!paymentSystem) return;
     
-    const report = window.paymentSystem.getFinancialReport(startDate, endDate);
+    const report = paymentSystem.getFinancialReport(startDate, endDate);
     const container = document.getElementById('financial-report');
     
     container.innerHTML = `
@@ -45,9 +78,9 @@ function generateFinancialReport() {
     `;
 }
 
-// Carregar ao abrir a página
-if (window.paymentSystem) {
-    loadTransactions();
-}
+// Exportar funções globalmente
+window.initPayments = initPayments;
+window.loadTransactions = loadTransactions;
+window.generateFinancialReport = generateFinancialReport;
 
-console.log('Página de pagamentos carregada');
+console.log('[payments-page] ✅ Módulo de pagamentos carregado');
