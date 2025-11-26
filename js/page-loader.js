@@ -227,8 +227,8 @@ async function initializePage(pageName) {
             break;
             
         case 'ai-assistant':
-            // Inicializar assistente AI (admin only)
-            if (currentUser?.role === 'admin' && typeof initAiAssistant === 'function') {
+            // Inicializar assistente AI
+            if (typeof initAiAssistant === 'function') {
                 initAiAssistant();
             }
             break;
