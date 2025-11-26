@@ -1,5 +1,5 @@
 /* ============================================ */
-/* TEMA CRISTÃO JUVENIL - CORES E VARIÁVEIS */
+/* TEMA CRISTÃO JUVENIL 3D - CORES E VARIÁVEIS */
 /* ============================================ */
 :root {
     /* Paleta Cristã Moderna - Tons suaves e vibrantes */
@@ -20,14 +20,17 @@
     --gradient-love: linear-gradient(135deg, #FF6B9D 0%, #C44569 100%);
     --gradient-peace: linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%);
     
-    /* Sombras Suaves */
+    /* Sombras 3D */
     --shadow-sm: 0 2px 8px rgba(108, 99, 255, 0.1);
     --shadow-md: 0 4px 16px rgba(108, 99, 255, 0.15);
     --shadow-lg: 0 8px 32px rgba(108, 99, 255, 0.2);
+    --shadow-3d: 0 10px 30px rgba(0, 0, 0, 0.3), 0 5px 15px rgba(108, 99, 255, 0.2);
+    --shadow-3d-hover: 0 20px 50px rgba(0, 0, 0, 0.4), 0 10px 25px rgba(108, 99, 255, 0.3);
     
     /* Animações */
     --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --transition-3d: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 /* ============================================ */
@@ -88,10 +91,10 @@
 
 @keyframes float {
     0%, 100% {
-        transform: translateY(0);
+        transform: translateY(0) translateZ(0);
     }
     50% {
-        transform: translateY(-10px);
+        transform: translateY(-10px) translateZ(10px);
     }
 }
 
@@ -102,6 +105,86 @@
     100% {
         background-position: 200%;
     }
+}
+
+@keyframes rotate3d {
+    0% {
+        transform: rotateY(0deg) rotateX(0deg);
+    }
+    100% {
+        transform: rotateY(360deg) rotateX(360deg);
+    }
+}
+
+@keyframes bibleFloat {
+    0%, 100% {
+        transform: translate(-50%, -50%) scale(1) rotate(0deg);
+        opacity: 0.03;
+    }
+    25% {
+        transform: translate(-48%, -52%) scale(1.05) rotate(2deg);
+        opacity: 0.05;
+    }
+    50% {
+        transform: translate(-52%, -48%) scale(1.1) rotate(-2deg);
+        opacity: 0.07;
+    }
+    75% {
+        transform: translate(-50%, -50%) scale(1.05) rotate(1deg);
+        opacity: 0.05;
+    }
+}
+
+@keyframes biblePulse {
+    0%, 100% {
+        filter: brightness(1) blur(0px);
+    }
+    50% {
+        filter: brightness(1.2) blur(1px);
+    }
+}
+
+/* ============================================ */
+/* BACKGROUND 3D COM BÍBLIA ANIMADA */
+/* ============================================ */
+body::before {
+    content: '';
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80vw;
+    height: 80vh;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="%236C63FF" d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm61.8-104.4l-84.9-61.7c-3.1-2.3-4.9-5.9-4.9-9.7V116c0-6.6 5.4-12 12-12h32c6.6 0 12 5.4 12 12v141.7l66.8 48.6c5.4 3.9 6.5 11.4 2.6 16.8L334.6 349c-3.9 5.3-11.4 6.5-16.8 2.6z"/></svg>');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0.05;
+    pointer-events: none;
+    z-index: 0;
+    animation: bibleFloat 20s ease-in-out infinite, biblePulse 10s ease-in-out infinite;
+    mix-blend-mode: multiply;
+}
+
+body::after {
+    content: '✝';
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 50vw;
+    color: var(--primary);
+    opacity: 0.02;
+    pointer-events: none;
+    z-index: 0;
+    animation: rotate3d 60s linear infinite;
+    font-weight: 100;
+}
+
+body {
+    perspective: 1500px;
+    perspective-origin: 50% 50%;
+    transform-style: preserve-3d;
 }
 
 @keyframes heartbeat {
@@ -131,6 +214,8 @@ body {
     color: var(--dark);
     line-height: 1.6;
     overflow-x: hidden;
+    position: relative;
+    min-height: 100vh;
 }
 
 .container {
@@ -262,7 +347,7 @@ header::before {
 }
 
 /* ============================================ */
-/* BOTÕES ESTILIZADOS */
+/* BOTÕES ESTILIZADOS 3D */
 /* ============================================ */
 .btn {
     padding: clamp(8px, 1.5vh, 12px) clamp(15px, 3vw, 25px);
@@ -271,11 +356,13 @@ header::before {
     cursor: pointer;
     font-weight: 600;
     font-size: clamp(0.85rem, 2vw, 1rem);
-    transition: var(--transition-bounce);
+    transition: var(--transition-3d);
     position: relative;
     overflow: hidden;
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--shadow-3d);
     white-space: nowrap;
+    transform-style: preserve-3d;
+    transform: perspective(800px) translateZ(0);
 }
 
 .btn::before {
@@ -287,7 +374,7 @@ header::before {
     height: 0;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.3);
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%) translateZ(5px);
     transition: width 0.6s, height 0.6s;
 }
 
@@ -297,27 +384,30 @@ header::before {
 }
 
 .btn:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: var(--shadow-lg);
+    transform: perspective(800px) translateZ(20px) translateY(-5px) scale(1.05);
+    box-shadow: var(--shadow-3d-hover);
 }
 
 .btn:active {
-    transform: translateY(-1px) scale(1.02);
+    transform: perspective(800px) translateZ(10px) translateY(-2px) scale(1.02);
 }
 
 .btn-primary {
     background: var(--gradient-heaven);
     color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .btn-secondary {
     background: var(--gradient-love);
     color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .btn-success {
     background: var(--gradient-peace);
     color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .btn-outline {
@@ -330,21 +420,25 @@ header::before {
     background: var(--gradient-heaven);
     color: white;
     border-color: transparent;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .btn-danger {
     background: var(--gradient-love);
     color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .btn-warning {
     background: var(--gradient-hope);
     color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .btn-info {
     background: var(--gradient-peace);
     color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .btn-sm {
@@ -364,7 +458,7 @@ header::before {
 }
 
 /* ============================================ */
-/* SIDEBAR - MENU LATERAL */
+/* SIDEBAR - MENU LATERAL 3D */
 /* ============================================ */
 .sidebar {
     width: clamp(220px, 25vw, 280px);
@@ -372,12 +466,20 @@ header::before {
     background: white;
     border-radius: 20px;
     padding: clamp(15px, 3vw, 25px);
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-3d);
     max-height: 500px !important;
     overflow-y: auto !important;
     position: sticky;
     top: clamp(70px, 10vh, 100px);
     animation: slideInLeft 0.8s ease-out 0.4s both;
+    transform-style: preserve-3d;
+    transform: perspective(1200px) rotateY(0deg) translateZ(0);
+    transition: var(--transition-3d);
+}
+
+.sidebar:hover {
+    transform: perspective(1200px) rotateY(-2deg) translateZ(10px);
+    box-shadow: var(--shadow-3d-hover);
 }
 
 /* Estilo do scrollbar da sidebar */
@@ -466,10 +568,12 @@ header::before {
     border-radius: 12px;
     text-decoration: none;
     color: var(--dark);
-    transition: var(--transition-smooth);
+    transition: var(--transition-3d);
     position: relative;
     overflow: hidden;
     font-weight: 500;
+    transform-style: preserve-3d;
+    transform: perspective(600px) translateZ(0);
 }
 
 .sidebar-menu a::before {
@@ -480,21 +584,21 @@ header::before {
     bottom: 0;
     width: 4px;
     background: var(--gradient-heaven);
-    transform: scaleY(0);
+    transform: scaleY(0) translateZ(5px);
     transition: var(--transition-smooth);
 }
 
 .sidebar-menu a:hover::before,
 .sidebar-menu a.active::before {
-    transform: scaleY(1);
+    transform: scaleY(1) translateZ(5px);
 }
 
 .sidebar-menu a:hover,
 .sidebar-menu a.active {
     background: linear-gradient(135deg, rgba(108, 99, 255, 0.1) 0%, rgba(255, 107, 157, 0.1) 100%);
     color: var(--primary);
-    transform: translateX(5px);
-    box-shadow: var(--shadow-sm);
+    transform: perspective(600px) translateZ(15px) translateX(8px);
+    box-shadow: var(--shadow-3d);
 }
 
 /* Destaque especial para Assistente AI */
@@ -533,18 +637,20 @@ header::before {
 }
 
 /* ============================================ */
-/* CARDS - ESTILO JOVEM E VIBRANTE */
+/* CARDS - ESTILO 3D MODERNO */
 /* ============================================ */
 .card {
     background: white;
     border-radius: clamp(15px, 3vw, 25px);
     padding: clamp(15px, 4vw, 30px);
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-3d);
     margin-bottom: clamp(15px, 3vh, 25px);
     position: relative;
     overflow: hidden;
-    transition: var(--transition-smooth);
+    transition: var(--transition-3d);
     animation: fadeInUp 0.6s ease-out both;
+    transform-style: preserve-3d;
+    transform: perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0);
 }
 
 .card::before {
@@ -555,11 +661,12 @@ header::before {
     right: 0;
     height: 4px;
     background: var(--gradient-heaven);
+    transform: translateZ(20px);
 }
 
 .card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-lg);
+    transform: perspective(1000px) rotateX(-2deg) rotateY(2deg) translateZ(20px) translateY(-10px);
+    box-shadow: var(--shadow-3d-hover);
 }
 
 .card-header {
@@ -574,6 +681,7 @@ header::before {
     border-image-slice: 1;
     flex-wrap: wrap;
     gap: 10px;
+    transform: translateZ(10px);
 }
 
 .card-header button {
@@ -585,6 +693,8 @@ header::before {
     font-weight: 600;
     color: var(--dark);
     flex: 0 1 auto;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    transform: translateZ(15px);
 }
 
 #createGroupBtn {
@@ -598,18 +708,22 @@ header::before {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(clamp(250px, 40vw, 320px), 1fr));
     gap: clamp(15px, 3vw, 25px);
+    perspective: 1500px;
 }
 
 .event-card {
     background-color: white;
     border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s;
+    box-shadow: var(--shadow-3d);
+    transition: var(--transition-3d);
+    transform-style: preserve-3d;
+    transform: perspective(1000px) rotateX(0deg) translateZ(0);
 }
 
 .event-card:hover {
-    transform: translateY(-5px);
+    transform: perspective(1000px) rotateX(-5deg) rotateY(5deg) translateZ(30px) translateY(-10px);
+    box-shadow: var(--shadow-3d-hover);
 }
 
 .event-image {
@@ -671,12 +785,16 @@ header::before {
     border: 1px solid #ddd;
     border-radius: clamp(5px, 1vw, 8px);
     font-size: clamp(0.9rem, 2vw, 1rem);
-    transition: border-color 0.3s ease;
+    transition: var(--transition-3d);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+    transform: perspective(800px) translateZ(0);
 }
 
 .form-control:focus {
     outline: none;
     border-color: var(--primary);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05), 0 0 0 3px rgba(108, 99, 255, 0.1);
+    transform: perspective(800px) translateZ(10px);
 }
 
 /* Tabs */
@@ -863,39 +981,46 @@ header::before {
     background-color: white;
     border-radius: 10px;
     padding: 20px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-3d);
     text-align: center;
     position: relative;
     overflow: hidden;
+    transform-style: preserve-3d;
+    transform: perspective(1000px) rotateX(0deg) translateZ(0);
+    transition: var(--transition-3d);
 }
 
 .stat-value {
     font-size: 2rem;
     font-weight: 700;
     margin: 10px 0;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    transform: translateZ(20px);
 }
 
 .stat-label {
     font-weight: 600;
     color: var(--dark);
     margin-bottom: 5px;
+    transform: translateZ(10px);
 }
 
 .stat-subtitle {
     font-size: 0.85rem;
     color: var(--gray);
     margin-top: 8px;
+    transform: translateZ(5px);
 }
 
 /* Cards clicáveis do dashboard */
 .clickable-stat {
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: var(--transition-3d);
 }
 
 .clickable-stat:hover {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    transform: perspective(1000px) rotateX(-5deg) rotateY(5deg) translateZ(30px) translateY(-10px);
+    box-shadow: var(--shadow-3d-hover);
 }
 
 .clickable-stat::after {
@@ -908,6 +1033,7 @@ header::before {
     background: linear-gradient(135deg, rgba(108, 99, 255, 0.05) 0%, rgba(255, 107, 157, 0.05) 100%);
     opacity: 0;
     transition: opacity 0.3s ease;
+    transform: translateZ(-1px);
 }
 
 .clickable-stat:hover::after {
@@ -926,13 +1052,13 @@ header::before {
     font-weight: 600;
     color: var(--primary);
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(10px) translateZ(15px);
     transition: all 0.3s ease;
 }
 
 .clickable-stat:hover .stat-action {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) translateZ(15px);
 }
 
 .stat-action i {
@@ -1007,9 +1133,23 @@ header::before {
     width: clamp(90%, 85vw, 95%);
     max-width: 550px;
     padding: clamp(20px, 4vw, 35px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-3d-hover);
     max-height: 90vh;
     overflow-y: auto;
+    transform-style: preserve-3d;
+    transform: perspective(1200px) rotateX(0deg) scale(1);
+    animation: modalAppear 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes modalAppear {
+    0% {
+        transform: perspective(1200px) rotateX(-90deg) scale(0.5);
+        opacity: 0;
+    }
+    100% {
+        transform: perspective(1200px) rotateX(0deg) scale(1);
+        opacity: 1;
+    }
 }
 
 .modal-header {
