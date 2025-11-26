@@ -144,6 +144,18 @@
     }
 }
 
+@keyframes float3d {
+    0%, 100% {
+        transform: translateY(0) translateZ(0) rotateZ(0deg);
+    }
+    33% {
+        transform: translateY(-20px) translateZ(20px) rotateZ(10deg);
+    }
+    66% {
+        transform: translateY(20px) translateZ(-20px) rotateZ(-10deg);
+    }
+}
+
 /* ============================================ */
 /* BACKGROUND 3D COM BÍBLIA ANIMADA */
 /* ============================================ */
@@ -153,17 +165,18 @@ body::before {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 80vw;
-    height: 80vh;
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="%236C63FF" d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm61.8-104.4l-84.9-61.7c-3.1-2.3-4.9-5.9-4.9-9.7V116c0-6.6 5.4-12 12-12h32c6.6 0 12 5.4 12 12v141.7l66.8 48.6c5.4 3.9 6.5 11.4 2.6 16.8L334.6 349c-3.9 5.3-11.4 6.5-16.8 2.6z"/></svg>');
+    width: 60vw;
+    height: 60vh;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="%236C63FF" d="M448 358.4V25.6c0-16-9.6-25.6-25.6-25.6H96C41.6 0 0 41.6 0 96v320c0 54.4 41.6 96 96 96h326.4c12.8 0 25.6-9.6 25.6-25.6v-16c0-6.4-3.2-12.8-9.6-19.2-3.2-16-3.2-60.8 0-73.6 6.4-3.2 9.6-9.6 9.6-19.2zM144 168c0-8.84 7.16-16 16-16h192c8.84 0 16 7.16 16 16v16c0 8.84-7.16 16-16 16H160c-8.84 0-16-7.16-16-16v-16zm0 96c0-8.84 7.16-16 16-16h192c8.84 0 16 7.16 16 16v16c0 8.84-7.16 16-16 16H160c-8.84 0-16-7.16-16-16v-16zm0 96c0-8.84 7.16-16 16-16h192c8.84 0 16 7.16 16 16v16c0 8.84-7.16 16-16 16H160c-8.84 0-16-7.16-16-16v-16z"/></svg>');
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    opacity: 0.05;
+    opacity: 0.08;
     pointer-events: none;
     z-index: 0;
     animation: bibleFloat 20s ease-in-out infinite, biblePulse 10s ease-in-out infinite;
     mix-blend-mode: multiply;
+    filter: drop-shadow(0 10px 30px rgba(108, 99, 255, 0.3));
 }
 
 body::after {
@@ -172,19 +185,21 @@ body::after {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 50vw;
+    font-size: 40vw;
     color: var(--primary);
-    opacity: 0.02;
+    opacity: 0.03;
     pointer-events: none;
     z-index: 0;
     animation: rotate3d 60s linear infinite;
     font-weight: 100;
+    filter: drop-shadow(0 0 50px rgba(108, 99, 255, 0.5));
 }
 
 body {
-    perspective: 1500px;
+    perspective: 2000px;
     perspective-origin: 50% 50%;
     transform-style: preserve-3d;
+    position: relative;
 }
 
 @keyframes heartbeat {
@@ -216,6 +231,48 @@ body {
     overflow-x: hidden;
     position: relative;
     min-height: 100vh;
+}
+
+/* Camada adicional de profundidade 3D */
+body > #app,
+body > #login-container {
+    position: relative;
+    z-index: 10;
+    transform-style: preserve-3d;
+}
+
+/* Partículas 3D flutuantes */
+body::after {
+    content: '✝';
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 40vw;
+    color: var(--primary-color);
+    opacity: 0.03;
+    z-index: 1;
+    pointer-events: none;
+    animation: rotate3d 60s linear infinite;
+    perspective: 2000px;
+    transform-style: preserve-3d;
+    filter: drop-shadow(0 0 50px rgba(108, 99, 255, 0.5));
+}
+
+/* Adiciona múltiplas partículas 3D */
+.particle-3d {
+    position: fixed;
+    width: 4px;
+    height: 4px;
+    background: radial-gradient(circle, var(--primary-color), transparent);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 2;
+    transform-style: preserve-3d;
+    box-shadow: 
+        0 0 10px rgba(108, 99, 255, 0.8),
+        0 0 20px rgba(108, 99, 255, 0.5),
+        0 0 30px rgba(108, 99, 255, 0.3);
 }
 
 .container {
@@ -384,7 +441,7 @@ header::before {
 }
 
 .btn:hover {
-    transform: perspective(800px) translateZ(20px) translateY(-5px) scale(1.05);
+    transform: perspective(800px) rotateX(-10deg) translateZ(30px) translateY(-8px) scale(1.08);
     box-shadow: var(--shadow-3d-hover);
 }
 
@@ -478,7 +535,7 @@ header::before {
 }
 
 .sidebar:hover {
-    transform: perspective(1200px) rotateY(-2deg) translateZ(10px);
+    transform: perspective(1200px) rotateY(-5deg) translateZ(25px) scale(1.02);
     box-shadow: var(--shadow-3d-hover);
 }
 
@@ -665,7 +722,7 @@ header::before {
 }
 
 .card:hover {
-    transform: perspective(1000px) rotateX(-2deg) rotateY(2deg) translateZ(20px) translateY(-10px);
+    transform: perspective(1000px) rotateX(-8deg) rotateY(8deg) translateZ(50px) translateY(-15px) scale(1.02);
     box-shadow: var(--shadow-3d-hover);
 }
 
@@ -722,7 +779,7 @@ header::before {
 }
 
 .event-card:hover {
-    transform: perspective(1000px) rotateX(-5deg) rotateY(5deg) translateZ(30px) translateY(-10px);
+    transform: perspective(1000px) rotateX(-10deg) rotateY(10deg) translateZ(60px) translateY(-20px) scale(1.05);
     box-shadow: var(--shadow-3d-hover);
 }
 
@@ -1019,7 +1076,7 @@ header::before {
 }
 
 .clickable-stat:hover {
-    transform: perspective(1000px) rotateX(-5deg) rotateY(5deg) translateZ(30px) translateY(-10px);
+    transform: perspective(1000px) rotateX(-12deg) rotateY(12deg) translateZ(50px) translateY(-15px) scale(1.05);
     box-shadow: var(--shadow-3d-hover);
 }
 

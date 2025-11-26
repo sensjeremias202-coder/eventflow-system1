@@ -631,3 +631,43 @@ function resetDemoData() {
 
 // Chame esta função no showApp()
 // (Função showApp já é definida em `js/auth.js`. Aqui mantemos apenas `setupLogout`.)
+
+// ========== PARTÍCULAS 3D FLUTUANTES ==========
+function createFloatingParticles() {
+    const particleCount = 30;
+    const body = document.body;
+    
+    for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle-3d';
+        
+        // Posição aleatória
+        const x = Math.random() * 100;
+        const y = Math.random() * 100;
+        const z = Math.random() * 100 - 50; // -50 a 50
+        
+        // Tamanho aleatório
+        const size = Math.random() * 3 + 2; // 2-5px
+        
+        // Duração de animação aleatória
+        const duration = Math.random() * 10 + 15; // 15-25s
+        const delay = Math.random() * 5; // 0-5s
+        
+        particle.style.cssText = `
+            left: ${x}vw;
+            top: ${y}vh;
+            width: ${size}px;
+            height: ${size}px;
+            animation: float3d ${duration}s ease-in-out ${delay}s infinite;
+        `;
+        
+        body.appendChild(particle);
+    }
+}
+
+// Inicializa partículas quando página carregar
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', createFloatingParticles);
+} else {
+    createFloatingParticles();
+}
