@@ -225,6 +225,13 @@ async function initializePage(pageName) {
                 loadCategoriesTable();
             }
             break;
+            
+        case 'ai-assistant':
+            // Inicializar assistente AI (admin only)
+            if (currentUser?.role === 'admin' && typeof initAiAssistant === 'function') {
+                initAiAssistant();
+            }
+            break;
     }
 }
 
