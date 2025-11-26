@@ -1,125 +1,172 @@
-```markdown
-# EventFlow - Sistema de Agendamento de Eventos
+# 📅 EventFlow System
 
-Sistema completo de agendamento e gerenciamento de eventos com funcionalidades para administradores e usuários comuns.
+Sistema completo de gerenciamento de eventos com funcionalidades para administradores e usuários.
 
 ## 🚀 Funcionalidades
 
-### Para Administradores
-- **Dashboard** com estatísticas e gráficos de análise
-- **Gerenciamento de Eventos** (criar, editar, excluir)
-- **Gerenciamento de Usuários** (criar, editar, excluir)
-- **Gerenciamento de Categorias** (criar, editar, excluir)
-- **Chat** com usuários comuns
-- **Análise de Comentários** em forma de gráficos
+### 👨‍💼 Para Administradores
+- Dashboard com estatísticas e análises
+- Gerenciamento de eventos (CRUD completo)
+- Gerenciamento de usuários
+- Gerenciamento de categorias
+- Chat com usuários
+- Assistente AI para análises
+- Gráficos e relatórios
 
-### Para Usuários Comuns
-- **Visualização de Eventos**
-- **Avaliação e Comentários** em eventos
-- **Chat** com administradores
-- **Meus Eventos** - visualização personalizada
+### 👤 Para Usuários Comuns
+- Visualização de eventos
+- Inscrição em eventos
+- Avaliação e comentários
+- Chat com administradores
+- Meus eventos
 
-## 👥 Como Usar
-
-### Login de Teste
+## 🔐 Credenciais de Teste
 
 **Administrador:**
 - E-mail: `admin@eventflow.com`
 - Senha: `admin123`
 
-**Usuário Comum:**
+**Usuário:**
 - E-mail: `joao@email.com`
 - Senha: `123456`
 
-### Funcionalidades Principais
-
-1. **Dashboard**: Visualize estatísticas e análises dos comentários
-2. **Eventos**: Veja todos os eventos disponíveis
-3. **Meus Eventos**: Visualize eventos que você avaliou (apenas usuários comuns)
-4. **Chat**: Comunique-se com outros usuários
-5. **Usuários** (apenas admin): Gerencie usuários do sistema
-6. **Categorias** (apenas admin): Gerencie categorias de eventos
-
-## 📁 Estrutura de Arquivos
+## 📁 Estrutura do Projeto
 
 ```
-
-## 🛠 Correção Recente
-
-Foi identificada e corrigida uma condição que impedia a tela principal de ser exibida após o login.
-
-- Causa: havia uma definição duplicada da função `showApp()` em `js/app.js` que sobrescrevia a implementação correta presente em `js/auth.js`. Como `app.js` é carregado depois de `auth.js`, a versão vazia estava sendo executada, deixando a aplicação escondida.
-- Correção aplicada: removida a definição duplicada de `showApp()` em `js/app.js` e adicionada uma chamada a `setupLogout()` dentro de `showApp()` em `js/auth.js` para garantir que o botão de logout seja configurado após o login.
-
-## ✅ Como testar localmente
-
-1. Abra o arquivo `index.html` no navegador (duplo-clique ou via PowerShell):
-
-```powershell
-start .\index.html
+eventflow-system1/
+├── index.html              # Arquivo principal
+├── README.md              # Este arquivo
+│
+├── css/                   # Estilos
+│   ├── style.css         # Estilos principais
+│   └── theme-christian.css # Tema personalizado
+│
+├── js/                    # Scripts
+│   ├── app.js            # Lógica principal
+│   ├── auth.js           # Autenticação
+│   ├── categories.js     # Gerenciamento de categorias
+│   ├── chat.js           # Sistema de chat
+│   ├── dashboard.js      # Dashboard
+│   ├── events.js         # Gerenciamento de eventos
+│   ├── users.js          # Gerenciamento de usuários
+│   ├── data.js           # Dados iniciais
+│   ├── firebase-config.js # Configuração Firebase
+│   ├── page-loader.js    # Carregamento modular
+│   └── sync.js           # Sincronização de dados
+│
+├── pages/                 # Páginas modulares
+│   ├── dashboard/        # Dashboard
+│   ├── events/           # Eventos
+│   ├── chat/             # Chat
+│   ├── users/            # Usuários
+│   ├── categories/       # Categorias
+│   ├── profile/          # Perfil
+│   ├── ai-assistant/     # Assistente AI
+│   ├── graficos/         # Gráficos
+│   └── financeiro/       # Financeiro
+│
+└── docs/                  # Documentação
+    ├── CHANGELOG.md       # Histórico de mudanças
+    ├── DEPLOY.md          # Guia de deploy
+    ├── FIREBASE_SETUP.md  # Setup Firebase
+    ├── SETUP_DATABASE.md  # Setup do banco
+    ├── SISTEMA_ID.md      # Sistema de IDs
+    └── README-ESTRUTURA-MODULAR.md  # Estrutura modular
 ```
 
-2. Faça login com as credenciais de teste (veja seção acima).
-3. Após o login, a área principal (`#app`) deve aparecer e o nome do usuário deve ser exibido em `#userName`.
-4. Clique no botão `Sair` para confirmar que o logout retorna para a tela de login.
+## 🛠️ Tecnologias
 
-Se algo não funcionar, abra o Console do DevTools (F12) e verifique erros; também verifique o conteúdo de `localStorage` executando `localStorage.getItem('currentUser')` no console.
+- **Frontend:** HTML5, CSS3, JavaScript (Vanilla)
+- **Armazenamento:** LocalStorage + Firebase Realtime Database
+- **Modular:** Sistema de carregamento dinâmico de páginas
+- **UI:** Font Awesome, Google Fonts (Poppins)
+- **Analytics:** Firebase Analytics, Google Analytics
 
-## 🔐 Credenciais de Teste (fornecidas no projeto)
+## 🚀 Como Usar
 
-- Administrador:
-  - E-mail: `admin@eventflow.com`
-  - Senha: `admin123`
+1. **Abrir o projeto:**
+   ```powershell
+   start .\index.html
+   ```
 
-- Usuário comum:
-  - E-mail: `joao@email.com`
-  - Senha: `123456`
+2. **Fazer login** com as credenciais de teste
 
-## 🧭 Observações e próximos passos
+3. **Navegar** pelo sistema usando o menu lateral
 
-- Recomenda-se substituir o armazenamento de senhas em texto plano por um mecanismo seguro (hash + salt) antes de usar em produção.
-- Caso queira, eu posso adicionar a seção acima ao README e você pode revisar/commit/push as preferir.
+## 📚 Documentação
 
-```
-# EventFlow - Sistema de Agendamento de Eventos
+Toda a documentação técnica está disponível na pasta [`docs/`](./docs/):
 
-Sistema completo de agendamento e gerenciamento de eventos com funcionalidades para administradores e usuários comuns.
+- **[CHANGELOG.md](./docs/CHANGELOG.md)** - Histórico de alterações
+- **[DEPLOY.md](./docs/DEPLOY.md)** - Guia de implantação
+- **[FIREBASE_SETUP.md](./docs/FIREBASE_SETUP.md)** - Configuração do Firebase
+- **[SETUP_DATABASE.md](./docs/SETUP_DATABASE.md)** - Setup do banco de dados
+- **[SISTEMA_ID.md](./docs/SISTEMA_ID.md)** - Sistema de IDs únicos
+- **[README-ESTRUTURA-MODULAR.md](./docs/README-ESTRUTURA-MODULAR.md)** - Arquitetura modular
 
-## 🚀 Funcionalidades
+## ✨ Recursos Principais
 
-### Para Administradores
-- **Dashboard** com estatísticas e gráficos de análise
-- **Gerenciamento de Eventos** (criar, editar, excluir)
-- **Gerenciamento de Usuários** (criar, editar, excluir)
-- **Gerenciamento de Categorias** (criar, editar, excluir)
-- **Chat** com usuários comuns
-- **Análise de Comentários** em forma de gráficos
+### 📊 Dashboard Inteligente
+- Estatísticas em tempo real
+- Gráficos interativos
+- Análise de comentários com AI
+- Resumo de eventos e usuários
 
-### Para Usuários Comuns
-- **Visualização de Eventos**
-- **Avaliação e Comentários** em eventos
-- **Chat** com administradores
-- **Meus Eventos** - visualização personalizada
+### 💬 Sistema de Chat
+- Chat entre usuários e administradores
+- Interface responsiva
+- Mensagens em tempo real
 
-## 👥 Como Usar
+### 🎯 Gerenciamento de Eventos
+- Criação e edição de eventos
+- Categorização
+- Sistema de avaliações
+- Comentários e feedback
 
-### Login de Teste
+### 🔥 Integração Firebase
+- Sincronização em tempo real
+- Armazenamento persistente
+- Analytics integrado
+- Multi-dispositivos
 
-**Administrador:**
-- E-mail: `admin@eventflow.com`
-- Senha: `admin123`
+## 🔧 Desenvolvimento
 
-**Usuário Comum:**
-- E-mail: `joao@email.com`
-- Senha: `123456`
+O projeto usa uma arquitetura modular com carregamento dinâmico de páginas:
 
-### Funcionalidades Principais
+1. **Carregamento Modular** (`page-loader.js`):
+   - Carrega HTML, CSS e JS dinamicamente
+   - Templates inline no `index.html`
+   - Inicialização automática
 
-1. **Dashboard**: Visualize estatísticas e análises dos comentários
-2. **Eventos**: Veja todos os eventos disponíveis
-3. **Meus Eventos**: Visualize eventos que você avaliou (apenas usuários comuns)
-4. **Chat**: Comunique-se com outros usuários
-5. **Usuários** (apenas admin): Gerencie usuários do sistema
-6. **Categorias** (apenas admin): Gerencie categorias de eventos
+2. **Sincronização** (`sync.js`):
+   - LocalStorage como cache
+   - Firebase como backend
+   - Sincronização bidirecional
 
-## 📁 Estrutura de Arquivos
+3. **Autenticação** (`auth.js`):
+   - Gerenciamento de sessão
+   - Controle de permissões
+   - Proteção de rotas
+
+## 📝 Notas
+
+- Sistema 100% offline-first
+- Firebase opcional (funciona sem conexão)
+- Dados persistem no localStorage
+- Interface responsiva e moderna
+
+## 🤝 Contribuindo
+
+1. Fork o projeto
+2. Crie uma branch para sua feature
+3. Commit suas mudanças
+4. Push para a branch
+5. Abra um Pull Request
+
+## 📄 Licença
+
+Este projeto é de uso educacional.
+
+---
+
+**Desenvolvido com ❤️ para gerenciamento eficiente de eventos**
