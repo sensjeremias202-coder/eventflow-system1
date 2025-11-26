@@ -572,12 +572,25 @@ header::before {
     background: linear-gradient(white, white) padding-box,
                 var(--gradient-heaven) border-box;
     border-image-slice: 1;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.card-header button {
+    flex-shrink: 0;
 }
 
 .card-title {
     font-size: 1.3rem;
     font-weight: 600;
     color: var(--dark);
+    flex: 0 1 auto;
+}
+
+#createGroupBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 }
 
 /* Events Grid */
