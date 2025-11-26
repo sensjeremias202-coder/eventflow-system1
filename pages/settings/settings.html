@@ -1,0 +1,97 @@
+<div class="page-header">
+    <h1><i class="fas fa-cog"></i> Configurações do Sistema</h1>
+    <p>Personalize e configure o EventFlow</p>
+</div>
+
+<div class="settings-grid">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title"><i class="fas fa-palette"></i> Personalização de Tema</div>
+        </div>
+        <div class="card-body">
+            <div id="theme-customizer"></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title"><i class="fas fa-globe"></i> Idioma</div>
+        </div>
+        <div class="card-body">
+            <div id="language-selector"></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title"><i class="fas fa-bell"></i> Notificações</div>
+        </div>
+        <div class="card-body">
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="emailNotifications" checked>
+                    Receber notificações por e-mail
+                </label>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="browserNotifications" checked>
+                    Notificações do navegador
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title"><i class="fas fa-database"></i> Dados e Sincronização</div>
+        </div>
+        <div class="card-body">
+            <button class="btn btn-primary" onclick="forceSyncData()">
+                <i class="fas fa-sync"></i> Sincronizar Agora
+            </button>
+            <button class="btn btn-danger" onclick="clearLocalData()" style="margin-left: 10px;">
+                <i class="fas fa-trash"></i> Limpar Cache Local
+            </button>
+        </div>
+    </div>
+
+    <div class="card admin-only">
+        <div class="card-header">
+            <div class="card-title"><i class="fas fa-plug"></i> Integrações</div>
+        </div>
+        <div class="card-body">
+            <div class="form-group">
+                <label>API Key do Google Calendar</label>
+                <input type="text" class="form-control" id="googleApiKey" placeholder="Sua API Key">
+            </div>
+            <div class="form-group">
+                <label>Token do Stripe</label>
+                <input type="text" class="form-control" id="stripeToken" placeholder="Seu token">
+            </div>
+            <button class="btn btn-primary">
+                <i class="fas fa-save"></i> Salvar Configurações
+            </button>
+        </div>
+    </div>
+
+    <div class="card admin-only">
+        <div class="card-header">
+            <div class="card-title"><i class="fas fa-desktop"></i> Modo Quiosque</div>
+        </div>
+        <div class="card-body">
+            <p>Ative o modo quiosque para check-in autoatendimento em tablets</p>
+            <button class="btn btn-primary" onclick="kioskMode.activate()">
+                <i class="fas fa-expand"></i> Ativar Modo Quiosque
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+.settings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 20px;
+}
+</style>

@@ -1,0 +1,12 @@
+.page-header {
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    color: var(--primary);
+    margin-bottom: 10px;
+}
+
+.page-header p {
+    color: var(--text-muted);
+}
