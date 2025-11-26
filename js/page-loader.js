@@ -176,13 +176,17 @@ async function initializePage(pageName) {
             break;
             
         case 'chat':
-            // Carregar lista de usuários para chat
-            if (typeof loadChatUsers === 'function') {
-                loadChatUsers();
-            }
-            // Setup de eventos do chat
-            if (typeof setupChat === 'function') {
-                setupChat();
+            // Inicializar chat completo
+            if (typeof initChat === 'function') {
+                initChat();
+            } else {
+                // Fallback para compatibilidade
+                if (typeof loadChatUsers === 'function') {
+                    loadChatUsers();
+                }
+                if (typeof setupChat === 'function') {
+                    setupChat();
+                }
             }
             break;
             

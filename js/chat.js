@@ -593,14 +593,6 @@ function loadGroupMessages(groupId) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-// Inicializar chat quando o documento carregar
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initChat);
-} else {
-    // DOM já carregado
-    initChat();
-}
-
 // Parar mensagens automáticas quando sair da página de chat
 function stopAutoMessages() {
     if (autoMessageInterval) {
