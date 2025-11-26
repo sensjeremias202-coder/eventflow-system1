@@ -1,31 +1,52 @@
 // Gerenciamento de perfil do usuário
 
 function loadProfile() {
-    if (!currentUser) return;
+    if (!currentUser) {
+        console.error('[profile] Usuário não está logado');
+        return;
+    }
     
-    // Preencher dados do perfil
-    document.getElementById('profileName').value = currentUser.name || '';
-    document.getElementById('profileId').value = currentUser.identificationNumber || 'Não disponível';
-    document.getElementById('profileEmail').value = currentUser.email || '';
-    document.getElementById('profileRole').value = currentUser.role === 'admin' ? 'Administrador' : (currentUser.role === 'treasurer' ? 'Tesoureiro' : 'Jovens');
-    document.getElementById('profileRegistered').value = currentUser.registered || 'Não disponível';
+    console.log('[profile] Carregando perfil do usuário:', currentUser.name);
+    
+    // Preencher dados do perfil com verificação de elementos
+    const profileName = document.getElementById('profileName');
+    const profileId = document.getElementById('profileId');
+    const profileEmail = document.getElementById('profileEmail');
+    const profileRole = document.getElementById('profileRole');
+    const profileRegistered = document.getElementById('profileRegistered');
+    
+    if (profileName) profileName.value = currentUser.name || '';
+    if (profileId) profileId.value = currentUser.identificationNumber || 'Não disponível';
+    if (profileEmail) profileEmail.value = currentUser.email || '';
+    if (profileRole) {
+        const roleText = currentUser.role === 'admin' ? 'Administrador' : 
+                        (currentUser.role === 'treasurer' ? 'Tesoureiro' : 'Jovens');
+        profileRole.value = roleText;
+    }
+    if (profileRegistered) profileRegistered.value = currentUser.registered || 'Não disponível';
     
     // Adicionar funcionalidade ao botão de copiar ID
     const copyBtn = document.getElementById('copyIdBtn');
     if (copyBtn) {
-        copyBtn.addEventListener('click', function() {
+        // Remover listener anterior para evitar duplicação
+        const newCopyBtn = copyBtn.cloneNode(true);
+        copyBtn.parentNode.replaceChild(newCopyBtn, copyBtn);
+        
+        document.getElementById('copyIdBtn').addEventListener('click', function() {
             const idField = document.getElementById('profileId');
-            idField.select();
-            document.execCommand('copy');
-            
-            // Feedback visual
-            copyBtn.innerHTML = '<i class="fas fa-check"></i> Copiado!';
-            copyBtn.style.background = '#10b981';
-            
-            setTimeout(() => {
-                copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copiar';
-                copyBtn.style.background = '';
-            }, 2000);
+            if (idField) {
+                idField.select();
+                document.execCommand('copy');
+                
+                // Feedback visual
+                this.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+                this.style.background = '#10b981';
+                
+                setTimeout(() => {
+                    this.innerHTML = '<i class="fas fa-copy"></i> Copiar';
+                    this.style.background = '';
+                }, 2000);
+            }
         });
     }
     
@@ -282,6 +303,36 @@ function deleteAccount() {
     }, 2000);
 }
 
-// Event listeners
-document.getElementById('editProfileBtn')?.addEventListener('click', editProfile);
-document.getElementById('deleteAccountBtn')?.addEventListener('click', deleteAccount);
+// Função de inicialização do perfil
+function initProfilePage() {
+    console.log('[profile] Inicializando página de perfil...');
+    
+    // Configurar event listeners
+    const editBtn = document.getElementById('editProfileBtn');
+    const deleteBtn = document.getElementById('deleteAccountBtn');
+    
+    if (editBtn) {
+        // Remover listeners antigos
+        const newEditBtn = editBtn.cloneNode(true);
+        editBtn.parentNode.replaceChild(newEditBtn, editBtn);
+        document.getElementById('editProfileBtn').addEventListener('click', editProfile);
+    }
+    
+    if (deleteBtn) {
+        // Remover listeners antigos
+        const newDeleteBtn = deleteBtn.cloneNode(true);
+        deleteBtn.parentNode.replaceChild(newDeleteBtn, deleteBtn);
+        document.getElementById('deleteAccountBtn').addEventListener('click', deleteAccount);
+    }
+    
+    // Carregar dados do perfil
+    loadProfile();
+}
+
+// Chamar inicialização quando a página for carregada
+if (typeof currentUser !== 'undefined' && currentUser) {
+    // Se já estiver na página, inicializar
+    if (document.getElementById('profileName')) {
+        initProfilePage();
+    }
+}
