@@ -596,3 +596,4 @@ window.initChat = initChat;
 window.loadChatUsers = loadChatUsers;
 window.setupChat = setupChat;
 window.stopAutoMessages = stopAutoMessages;
+window.openCreateGroupModal = openCreateGroupModal;

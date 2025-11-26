@@ -454,24 +454,34 @@ function setupModals() {
         }
     });
     
-    // Modal de usuário
-    const addUserBtn = document.getElementById('addUserBtn');
-    const addUserModal = document.getElementById('addUserModal');
-    
-    if (addUserBtn && addUserModal) {
-        addUserBtn.addEventListener('click', () => {
-            addUserModal.classList.add('active');
-        });
-        
-        const userModalClose = addUserModal.querySelector('.modal-close');
-        if (userModalClose) {
-            userModalClose.addEventListener('click', () => {
-                addUserModal.classList.remove('active');
-                const form = document.getElementById('addUserForm');
-                if (form) form.reset();
-            });
+    // Delegação de eventos para submits de formulários
+    document.body.addEventListener('submit', function(e) {
+        // Form de adicionar evento
+        if (e.target.id === 'addEventForm') {
+            e.preventDefault();
+            if (validateEventForm()) {
+                createEvent();
+            }
         }
-    }
+        
+        // Form de adicionar usuário
+        if (e.target.id === 'addUserForm') {
+            e.preventDefault();
+            if (validateUserForm()) {
+                createUser();
+            }
+        }
+        
+        // Form de adicionar categoria
+        if (e.target.id === 'addCategoryForm') {
+            e.preventDefault();
+            if (validateCategoryForm()) {
+                createCategory();
+            }
+        }
+    });
+    
+    // Modal de usuário (delegação configurada acima, mantido para compatibilidade)
     
     // Modal de categoria
     const addCategoryBtn = document.getElementById('addCategoryBtn');
@@ -503,44 +513,7 @@ function setupModals() {
         }
     }
     // Garantir que o formulário de evento tenha apenas um listener
-    const eventForm = document.getElementById('addEventForm');
-    if (eventForm) {
-        // Remover event listeners anteriores substituindo o nó
-        const newEventForm = eventForm.cloneNode(true);
-        eventForm.parentNode.replaceChild(newEventForm, eventForm);
-
-        const currentEventForm = document.getElementById('addEventForm');
-        if (currentEventForm) {
-            currentEventForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                if (validateEventForm()) {
-                    createEvent();
-                }
-            });
-        }
-    }
-    
-    // Formulário de usuário
-    const userForm = document.getElementById('addUserForm');
-    if (userForm) {
-        userForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            if (validateUserForm()) {
-                createUser();
-            }
-        });
-    }
-    
-    // Formulário de categoria
-    const categoryForm = document.getElementById('addCategoryForm');
-    if (categoryForm) {
-        categoryForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            if (validateCategoryForm()) {
-                createCategory();
-            }
-        });
-    }
+    // Formulários agora usam delegação de eventos (veja acima)
 }
 
 function loadCategoryOptions() {
