@@ -336,6 +336,7 @@ function openCreateGroupModal() {
     // Criar modal se não existir
     let modal = document.getElementById('createGroupModal');
     if (!modal) {
+        console.log('[chat] Criando modal pela primeira vez...');
         modal = document.createElement('div');
         modal.id = 'createGroupModal';
         modal.className = 'modal';
@@ -367,25 +368,37 @@ function openCreateGroupModal() {
             </div>
         `;
         document.body.appendChild(modal);
+        console.log('[chat] Modal adicionado ao body');
         
         // Event listeners
         const closeBtn = modal.querySelector('.modal-close');
         closeBtn.addEventListener('click', () => {
+            console.log('[chat] Fechando modal');
             modal.classList.remove('active');
         });
         
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
+                console.log('[chat] Fechando modal (clique fora)');
                 modal.classList.remove('active');
             }
         });
+    }
+    
+    // Form submit - sempre reconfigurar
+    const form = document.getElementById('createGroupForm');
+    if (form) {
+        // Remover listeners antigos
+        const newForm = form.cloneNode(true);
+        form.parentNode.replaceChild(newForm, form);
         
-        // Form submit
-        const form = modal.querySelector('#createGroupForm');
-        form.addEventListener('submit', (e) => {
+        // Adicionar novo listener
+        document.getElementById('createGroupForm').addEventListener('submit', (e) => {
             e.preventDefault();
+            console.log('[chat] Form submit - criando grupo...');
             createGroup();
         });
+        console.log('[chat] Listener de submit configurado');
     }
     
     // Carregar lista de usuários
@@ -393,6 +406,7 @@ function openCreateGroupModal() {
     
     // Mostrar modal
     modal.classList.add('active');
+    console.log('[chat] Modal exibido');
 }
 
 /**
@@ -441,15 +455,24 @@ function loadGroupMembersList() {
  * Criar grupo
  */
 function createGroup() {
-    const groupName = document.getElementById('groupName').value.trim();
+    console.log('[chat] createGroup() chamada');
+    
+    const groupNameInput = document.getElementById('groupName');
     const checkboxes = document.querySelectorAll('.group-member-checkbox:checked');
     
+    console.log('[chat] Input groupName:', groupNameInput);
+    console.log('[chat] Checkboxes selecionadas:', checkboxes.length);
+    
+    const groupName = groupNameInput ? groupNameInput.value.trim() : '';
+    
     if (!groupName) {
+        console.warn('[chat] Nome do grupo vazio');
         showNotification('Digite um nome para o grupo', 'error');
         return;
     }
     
     if (checkboxes.length === 0) {
+        console.warn('[chat] Nenhum membro selecionado');
         showNotification('Selecione pelo menos um membro', 'error');
         return;
     }
@@ -471,11 +494,20 @@ function createGroup() {
     localStorage.setItem('chatGroups', JSON.stringify(chatGroups));
     
     console.log('[chat] Grupo criado:', newGroup);
+    console.log('[chat] Total de grupos:', chatGroups.length);
     
     showNotification('Grupo criado com sucesso!', 'success');
     
     // Fechar modal
-    document.getElementById('createGroupModal').classList.remove('active');
+    const modal = document.getElementById('createGroupModal');
+    if (modal) {
+        modal.classList.remove('active');
+        console.log('[chat] Modal fechado');
+    }
+    
+    // Limpar form
+    if (groupNameInput) groupNameInput.value = '';
+    checkboxes.forEach(cb => cb.checked = false);
     
     // Recarregar lista de usuários/grupos
     loadChatUsers();
