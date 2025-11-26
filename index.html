@@ -11,8 +11,16 @@
     <!-- External CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css?v=20241126070000">
+    <link rel="stylesheet" href="css/features.css?v=20241126070000">
     <link rel="stylesheet" href="css/theme-christian.css?v=20241126030000">
     <!-- CSS dos módulos são carregados dinamicamente pelo page-loader.js -->
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#6C63FF">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="EventFlow">
     
     <!-- Google Fonts para fontes mais jovens -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -202,6 +210,14 @@
     </style>
 </head>
 <body>
+    <!-- Bot\u00e3o de Tema (Modo Escuro/Claro) -->
+    <button id="themeToggle" onclick="toggleTheme()" title="Alternar Tema">
+        <i class="fas fa-moon"></i>
+    </button>
+    
+    <!-- Badge de Notifica\u00e7\u00f5es (ser\u00e1 adicionado ao \u00edcone do sino) -->
+    <span id="notificationBadge" class="notification-badge" style="display: none;">0</span>
+    
     <!-- ============================================ -->
     <!-- LOGIN SCREEN -->
     <!-- ============================================ -->
@@ -1114,6 +1130,17 @@
     <script src="js/app.js?v=20241125100000"></script>
     <!-- Dashboard necessita estar disponível globalmente -->
     <script src="js/dashboard.js?v=20241125100000"></script>
+    
+    <!-- Novas Funcionalidades -->
+    <script src="js/notifications.js?v=20241126070000"></script>
+    <script src="js/export.js?v=20241126070000"></script>
+    <script src="js/search-filters.js?v=20241126070000"></script>
+    <script src="js/enrollment-system.js?v=20241126070000"></script>
+    <script src="js/image-upload.js?v=20241126070000"></script>
+    <script src="js/theme.js?v=20241126070000"></script>
+    <script src="js/gamification.js?v=20241126070000"></script>
+    <script src="js/pwa.js?v=20241126070000"></script>
+    
     <!-- Scripts específicos das páginas agora são carregados dinamicamente pelo page-loader.js -->
     <!-- Não é mais necessário carregar: events.js, chat.js, users.js, categories.js, profile.js -->
 </body>
