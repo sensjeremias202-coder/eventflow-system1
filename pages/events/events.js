@@ -256,10 +256,12 @@ function loadEvents() {
                 <span class="category-badge" style="background:${category.color};">${escapeHtml(category.name)}</span>
                 ${ev.createdBy === currentUser?.id ? `
                 <div style="margin-left: auto; display:flex; gap:8px; align-items:center;">
+                    ${ratings.length > 0 ? `<button class="btn btn-outline btn-sm view-comments" data-id="${ev.id}" title="Ver comentários"><i class="fas fa-comments"></i> ${ratings.filter(r => r.comment && r.comment.trim()).length}</button>` : ''}
                     <button class="btn btn-outline btn-sm edit-event" data-id="${ev.id}"><i class="far fa-edit"></i></button>
                     <button class="btn btn-outline btn-sm delete-event" data-id="${ev.id}"><i class="far fa-trash-alt"></i></button>
                 </div>` : `
                 <div style="margin-left: auto; display:flex; gap:8px; align-items:center;">
+                    ${ratings.length > 0 ? `<button class="btn btn-outline btn-sm view-comments" data-id="${ev.id}" title="Ver comentários"><i class="fas fa-comments"></i> ${ratings.filter(r => r.comment && r.comment.trim()).length}</button>` : ''}
                     <button class="btn btn-outline btn-sm rate-event" data-id="${ev.id}" title="${userRating ? 'Atualizar avaliação' : 'Avaliar evento'}">
                         <i class="fa${userRating ? 's' : 'r'} fa-star"></i> ${userRating ? 'Sua avaliação' : 'Avaliar'}
                     </button>
@@ -282,6 +284,14 @@ function loadEvents() {
         btn.addEventListener('click', function() {
             const id = parseInt(this.getAttribute('data-id'));
             deleteEvent(id);
+        });
+    });
+
+    // Configurar botões de visualizar comentários
+    document.querySelectorAll('.view-comments').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = parseInt(this.getAttribute('data-id'));
+            viewComments(id);
         });
     });
 
@@ -832,4 +842,101 @@ function setupRatingButtons() {
     });
     
     console.log('[events] Botões de avaliação configurados:', document.querySelectorAll('.rate-event').length);
+}
+
+/**
+ * Visualizar comentários de um evento
+ */
+function viewComments(eventId) {
+    console.log('[events] Visualizando comentários do evento:', eventId);
+    
+    const event = events.find(e => e.id === eventId);
+    if (!event) {
+        showNotification('Evento não encontrado', 'error');
+        return;
+    }
+    
+    const ratings = event.ratings || [];
+    const commentsWithText = ratings.filter(r => r.comment && r.comment.trim());
+    
+    if (commentsWithText.length === 0) {
+        showNotification('Este evento não possui comentários ainda', 'info');
+        return;
+    }
+    
+    // Criar modal se não existir
+    let modal = document.getElementById('commentsModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'commentsModal';
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 700px;">
+                <div class="modal-header">
+                    <h3 id="commentsModalTitle">Comentários</h3>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div id="commentsModalBody" style="max-height: 500px; overflow-y: auto; padding: 20px;">
+                    <!-- Comentários serão inseridos aqui -->
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        // Event listeners
+        const closeBtn = modal.querySelector('.modal-close');
+        closeBtn.addEventListener('click', () => {
+            modal.classList.remove('active');
+        });
+        
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+            }
+        });
+    }
+    
+    // Atualizar título
+    const titleElement = modal.querySelector('#commentsModalTitle');
+    titleElement.textContent = `Comentários - ${event.title}`;
+    
+    // Gerar HTML dos comentários
+    const bodyElement = modal.querySelector('#commentsModalBody');
+    let html = '<div class="comments-list">';
+    
+    commentsWithText.forEach(rating => {
+        const user = users.find(u => u.id === rating.userId) || { name: 'Usuário desconhecido' };
+        const date = rating.date ? new Date(rating.date).toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        }) : 'Data desconhecida';
+        
+        html += `
+            <div class="comment-item">
+                <div class="comment-header">
+                    <div class="comment-user">
+                        <div class="user-avatar">${user.name.split(' ').map(n => n[0]).join('').toUpperCase()}</div>
+                        <div>
+                            <div class="user-name">${escapeHtml(user.name)}</div>
+                            <div class="comment-date">${date}</div>
+                        </div>
+                    </div>
+                    <div class="comment-rating">
+                        ${generateStarRating(rating.rating)}
+                        <span style="margin-left: 8px; font-weight: 600;">${rating.rating.toFixed(1)}</span>
+                    </div>
+                </div>
+                <div class="comment-text">${escapeHtml(rating.comment)}</div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    bodyElement.innerHTML = html;
+    
+    // Mostrar modal
+    modal.classList.add('active');
 }
