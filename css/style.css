@@ -373,8 +373,8 @@ header::before {
     border-radius: 20px;
     padding: clamp(15px, 3vw, 25px);
     box-shadow: var(--shadow-md);
-    max-height: calc(100vh - 140px);
-    overflow-y: auto;
+    max-height: 500px !important;
+    overflow-y: auto !important;
     position: sticky;
     top: clamp(70px, 10vh, 100px);
     animation: slideInLeft 0.8s ease-out 0.4s both;
@@ -495,6 +495,24 @@ header::before {
     color: var(--primary);
     transform: translateX(5px);
     box-shadow: var(--shadow-sm);
+}
+
+/* Destaque especial para Assistente AI */
+.sidebar-menu a[data-page="ai-assistant"] {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+    font-weight: 600 !important;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    animation: pulse-glow 2s infinite;
+}
+
+@keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); }
+    50% { box-shadow: 0 4px 25px rgba(102, 126, 234, 0.8); }
+}
+
+.sidebar-menu a[data-page="ai-assistant"]:hover {
+    transform: translateX(8px) scale(1.02) !important;
 }
 
 .sidebar-menu a i {
