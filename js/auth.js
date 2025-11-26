@@ -368,7 +368,7 @@ function showApp() {
     // Mostrar/ocultar funcionalidades de administrador
     if (currentUser.role === 'admin') {
         document.querySelectorAll('.admin-only').forEach(el => {
-            el.style.display = 'flex';
+            el.style.display = el.tagName === 'LI' ? 'block' : 'flex';
         });
     }
     
@@ -378,22 +378,23 @@ function showApp() {
         const adminElements = document.querySelectorAll('.admin-only');
         console.log('[auth] 🔍 Total de elementos admin-only encontrados:', adminElements.length);
         adminElements.forEach(el => {
-            el.style.display = 'flex';
+            // Usar block para <li> e flex para outros elementos
+            el.style.display = el.tagName === 'LI' ? 'block' : 'flex';
             console.log('[auth] ✅ Exibindo elemento admin-only:', el.textContent?.trim() || el.innerHTML.substring(0, 50));
         });
         document.querySelectorAll('.admin-treasurer-only').forEach(el => {
-            el.style.display = 'flex';
+            el.style.display = el.tagName === 'LI' ? 'block' : 'flex';
         });
         document.querySelectorAll('.treasurer-only').forEach(el => {
-            el.style.display = 'flex';
+            el.style.display = el.tagName === 'LI' ? 'block' : 'flex';
         });
     } else if (currentUser.role === 'treasurer') {
         // Tesoureiro: acesso total exceto limpar dados
         document.querySelectorAll('.admin-treasurer-only').forEach(el => {
-            el.style.display = 'flex';
+            el.style.display = el.tagName === 'LI' ? 'block' : 'flex';
         });
         document.querySelectorAll('.treasurer-only').forEach(el => {
-            el.style.display = 'flex';
+            el.style.display = el.tagName === 'LI' ? 'block' : 'flex';
         });
         // Ocultar botões de limpar dados (admin-only)
         document.querySelectorAll('.admin-only').forEach(el => {
