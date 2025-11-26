@@ -446,11 +446,9 @@ function setupModals() {
             e.preventDefault();
             e.stopPropagation();
             console.log('[app] Botão criar grupo clicado via delegação');
-            if (typeof openCreateGroupModal === 'function') {
-                openCreateGroupModal();
-            } else {
-                console.error('[app] openCreateGroupModal não está definida');
-            }
+            
+            // Abrir modal direto
+            openCreateGroupModal();
         }
     });
     
@@ -479,7 +477,186 @@ function setupModals() {
                 createCategory();
             }
         }
+        
+        // Form de criar grupo
+        if (e.target.id === 'createGroupForm') {
+            e.preventDefault();
+            createChatGroup();
+        }
     });
+    
+    // Função para abrir modal de criar grupo
+    function openCreateGroupModal() {
+        console.log('[app] Abrindo modal de criar grupo...');
+        
+        // Criar modal se não existir
+        let modal = document.getElementById('createGroupModal');
+        if (!modal) {
+            console.log('[app] Criando modal pela primeira vez...');
+            modal = document.createElement('div');
+            modal.id = 'createGroupModal';
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 600px;">
+                    <div class="modal-header">
+                        <h3>Criar Novo Grupo</h3>
+                        <button class="modal-close">&times;</button>
+                    </div>
+                    <form id="createGroupForm">
+                        <div class="form-group">
+                            <label class="form-label" for="groupName">Nome do Grupo</label>
+                            <input type="text" class="form-control" id="groupName" placeholder="Ex: Grupo de Oração" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Selecionar Membros</label>
+                            <div id="groupMembersList" style="max-height: 300px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px;">
+                                <!-- Membros serão listados aqui -->
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary" style="width: 100%;">
+                                <i class="fas fa-users"></i> Criar Grupo
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            console.log('[app] Modal adicionado ao body');
+            
+            // Event listeners
+            const closeBtn = modal.querySelector('.modal-close');
+            closeBtn.addEventListener('click', () => {
+                console.log('[app] Fechando modal');
+                modal.classList.remove('active');
+            });
+            
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    console.log('[app] Fechando modal (clique fora)');
+                    modal.classList.remove('active');
+                }
+            });
+        }
+        
+        // Carregar lista de usuários
+        loadGroupMembersList();
+        
+        // Mostrar modal
+        modal.classList.add('active');
+        console.log('[app] Modal exibido');
+    }
+    
+    // Função para carregar lista de membros
+    function loadGroupMembersList() {
+        const container = document.getElementById('groupMembersList');
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        const otherUsers = users.filter(u => u.id !== currentUser.id);
+        
+        if (otherUsers.length === 0) {
+            container.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 20px;">Nenhum usuário disponível</p>';
+            return;
+        }
+        
+        otherUsers.forEach(user => {
+            const memberItem = document.createElement('div');
+            memberItem.className = 'group-member-item';
+            memberItem.innerHTML = `
+                <label style="display: flex; align-items: center; gap: 12px; padding: 10px; cursor: pointer; border-radius: 8px; transition: all 0.2s;">
+                    <input type="checkbox" class="group-member-checkbox" value="${user.id}" style="width: 20px; height: 20px; cursor: pointer;">
+                    <div class="chat-user-avatar" style="width: 35px; height: 35px; font-size: 12px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; border-radius: 50%;">${user.name.split(' ').map(n => n[0]).join('').toUpperCase()}</div>
+                    <div>
+                        <div style="font-weight: 500;">${user.name}</div>
+                        <div style="font-size: 12px; color: var(--gray);">${user.email}</div>
+                    </div>
+                </label>
+            `;
+            
+            memberItem.addEventListener('mouseenter', function() {
+                this.style.background = 'var(--light)';
+            });
+            
+            memberItem.addEventListener('mouseleave', function() {
+                this.style.background = 'transparent';
+            });
+            
+            container.appendChild(memberItem);
+        });
+    }
+    
+    // Função para criar grupo
+    function createChatGroup() {
+        console.log('[app] createChatGroup() chamada');
+        
+        const groupNameInput = document.getElementById('groupName');
+        const checkboxes = document.querySelectorAll('.group-member-checkbox:checked');
+        
+        console.log('[app] Input groupName:', groupNameInput);
+        console.log('[app] Checkboxes selecionadas:', checkboxes.length);
+        
+        const groupName = groupNameInput ? groupNameInput.value.trim() : '';
+        
+        if (!groupName) {
+            console.warn('[app] Nome do grupo vazio');
+            showNotification('Digite um nome para o grupo', 'error');
+            return;
+        }
+        
+        if (checkboxes.length === 0) {
+            console.warn('[app] Nenhum membro selecionado');
+            showNotification('Selecione pelo menos um membro', 'error');
+            return;
+        }
+        
+        const memberIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+        
+        // Adicionar o criador do grupo
+        memberIds.push(currentUser.id);
+        
+        // Carregar grupos existentes
+        let chatGroups = [];
+        const savedGroups = localStorage.getItem('chatGroups');
+        if (savedGroups) {
+            chatGroups = JSON.parse(savedGroups);
+        }
+        
+        const newGroup = {
+            id: 'group_' + Date.now(),
+            name: groupName,
+            members: memberIds,
+            createdBy: currentUser.id,
+            createdAt: new Date().toISOString()
+        };
+        
+        chatGroups.push(newGroup);
+        localStorage.setItem('chatGroups', JSON.stringify(chatGroups));
+        
+        console.log('[app] Grupo criado:', newGroup);
+        console.log('[app] Total de grupos:', chatGroups.length);
+        
+        showNotification('Grupo criado com sucesso!', 'success');
+        
+        // Fechar modal
+        const modal = document.getElementById('createGroupModal');
+        if (modal) {
+            modal.classList.remove('active');
+            console.log('[app] Modal fechado');
+        }
+        
+        // Limpar form
+        if (groupNameInput) groupNameInput.value = '';
+        checkboxes.forEach(cb => cb.checked = false);
+        
+        // Recarregar lista de usuários/grupos se a função existir
+        if (typeof loadChatUsers === 'function') {
+            loadChatUsers();
+        }
+    }
     
     // Modal de usuário (delegação configurada acima, mantido para compatibilidade)
     
