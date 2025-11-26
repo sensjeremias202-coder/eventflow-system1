@@ -324,9 +324,13 @@ function sendMessage() {
 // Inicializar chat quando a página carregar
 function initChat() {
     console.log('[chat] Inicializando chat...');
-    setupChat();
     loadChatUsers();
-    setupCreateGroupButton();
+    setupChat();
+    
+    // Aguardar o DOM estar pronto antes de configurar o botão
+    setTimeout(() => {
+        setupCreateGroupButton();
+    }, 100);
 }
 
 /**
@@ -338,19 +342,18 @@ function setupCreateGroupButton() {
     console.log('[chat] Botão encontrado:', createGroupBtn);
     
     if (createGroupBtn) {
-        // Remover listener anterior se existir
-        createGroupBtn.replaceWith(createGroupBtn.cloneNode(true));
-        const newBtn = document.getElementById('createGroupBtn');
-        
-        newBtn.addEventListener('click', function(e) {
+        createGroupBtn.onclick = function(e) {
             console.log('[chat] Botão criar grupo clicado!');
             e.preventDefault();
+            e.stopPropagation();
             openCreateGroupModal();
-        });
+        };
         
         console.log('[chat] Event listener adicionado ao botão');
     } else {
         console.warn('[chat] Botão createGroupBtn não encontrado no DOM');
+        console.log('[chat] Tentando novamente em 500ms...');
+        setTimeout(setupCreateGroupButton, 500);
     }
 }
 
