@@ -326,40 +326,10 @@ function initChat() {
     console.log('[chat] Inicializando chat...');
     loadChatUsers();
     setupChat();
-    
-    // Aguardar o DOM estar pronto antes de configurar o botão
-    setTimeout(() => {
-        setupCreateGroupButton();
-    }, 100);
+    // O botão de criar grupo é gerenciado por delegação de eventos no app.js
 }
 
-/**
- * Configurar botão de criar grupo
- */
-function setupCreateGroupButton() {
-    console.log('[chat] Configurando botão de criar grupo...');
-    const createGroupBtn = document.getElementById('createGroupBtn');
-    console.log('[chat] Botão encontrado:', createGroupBtn);
-    
-    if (createGroupBtn) {
-        createGroupBtn.onclick = function(e) {
-            console.log('[chat] Botão criar grupo clicado!');
-            e.preventDefault();
-            e.stopPropagation();
-            openCreateGroupModal();
-        };
-        
-        console.log('[chat] Event listener adicionado ao botão');
-    } else {
-        console.warn('[chat] Botão createGroupBtn não encontrado no DOM');
-        console.log('[chat] Tentando novamente em 500ms...');
-        setTimeout(setupCreateGroupButton, 500);
-    }
-}
-
-/**
- * Abrir modal de criar grupo
- */
+// Função openCreateGroupModal - chamada via delegação de eventos
 function openCreateGroupModal() {
     console.log('[chat] Abrindo modal de criar grupo...');
     

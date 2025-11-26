@@ -413,20 +413,23 @@ function validateCategoryForm() {
 
 function setupModals() {
     // Modal de evento
-    const addEventBtn = document.getElementById('addEventBtn');
-    const addEventModal = document.getElementById('addEventModal');
-    
-    if (addEventBtn && addEventModal) {
-        addEventBtn.addEventListener('click', () => {
-            loadCategoryOptions();
-            addEventModal.classList.add('active');
-        });
+    // Usar delegação de eventos para botões que podem não existir ainda
+    document.body.addEventListener('click', function(e) {
+        // Botão adicionar evento
+        if (e.target.closest('#addEventBtn')) {
+            e.preventDefault();
+            const addEventModal = document.getElementById('addEventModal');
+            if (addEventModal) {
+                loadCategoryOptions();
+                addEventModal.classList.add('active');
+            }
+        }
         
-        const eventModalClose = addEventModal.querySelector('.modal-close');
-        if (eventModalClose) {
-            eventModalClose.addEventListener('click', () => {
+        // Fechar modal de evento
+        if (e.target.closest('#addEventModal .modal-close')) {
+            const addEventModal = document.getElementById('addEventModal');
+            if (addEventModal) {
                 addEventModal.classList.remove('active');
-                // Resetar formulário
                 const form = document.getElementById('addEventForm');
                 if (form) {
                     form.reset();
@@ -435,9 +438,21 @@ function setupModals() {
                         submitBtn.textContent = 'Criar Evento';
                     }
                 }
-            });
+            }
         }
-    }
+        
+        // Botão criar grupo no chat
+        if (e.target.closest('#createGroupBtn')) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('[app] Botão criar grupo clicado via delegação');
+            if (typeof openCreateGroupModal === 'function') {
+                openCreateGroupModal();
+            } else {
+                console.error('[app] openCreateGroupModal não está definida');
+            }
+        }
+    });
     
     // Modal de usuário
     const addUserBtn = document.getElementById('addUserBtn');
