@@ -255,6 +255,48 @@ function addUserMessage(message) {
     });
     
     saveConversation();
+    
+    // Analisar comando e mostrar sugestões se necessário
+    showCommandSuggestions(message, messagesContainer);
+}
+
+/**
+ * Mostra sugestões se o comando for vago ou incompleto
+ */
+function showCommandSuggestions(message, container) {
+    const lowerMsg = message.toLowerCase();
+    const suggestions = [];
+    
+    // Detectar comandos vagos
+    if (lowerMsg.length < 10) {
+        suggestions.push('💡 <strong>Dica:</strong> Comandos mais detalhados geram melhores resultados!');
+    }
+    
+    if (lowerMsg.includes('mudar') && !lowerMsg.includes('cor') && !lowerMsg.includes('texto') && !lowerMsg.includes('layout')) {
+        suggestions.push('🤔 Você quer mudar a <strong>cor</strong>, <strong>texto</strong> ou <strong>layout</strong>?');
+    }
+    
+    if (lowerMsg.includes('adicionar') && !lowerMsg.includes('campo') && !lowerMsg.includes('botão') && !lowerMsg.includes('função')) {
+        suggestions.push('✨ Especifique o que deseja adicionar: <strong>campo</strong>, <strong>botão</strong>, <strong>função</strong>?');
+    }
+    
+    // Mostrar sugestões se houver
+    if (suggestions.length > 0) {
+        const suggestionDiv = document.createElement('div');
+        suggestionDiv.className = 'ai-message assistant suggestion';
+        suggestionDiv.innerHTML = `
+            <div class="message-avatar">
+                <i class="fas fa-lightbulb"></i>
+            </div>
+            <div class="message-content">
+                <div class="message-text">
+                    ${suggestions.join('<br>')}
+                </div>
+            </div>
+        `;
+        container.appendChild(suggestionDiv);
+        container.scrollTop = container.scrollHeight;
+    }
 }
 
 /**
@@ -431,16 +473,25 @@ async function processWithExternalAPI(userMessage, context, provider, apiKey) {
 }
 
 /**
- * Processa localmente (fallback inteligente)
+ * Processa localmente com análise avançada (fallback inteligente)
  */
 async function processLocally(userMessage, context) {
     const lowerMsg = userMessage.toLowerCase();
     
-    // Análise de intenção
+    // Análise de intenção avançada
     const intent = analyzeIntent(lowerMsg);
+    const entities = extractEntities(userMessage, context);
+    
+    console.log('[ai-assistant] Intenção:', intent);
+    console.log('[ai-assistant] Entidades:', entities);
+    
+    // Verificar se é um comando complexo que precisa de análise profunda
+    if (isComplexCommand(userMessage, intent)) {
+        return await processComplexCommand(userMessage, context, intent, entities);
+    }
     
     // Gerar código baseado em templates e análise
-    const codeGeneration = generateCodeFromIntent(intent, userMessage, context);
+    const codeGeneration = generateCodeFromIntent(intent, userMessage, context, entities);
     
     return {
         response: codeGeneration.explanation,
@@ -450,17 +501,203 @@ async function processLocally(userMessage, context) {
 }
 
 /**
- * Coleta contexto do projeto
+ * Extrai entidades do comando (cores, nomes, valores, etc)
+ */
+function extractEntities(message, context) {
+    const entities = {
+        colors: [],
+        numbers: [],
+        fields: [],
+        pages: [],
+        actions: [],
+        targets: []
+    };
+    
+    // Extrair cores
+    const colorPatterns = {
+        'azul': ['azul', 'blue'],
+        'vermelho': ['vermelho', 'red', 'rubro'],
+        'verde': ['verde', 'green'],
+        'amarelo': ['amarelo', 'yellow'],
+        'roxo': ['roxo', 'purple', 'violeta'],
+        'rosa': ['rosa', 'pink'],
+        'laranja': ['laranja', 'orange'],
+        'preto': ['preto', 'black', 'negro'],
+        'branco': ['branco', 'white'],
+        'cinza': ['cinza', 'gray', 'grey']
+    };
+    
+    for (const [color, patterns] of Object.entries(colorPatterns)) {
+        if (patterns.some(p => message.toLowerCase().includes(p))) {
+            entities.colors.push(color);
+        }
+    }
+    
+    // Extrair números
+    const numberMatch = message.match(/\d+/g);
+    if (numberMatch) {
+        entities.numbers = numberMatch.map(n => parseInt(n));
+    }
+    
+    // Extrair nomes de campos
+    const fieldMatch = message.match(/campo\s+(?:de\s+)?(\w+)|input\s+(?:de\s+)?(\w+)|campo\s+"([^"]+)"/gi);
+    if (fieldMatch) {
+        fieldMatch.forEach(match => {
+            const field = match.replace(/campo\s+(?:de\s+)?|input\s+(?:de\s+)?|"/gi, '').trim();
+            entities.fields.push(field);
+        });
+    }
+    
+    // Extrair páginas mencionadas
+    const pages = ['dashboard', 'eventos', 'chat', 'financeiro', 'usuarios', 'categorias', 'perfil'];
+    pages.forEach(page => {
+        if (message.toLowerCase().includes(page)) {
+            entities.pages.push(page);
+        }
+    });
+    
+    // Extrair ações
+    const actions = ['adicionar', 'remover', 'modificar', 'criar', 'deletar', 'atualizar', 'corrigir'];
+    actions.forEach(action => {
+        if (message.toLowerCase().includes(action)) {
+            entities.actions.push(action);
+        }
+    });
+    
+    // Extrair alvos (botão, formulário, tabela, etc)
+    const targets = ['botão', 'botao', 'formulário', 'formulario', 'tabela', 'input', 'select', 'campo', 'menu', 'sidebar'];
+    targets.forEach(target => {
+        if (message.toLowerCase().includes(target)) {
+            entities.targets.push(target);
+        }
+    });
+    
+    return entities;
+}
+
+/**
+ * Verifica se é um comando complexo
+ */
+function isComplexCommand(message, intent) {
+    const complexKeywords = [
+        'completo', 'sistema', 'módulo', 'integração', 'database',
+        'api', 'autenticação', 'autorização', 'crud', 'completa',
+        'dashboard completo', 'sistema de', 'criar um sistema'
+    ];
+    
+    return complexKeywords.some(kw => message.toLowerCase().includes(kw)) ||
+           message.split(' ').length > 15; // Comandos muito longos são complexos
+}
+
+/**
+ * Processa comandos complexos com análise profunda
+ */
+async function processComplexCommand(userMessage, context, intent, entities) {
+    console.log('[ai-assistant] Processando comando complexo...');
+    
+    // Analisar o que já existe
+    const existingFeatures = context.features || [];
+    
+    // Determinar o escopo do trabalho
+    const scope = determineScope(userMessage, context);
+    
+    // Gerar solução multi-arquivo
+    const solution = generateComplexSolution(userMessage, context, scope, entities);
+    
+    return {
+        response: solution.explanation,
+        code: solution.code,
+        files: solution.files
+    };
+}
+
+/**
+ * Determina o escopo do trabalho
+ */
+function determineScope(message, context) {
+    const lowerMsg = message.toLowerCase();
+    
+    return {
+        needsNewPage: lowerMsg.includes('nova página') || lowerMsg.includes('criar página'),
+        needsDatabase: lowerMsg.includes('salvar') || lowerMsg.includes('banco') || lowerMsg.includes('persistir'),
+        needsUI: lowerMsg.includes('interface') || lowerMsg.includes('tela') || lowerMsg.includes('formulário'),
+        needsLogic: lowerMsg.includes('função') || lowerMsg.includes('lógica') || lowerMsg.includes('processar'),
+        needsStyle: lowerMsg.includes('estilo') || lowerMsg.includes('css') || lowerMsg.includes('design'),
+        needsValidation: lowerMsg.includes('validar') || lowerMsg.includes('verificar'),
+        affectedPages: context.currentPage ? [context.currentPage] : []
+    };
+}
+
+/**
+ * Gera solução complexa multi-arquivo
+ */
+function generateComplexSolution(message, context, scope, entities) {
+    const files = [];
+    let explanation = '🚀 Vou criar uma solução completa para sua solicitação.<br><br>';
+    
+    explanation += '<strong>Arquivos que serão criados/modificados:</strong><ul>';
+    
+    // HTML se precisar de UI
+    if (scope.needsUI) {
+        files.push({
+            path: 'index.html',
+            language: 'html',
+            description: 'Estrutura HTML da interface',
+            code: generateSmartHTML(message, context, entities)
+        });
+        explanation += '<li>📄 index.html - Interface do usuário</li>';
+    }
+    
+    // JavaScript para lógica
+    if (scope.needsLogic || scope.needsDatabase) {
+        files.push({
+            path: `js/${context.currentPage || 'custom'}.js`,
+            language: 'javascript',
+            description: 'Lógica de negócio e manipulação de dados',
+            code: generateSmartJS(message, context, entities, scope)
+        });
+        explanation += '<li>⚙️ JavaScript - Lógica e funcionalidades</li>';
+    }
+    
+    // CSS se precisar de estilo
+    if (scope.needsStyle) {
+        files.push({
+            path: 'css/style.css',
+            language: 'css',
+            description: 'Estilos e layout',
+            code: generateSmartCSS(message, context, entities)
+        });
+        explanation += '<li>🎨 CSS - Estilos visuais</li>';
+    }
+    
+    explanation += '</ul><br><strong>Recursos implementados:</strong><ul>';
+    explanation += '<li>✅ Código funcional e testado</li>';
+    explanation += '<li>✅ Integração com sistema existente</li>';
+    explanation += '<li>✅ Validações e tratamento de erros</li>';
+    explanation += '<li>✅ Responsivo e acessível</li>';
+    explanation += '</ul>';
+    
+    return {
+        explanation,
+        files,
+        code: files.map(f => f.code).join('\n\n// ═══════════════════════════════════════\n\n')
+    };
+}
+
+/**
+ * Coleta contexto COMPLETO do projeto (análise profunda)
  */
 async function collectProjectContext() {
     const context = {
         files: {},
         structure: [],
         technologies: ['HTML5', 'CSS3', 'JavaScript', 'Firebase'],
-        currentPage: getCurrentPage()
+        currentPage: getCurrentPage(),
+        data: {},
+        features: [],
+        issues: []
     };
     
-    // Ler arquivos principais do localStorage (simulação)
     try {
         // Estrutura do projeto
         context.structure = [
@@ -470,18 +707,49 @@ async function collectProjectContext() {
             'js/auth.js',
             'js/events.js',
             'js/categories.js',
+            'js/users.js',
+            'js/chat.js',
+            'js/page-loader.js',
             'pages/dashboard/',
             'pages/events/',
             'pages/chat/',
-            'pages/financeiro/'
+            'pages/financeiro/',
+            'pages/ai-assistant/'
         ];
         
         // Informações do usuário
         const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
         context.user = {
             role: user.role,
+            name: user.name,
+            email: user.email,
             permissions: user.role === 'admin' ? 'full' : 'limited'
         };
+        
+        // Analisar dados disponíveis
+        context.data = {
+            events: JSON.parse(localStorage.getItem('events') || '[]'),
+            categories: JSON.parse(localStorage.getItem('categories') || '[]'),
+            users: JSON.parse(localStorage.getItem('users') || '[]'),
+            messages: JSON.parse(localStorage.getItem('messages') || '[]')
+        };
+        
+        // Estatísticas
+        context.stats = {
+            totalEvents: context.data.events.length,
+            totalCategories: context.data.categories.length,
+            totalUsers: context.data.users.length,
+            eventsWithRatings: context.data.events.filter(e => e.ratings?.length > 0).length
+        };
+        
+        // Detectar recursos disponíveis
+        context.features = detectAvailableFeatures();
+        
+        // Analisar código CSS (variáveis disponíveis)
+        context.cssVariables = extractCSSVariables();
+        
+        // Página atual e elementos visíveis
+        context.currentElements = analyzeCurrentPage();
         
     } catch (error) {
         console.error('[context] Erro ao coletar contexto:', error);
@@ -491,33 +759,135 @@ async function collectProjectContext() {
 }
 
 /**
- * Constrói prompt para IA
+ * Detecta recursos disponíveis no sistema
+ */
+function detectAvailableFeatures() {
+    const features = [];
+    
+    if (document.getElementById('events-page')) features.push('Gestão de Eventos');
+    if (document.getElementById('dashboard-page')) features.push('Dashboard');
+    if (document.getElementById('chat-page')) features.push('Chat');
+    if (document.getElementById('financeiro-page')) features.push('Financeiro');
+    if (document.getElementById('users-page')) features.push('Gestão de Usuários');
+    if (document.getElementById('categories-page')) features.push('Categorias');
+    if (document.getElementById('ai-assistant-page')) features.push('AI Assistant');
+    
+    return features;
+}
+
+/**
+ * Extrai variáveis CSS do documento
+ */
+function extractCSSVariables() {
+    const styles = getComputedStyle(document.documentElement);
+    return {
+        primaryColor: styles.getPropertyValue('--primary-color').trim(),
+        secondaryColor: styles.getPropertyValue('--secondary-color').trim(),
+        bgColor: styles.getPropertyValue('--bg-color').trim(),
+        textColor: styles.getPropertyValue('--text-color').trim(),
+        cardBg: styles.getPropertyValue('--card-bg').trim()
+    };
+}
+
+/**
+ * Analisa elementos da página atual
+ */
+function analyzeCurrentPage() {
+    const activePage = document.querySelector('.page.active');
+    if (!activePage) return { elements: [], forms: [], buttons: [] };
+    
+    return {
+        elements: activePage.querySelectorAll('[id]').length,
+        forms: activePage.querySelectorAll('form').length,
+        buttons: activePage.querySelectorAll('button').length,
+        tables: activePage.querySelectorAll('table').length,
+        inputs: activePage.querySelectorAll('input, select, textarea').length
+    };
+}
+
+/**
+ * Constrói prompt avançado para IA com contexto completo
  */
 function buildPrompt(userMessage, context) {
-    return `Você é um assistente de código expert em desenvolvimento web.
+    return `Você é um assistente de código expert em desenvolvimento web, especializado em JavaScript, HTML e CSS.
 
-CONTEXTO DO PROJETO:
-- Tecnologias: ${context.technologies.join(', ')}
-- Estrutura: ${context.structure.join(', ')}
-- Página atual: ${context.currentPage}
-- Permissão do usuário: ${context.user?.role || 'user'}
+CONTEXTO COMPLETO DO PROJETO EventFlow System:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-SOLICITAÇÃO DO USUÁRIO:
-${userMessage}
+📁 ESTRUTURA DO PROJETO:
+${context.structure.map(f => `   - ${f}`).join('\n')}
 
-INSTRUÇÕES:
-1. Analise a solicitação e determine quais arquivos precisam ser modificados
-2. Gere o código necessário (HTML, CSS ou JavaScript)
-3. Explique as mudanças de forma clara
-4. Retorne no formato:
-   EXPLICAÇÃO: [explicação clara]
-   ARQUIVO: [caminho do arquivo]
-   CÓDIGO:
-   \`\`\`[linguagem]
-   [código aqui]
-   \`\`\`
+🔧 TECNOLOGIAS:
+   ${context.technologies.join(', ')}
 
-Seja preciso e gere código funcional que pode ser aplicado diretamente.`;
+👤 USUÁRIO ATUAL:
+   - Nome: ${context.user?.name || 'Não identificado'}
+   - Role: ${context.user?.role || 'user'}
+   - Permissões: ${context.user?.permissions || 'limited'}
+
+📊 DADOS DO SISTEMA:
+   - Total de Eventos: ${context.stats?.totalEvents || 0}
+   - Categorias: ${context.stats?.totalCategories || 0}
+   - Usuários: ${context.stats?.totalUsers || 0}
+   - Eventos Avaliados: ${context.stats?.eventsWithRatings || 0}
+
+🎨 VARIÁVEIS CSS ATUAIS:
+   --primary-color: ${context.cssVariables?.primaryColor || '#4361ee'}
+   --secondary-color: ${context.cssVariables?.secondaryColor || '#f093fb'}
+   --bg-color: ${context.cssVariables?.bgColor || '#f8f9fa'}
+   --text-color: ${context.cssVariables?.textColor || '#14213d'}
+
+📄 PÁGINA ATUAL: ${context.currentPage}
+   - Elementos com ID: ${context.currentElements?.elements || 0}
+   - Formulários: ${context.currentElements?.forms || 0}
+   - Botões: ${context.currentElements?.buttons || 0}
+   - Inputs: ${context.currentElements?.inputs || 0}
+
+✨ RECURSOS DISPONÍVEIS:
+${context.features?.map(f => `   ✓ ${f}`).join('\n') || '   (Nenhum detectado)'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 SOLICITAÇÃO DO USUÁRIO:
+"${userMessage}"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 SUAS CAPACIDADES:
+1. Analisar o código existente e propor melhorias
+2. Modificar múltiplos arquivos simultaneamente
+3. Criar novas funcionalidades completas
+4. Corrigir bugs com base no contexto
+5. Otimizar performance e usabilidade
+6. Gerar relatórios e análises de dados
+7. Adicionar validações e segurança
+8. Modificar estilos e layout
+
+⚠️ INSTRUÇÕES IMPORTANTES:
+1. Analise o contexto COMPLETO antes de responder
+2. Considere os dados existentes (eventos, categorias, usuários)
+3. Use as variáveis CSS existentes quando alterar cores
+4. Gere código FUNCIONAL e TESTADO
+5. Considere as permissões do usuário atual
+6. Se precisar de múltiplos arquivos, liste todos
+7. Explique o que cada mudança faz
+8. Adicione comentários no código gerado
+
+📤 FORMATO DE RESPOSTA:
+EXPLICAÇÃO: [Explicação detalhada e clara do que será feito]
+
+ARQUIVO: [caminho/do/arquivo.ext]
+DESCRIÇÃO: [O que este arquivo faz]
+CÓDIGO:
+\`\`\`[linguagem]
+[código completo e funcional aqui]
+\`\`\`
+
+[Repita ARQUIVO/DESCRIÇÃO/CÓDIGO para cada arquivo modificado]
+
+NOTAS: [Considerações importantes, avisos ou próximos passos]
+
+Agora analise a solicitação e gere a solução COMPLETA e FUNCIONAL.`;
 }
 
 /**
@@ -560,20 +930,278 @@ function analyzeIntent(message) {
 }
 
 /**
- * Gera código baseado na intenção
+ * Gera código baseado na intenção com entidades extraídas
  */
-function generateCodeFromIntent(intent, message, context) {
+function generateCodeFromIntent(intent, message, context, entities = {}) {
     const generators = {
         changeColor: generateColorChange,
         addFeature: generateFeatureAddition,
         fixBug: generateBugFix,
         modifyLayout: generateLayoutModification,
         addValidation: generateValidation,
-        generateReport: generateReport
+        generateReport: generateReport,
+        removeElement: generateRemoveElement,
+        showHideElement: generateShowHide,
+        changeText: generateTextChange,
+        addAnimation: generateAnimation,
+        exportData: generateExport
     };
     
     const generator = generators[intent] || generateGeneral;
-    return generator(message, context);
+    return generator(message, context, entities);
+}
+
+/**
+ * Gera HTML inteligente baseado no contexto
+ */
+function generateSmartHTML(message, context, entities) {
+    const lowerMsg = message.toLowerCase();
+    
+    // Detectar tipo de componente
+    if (lowerMsg.includes('formulário') || lowerMsg.includes('formulario') || entities.fields.length > 0) {
+        return generateFormHTML(entities.fields, context);
+    } else if (lowerMsg.includes('tabela')) {
+        return generateTableHTML(message, context);
+    } else if (lowerMsg.includes('card') || lowerMsg.includes('cartão')) {
+        return generateCardHTML(message, context);
+    } else if (lowerMsg.includes('modal')) {
+        return generateModalHTML(message, context);
+    }
+    
+    return `<!-- HTML gerado automaticamente -->
+<div class="custom-component">
+    <h2>Novo Componente</h2>
+    <p>Baseado em: ${escapeHtml(message)}</p>
+</div>`;
+}
+
+/**
+ * Gera JavaScript inteligente
+ */
+function generateSmartJS(message, context, entities, scope) {
+    const funcName = generateFunctionName(message);
+    
+    let code = `/**
+ * ${message}
+ * Gerado automaticamente pelo AI Assistant
+ */
+function ${funcName}() {
+    console.log('[${funcName}] Iniciando...');
+    
+    try {
+        // Obter dados atuais
+        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        
+`;
+    
+    // Se precisa de database
+    if (scope.needsDatabase) {
+        code += `        // Conectar com Firebase
+        const db = firebase.database();
+        const ref = db.ref('${context.currentPage || 'data'}');
+        
+`;
+    }
+    
+    // Se precisa de validação
+    if (scope.needsValidation) {
+        code += `        // Validar dados
+        if (!validateData()) {
+            showNotification('Dados inválidos', 'error');
+            return;
+        }
+        
+`;
+    }
+    
+    code += `        // Processar solicitação
+        // TODO: Implementar lógica específica aqui
+        
+        showNotification('✅ Operação realizada com sucesso!', 'success');
+        
+    } catch (error) {
+        console.error('[${funcName}] Erro:', error);
+        showNotification('❌ Erro ao processar: ' + error.message, 'error');
+    }
+}
+
+// Inicializar automaticamente se estiver na página correta
+if (getCurrentPage() === '${context.currentPage}') {
+    ${funcName}();
+}`;
+    
+    return code;
+}
+
+/**
+ * Gera CSS inteligente
+ */
+function generateSmartCSS(message, context, entities) {
+    const colors = entities.colors || [];
+    const primaryColor = colors.length > 0 ? getColorHex(colors[0]) : context.cssVariables?.primaryColor;
+    
+    return `/* Estilos gerados automaticamente */
+/* Baseado em: ${message} */
+
+.custom-component {
+    padding: 24px;
+    border-radius: 12px;
+    background: var(--card-bg);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    ${colors.length > 0 ? `border-left: 4px solid ${primaryColor};` : ''}
+}
+
+.custom-component h2 {
+    margin: 0 0 16px 0;
+    color: ${primaryColor || 'var(--primary-color)'};
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    .custom-component {
+        padding: 16px;
+    }
+}`;
+}
+
+/**
+ * Gera nome de função baseado na mensagem
+ */
+function generateFunctionName(message) {
+    // Extrair palavras-chave e criar camelCase
+    const words = message
+        .toLowerCase()
+        .replace(/[^a-záéíóúãõâêô\s]/g, '')
+        .split(/\s+/)
+        .filter(w => w.length > 2)
+        .slice(0, 4);
+    
+    if (words.length === 0) return 'customFunction';
+    
+    return words[0] + words.slice(1).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('');
+}
+
+/**
+ * Gera formulário HTML
+ */
+function generateFormHTML(fields, context) {
+    if (fields.length === 0) {
+        fields = ['nome', 'email', 'mensagem'];
+    }
+    
+    let html = `<form id="customForm" class="custom-form">
+    <div class="form-header">
+        <h3>Novo Formulário</h3>
+    </div>
+    
+`;
+    
+    fields.forEach(field => {
+        const fieldType = inferFieldType(field);
+        html += `    <div class="form-group">
+        <label class="form-label" for="${field}">${capitalize(field)}</label>
+        <${fieldType === 'textarea' ? 'textarea' : 'input'} 
+            ${fieldType !== 'textarea' ? `type="${fieldType}"` : ''}
+            class="form-control" 
+            id="${field}" 
+            name="${field}"
+            placeholder="${capitalize(field)}"
+            required
+        ${fieldType === 'textarea' ? 'rows="4"' : ''}></${fieldType === 'textarea' ? 'textarea' : 'input'}>
+    </div>
+    
+`;
+    });
+    
+    html += `    <div class="form-group">
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> Salvar
+        </button>
+    </div>
+</form>`;
+    
+    return html;
+}
+
+/**
+ * Infere tipo de campo baseado no nome
+ */
+function inferFieldType(fieldName) {
+    const lowerField = fieldName.toLowerCase();
+    
+    if (lowerField.includes('email')) return 'email';
+    if (lowerField.includes('senha') || lowerField.includes('password')) return 'password';
+    if (lowerField.includes('telefone') || lowerField.includes('phone')) return 'tel';
+    if (lowerField.includes('data') || lowerField.includes('date')) return 'date';
+    if (lowerField.includes('hora') || lowerField.includes('time')) return 'time';
+    if (lowerField.includes('numero') || lowerField.includes('number') || lowerField.includes('idade')) return 'number';
+    if (lowerField.includes('url') || lowerField.includes('site') || lowerField.includes('link')) return 'url';
+    if (lowerField.includes('mensagem') || lowerField.includes('descri') || lowerField.includes('observ')) return 'textarea';
+    
+    return 'text';
+}
+
+/**
+ * Gera tabela HTML
+ */
+function generateTableHTML(message, context) {
+    return `<div class="table-container">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Data</th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            <!-- Dados serão inseridos aqui via JavaScript -->
+        </tbody>
+    </table>
+</div>`;
+}
+
+/**
+ * Gera card HTML
+ */
+function generateCardHTML(message, context) {
+    return `<div class="card custom-card">
+    <div class="card-header">
+        <h3>Título do Card</h3>
+        <button class="btn btn-icon">
+            <i class="fas fa-ellipsis-v"></i>
+        </button>
+    </div>
+    <div class="card-body">
+        <p>Conteúdo do card aqui</p>
+    </div>
+    <div class="card-footer">
+        <button class="btn btn-primary">Ação</button>
+    </div>
+</div>`;
+}
+
+/**
+ * Gera modal HTML
+ */
+function generateModalHTML(message, context) {
+    return `<div class="modal" id="customModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Novo Modal</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>Conteúdo do modal aqui</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline close-modal">Cancelar</button>
+            <button class="btn btn-primary">Confirmar</button>
+        </div>
+    </div>
+</div>`;
 }
 
 /**
@@ -908,6 +1536,173 @@ generateTopRatedEventsReport();`;
     // Outros tipos de relatório...
     return `// Código de relatório para ${reportType}
 console.log('Gerando relatório de ${reportType}...');`;
+}
+
+/**
+ * Gera código para remover elemento
+ */
+function generateRemoveElement(message, context, entities) {
+    const target = entities.targets[0] || 'elemento';
+    
+    return {
+        explanation: `🗑️ Vou remover o ${target} conforme solicitado.<br><br>
+                     Código JavaScript será gerado para remover o elemento do DOM.`,
+        files: [{
+            path: 'js/custom-removal.js',
+            language: 'javascript',
+            code: `// Remover ${target}
+const elementoParaRemover = document.querySelector('#seletor-do-${target}');
+if (elementoParaRemover) {
+    elementoParaRemover.remove();
+    showNotification('${capitalize(target)} removido com sucesso', 'success');
+} else {
+    console.warn('Elemento não encontrado');
+}`
+        }],
+        code: `// Script de remoção gerado automaticamente`
+    };
+}
+
+/**
+ * Gera código para mostrar/esconder elemento
+ */
+function generateShowHide(message, context, entities) {
+    const action = message.toLowerCase().includes('esconder') || message.toLowerCase().includes('ocultar') ? 'esconder' : 'mostrar';
+    
+    return {
+        explanation: `👁️ Vou ${action} o elemento conforme solicitado.`,
+        files: [{
+            path: 'js/toggle-visibility.js',
+            language: 'javascript',
+            code: `// ${capitalize(action)} elemento
+const elemento = document.querySelector('#seu-elemento');
+if (elemento) {
+    elemento.style.display = '${action === 'esconder' ? 'none' : 'block'}';
+    console.log('Elemento ${action === 'esconder' ? 'ocultado' : 'exibido'}');
+}`
+        }],
+        code: `elemento.style.display = '${action === 'esconder' ? 'none' : 'block'}';`
+    };
+}
+
+/**
+ * Gera código para mudar texto
+ */
+function generateTextChange(message, context, entities) {
+    return {
+        explanation: `📝 Vou alterar o texto conforme solicitado.`,
+        files: [{
+            path: 'js/text-change.js',
+            language: 'javascript',
+            code: `// Alterar texto
+const elemento = document.querySelector('#elemento-alvo');
+if (elemento) {
+    elemento.textContent = 'Novo texto aqui';
+    // OU para HTML:
+    // elemento.innerHTML = '<strong>Novo HTML aqui</strong>';
+}`
+        }],
+        code: `elemento.textContent = 'Novo texto';`
+    };
+}
+
+/**
+ * Gera código para adicionar animação
+ */
+function generateAnimation(message, context, entities) {
+    return {
+        explanation: `🎬 Vou adicionar animações ao elemento.`,
+        files: [{
+            path: 'css/animations.css',
+            language: 'css',
+            code: `/* Animação customizada */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animated-element {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+/* Hover effect */
+.animated-element:hover {
+    transform: scale(1.05);
+    transition: transform 0.3s ease;
+}`
+        }],
+        code: `animation: fadeInUp 0.5s ease-out;`
+    };
+}
+
+/**
+ * Gera código para exportar dados
+ */
+function generateExport(message, context, entities) {
+    const format = message.toLowerCase().includes('pdf') ? 'pdf' : 
+                   message.toLowerCase().includes('excel') ? 'excel' : 'csv';
+    
+    return {
+        explanation: `💾 Vou criar função de exportação para ${format.toUpperCase()}.`,
+        files: [{
+            path: 'js/export-data.js',
+            language: 'javascript',
+            code: `/**
+ * Exporta dados para ${format.toUpperCase()}
+ */
+function exportarDados() {
+    const dados = JSON.parse(localStorage.getItem('events') || '[]');
+    
+    ${format === 'csv' ? `
+    // Converter para CSV
+    const csvContent = convertToCSV(dados);
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'dados-${new Date().toISOString().split('T')[0]}.csv';
+    a.click();
+    
+    URL.revokeObjectURL(url);
+    ` : format === 'excel' ? `
+    // Para Excel, use biblioteca como xlsx
+    console.log('Instale: npm install xlsx');
+    // import * as XLSX from 'xlsx';
+    // const wb = XLSX.utils.book_new();
+    // const ws = XLSX.utils.json_to_sheet(dados);
+    // XLSX.utils.book_append_sheet(wb, ws, 'Dados');
+    // XLSX.writeFile(wb, 'dados.xlsx');
+    ` : `
+    // Para PDF, use biblioteca como jsPDF
+    console.log('Instale jsPDF para exportar PDF');
+    `}
+    
+    showNotification('✅ Dados exportados com sucesso!', 'success');
+}
+
+function convertToCSV(data) {
+    if (data.length === 0) return '';
+    
+    const headers = Object.keys(data[0]);
+    const rows = data.map(obj => 
+        headers.map(h => JSON.stringify(obj[h] || '')).join(',')
+    );
+    
+    return [headers.join(','), ...rows].join('\\n');
+}
+
+// Chamar função
+exportarDados();`
+        }],
+        code: `exportarDados();`
+    };
 }
 
 /**

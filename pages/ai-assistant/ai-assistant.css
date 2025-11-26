@@ -112,6 +112,16 @@
     border-radius: 12px 12px 12px 4px;
 }
 
+.ai-message.suggestion .message-avatar {
+    background: #ffd60a;
+    color: #14213d;
+}
+
+.ai-message.suggestion .message-text {
+    background: rgba(255, 214, 10, 0.1);
+    border-color: #ffd60a;
+}
+
 .ai-message.user .message-text {
     background: var(--primary-gradient);
     color: white;
