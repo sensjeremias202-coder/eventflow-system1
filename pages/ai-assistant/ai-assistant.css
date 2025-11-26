@@ -450,3 +450,75 @@
         display: none;
     }
 }
+
+/* AI Settings & Instructions */
+.ai-info-box {
+    display: flex;
+    gap: 12px;
+    padding: 16px;
+    background: rgba(67, 97, 238, 0.1);
+    border-radius: 8px;
+    margin-top: 16px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.ai-info-box i {
+    color: var(--primary-color);
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.instructions-list {
+    padding-left: 20px;
+}
+
+.instructions-list li {
+    margin: 16px 0;
+    padding: 12px;
+    background: var(--bg-color);
+    border-radius: 8px;
+    border-left: 3px solid var(--primary-color);
+}
+
+.instruction-step {
+    margin: 12px 0;
+    padding: 12px;
+    background: var(--card-bg);
+    border-radius: 6px;
+}
+
+.instruction-step p {
+    margin: 8px 0;
+}
+
+.instruction-step code {
+    background: rgba(0, 0, 0, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Consolas', monospace;
+}
+
+.instruction-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+    background: rgba(6, 255, 165, 0.1);
+    border-radius: 8px;
+    margin-top: 16px;
+    border-left: 4px solid #06ffa5;
+}
+
+.instruction-note i {
+    color: #06ffa5;
+    font-size: 20px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.modal-footer {
+    padding: 16px 24px;
+    background: var(--card-bg);
+    border-top: 1px solid var(--border-color);
+    border-radius: 0 0 12px 12px;
+}
