@@ -17,6 +17,8 @@ const urlsToCache = [
     '/js/theme.js',
     '/js/gamification.js',
     '/js/pwa.js'
+    , '/manifest.json'
+    , '/offline.html'
 ];
 
 // Instalação
@@ -48,22 +50,39 @@ self.addEventListener('activate', (event) => {
 
 // Fetch - Network First, fallback to Cache
 self.addEventListener('fetch', (event) => {
+    // Only handle GET requests
+    if (event.request.method !== 'GET') return;
+
+    const request = event.request;
+    // For navigation requests, try network first, fallback to cache, then offline page
+    if (request.mode === 'navigate') {
+        event.respondWith(
+            fetch(request)
+                .then(response => {
+                    caches.open(CACHE_NAME).then((cache) => cache.put(request, response.clone()));
+                    return response;
+                })
+                .catch(() => caches.match(request).then(r => r || caches.match('/offline.html')))
+        );
+        return;
+    }
+
+    // For other GET requests, try cache first, then network, then offline fallback
     event.respondWith(
-        fetch(event.request)
-            .then((response) => {
-                // Clone response antes de cachear
-                const responseToCache = response.clone();
-                
-                caches.open(CACHE_NAME).then((cache) => {
-                    cache.put(event.request, responseToCache);
-                });
-                
-                return response;
-            })
-            .catch(() => {
-                // Se network falhar, usar cache
-                return caches.match(event.request);
-            })
+        caches.match(request).then(cached => {
+            if (cached) return cached;
+            return fetch(request)
+                .then((response) => {
+                    // Don't cache opaque responses
+                    if (!response || response.status !== 200 || response.type === 'opaque') return response;
+                    const responseToCache = response.clone();
+                    caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(request, responseToCache);
+                    });
+                    return response;
+                })
+                .catch(() => caches.match('/offline.html'));
+        })
     );
 });
 
@@ -103,4 +122,12 @@ self.addEventListener('notificationclick', (event) => {
     event.waitUntil(
         clients.openWindow(event.notification.data.url || '/')
     );
+});
+
+// Listen for messages (e.g., skip waiting)
+self.addEventListener('message', (event) => {
+    if (!event.data) return;
+    if (event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
 });

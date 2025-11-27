@@ -1,0 +1,32 @@
+# Node
+node_modules/
+npm-debug.log
+package-lock.json
+
+# Electron
+dist/
+build/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Temp
+*.log
+.cache/
+
+# Compiled assets
+out/
+
+# Local dev server
+.env
+
+# Windows specific
+desktop.ini
+
+# Others
+**/icons/*.png

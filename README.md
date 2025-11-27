@@ -170,3 +170,20 @@ Este projeto é de uso educacional.
 ---
 
 **Desenvolvido com ❤️ para gerenciamento eficiente de eventos**
+
+## 📱 Transformando o site em App (PWA e Electron)
+
+O projeto já possui suporte básico de PWA (manifest, service worker e registro). Abaixo as opções para gerar apps a partir do site:
+
+- **PWA (Progressive Web App)** (recomendado): já presente, se instala no celular e funciona offline.
+   - Offline fallback já foi adicionado (`offline.html`).
+   - O Service Worker (`sw.js`) implementa cache e fallback.
+   - O botão de instalar (`installPWA`) foi inserido no header e será exibido quando apropriado.
+   - Para publicar, disponibilize via HTTPS e garanta icons adequados no manifest.
+
+- **Electron (Desktop)**: scaffolding de exemplo incluído.
+   - `electron-main.js` é o entry point para desktop.
+   - `package.json` com scripts para rodar localmente `npm start` (servidor) e `npm run start:electron` (Electron).
+   - Para construir instaladores, usar electron-builder com `npm run build:windows` / `build:mac` / `build:linux`.
+
+- **Capacitor / TWA / Cordova (Mobile Nativo)**: posso adicionar instruções/integração para Android/iOS caso queira exportar um app nativo (requer Android Studio / Xcode localmente).
