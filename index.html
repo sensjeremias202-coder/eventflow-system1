@@ -16,8 +16,6 @@
     <link rel="stylesheet" href="css/theme-christian.css?v=20241126030000">
     <!-- CSS dos módulos são carregados dinamicamente pelo page-loader.js -->
     
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#6C63FF">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -234,9 +232,6 @@
     <!-- Bot\u00e3o de Tema (Modo Escuro/Claro) -->
     <button id="themeToggle" onclick="toggleTheme()" title="Alternar Tema">
         <i class="fas fa-moon"></i>
-    </button>
-    <button id="installPWA" class="btn btn-info" style="display:none; margin-left:8px;" title="Instalar App">
-        <i class="fas fa-download"></i> Instalar App
     </button>
     
     <!-- Badge de Notifica\u00e7\u00f5es (ser\u00e1 adicionado ao \u00edcone do sino) -->
@@ -1392,7 +1387,7 @@
     <script src="js/image-upload.js?v=20241126070000"></script>
     <script src="js/theme.js?v=20241126070000"></script>
     <script src="js/gamification.js?v=20241126070000"></script>
-    <script src="js/pwa.js?v=20241126070000"></script>
+    <!-- pwa.js removed to disable PWA features -->
     
     <!-- 15 Novas Funcionalidades Implementadas -->
     <script src="js/calendar.js?v=20241126100000"></script>

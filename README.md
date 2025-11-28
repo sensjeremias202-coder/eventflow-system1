@@ -93,7 +93,7 @@ eventflow-system1/
 
 3. **Navegar** pelo sistema usando o menu lateral
 
-## 🧪 Rodando em desenvolvimento (servidor local + Electron)
+## 🧪 Rodando em desenvolvimento (servidor local)
 
 1. **Instale o Node.js e npm** (requerido): https://nodejs.org/
 
@@ -103,24 +103,11 @@ cd "c:\Users\sensj\OneDrive\Documentos\GitHub\eventflow-system1"
 npm install
 ```
 
-3. **Iniciar apenas o servidor local** (http://localhost:8080):
+3. **Iniciar o servidor local** (http://localhost:8080):
 ```powershell
 npm start
 # or: npx http-server -p 8080 -c-1 .
 ```
-
-4. **Iniciar o Electron apontando para o servidor local** (em outra janela do PowerShell):
-```powershell
-$env:ELECTRON_START_URL = "http://localhost:8080"
-npm run start:electron
-```
-
-5. **Atalho para desenvolvedor (instala dependências, inicia servidor e Electron)**:
-```powershell
-npm run dev
-```
-
-> Observação: O script `npm run dev` chama um script PowerShell `scripts/start-dev.ps1` que já faz as etapas acima automaticamente no Windows.
 
 ## 📚 Documentação
 
@@ -200,19 +187,4 @@ Este projeto é de uso educacional.
 
 **Desenvolvido com ❤️ para gerenciamento eficiente de eventos**
 
-## 📱 Transformando o site em App (PWA e Electron)
-
-O projeto já possui suporte básico de PWA (manifest, service worker e registro). Abaixo as opções para gerar apps a partir do site:
-
-- **PWA (Progressive Web App)** (recomendado): já presente, se instala no celular e funciona offline.
-   - Offline fallback já foi adicionado (`offline.html`).
-   - O Service Worker (`sw.js`) implementa cache e fallback.
-   - O botão de instalar (`installPWA`) foi inserido no header e será exibido quando apropriado.
-   - Para publicar, disponibilize via HTTPS e garanta icons adequados no manifest.
-
-- **Electron (Desktop)**: scaffolding de exemplo incluído.
-   - `electron-main.js` é o entry point para desktop.
-   - `package.json` com scripts para rodar localmente `npm start` (servidor) e `npm run start:electron` (Electron).
-   - Para construir instaladores, usar electron-builder com `npm run build:windows` / `build:mac` / `build:linux`.
-
-- **Capacitor / TWA / Cordova (Mobile Nativo)**: posso adicionar instruções/integração para Android/iOS caso queira exportar um app nativo (requer Android Studio / Xcode localmente).
+<!-- App conversion (PWA / Electron) removed by request -->

@@ -17,8 +17,7 @@ const urlsToCache = [
     '/js/theme.js',
     '/js/gamification.js',
     '/js/pwa.js'
-    , '/manifest.json'
-    , '/offline.html'
+    
 ];
 
 // Instalação
@@ -62,7 +61,7 @@ self.addEventListener('fetch', (event) => {
                     caches.open(CACHE_NAME).then((cache) => cache.put(request, response.clone()));
                     return response;
                 })
-                .catch(() => caches.match(request).then(r => r || caches.match('/offline.html')))
+                .catch(() => caches.match(request).then(r => r || caches.match('/index.html')))
         );
         return;
     }
@@ -81,7 +80,7 @@ self.addEventListener('fetch', (event) => {
                     });
                     return response;
                 })
-                .catch(() => caches.match('/offline.html'));
+                .catch(() => caches.match('/index.html'));
         })
     );
 });
