@@ -57,8 +57,6 @@ function createNotification(type, title, message, data = {}) {
     if ('Notification' in window && Notification.permission === 'granted') {
         new Notification(title, {
             body: message,
-            icon: '/icon-192.png',
-            badge: '/icon-72.png',
             tag: notification.id
         });
     }

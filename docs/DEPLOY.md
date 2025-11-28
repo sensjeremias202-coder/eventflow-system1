@@ -135,7 +135,7 @@ Após fazer deploy, compartilhe a URL do site:
 
 1. **Adicionar Firebase** para sincronização real
 2. **Implementar autenticação** (Firebase Auth)
-3. **Adicionar PWA** (funcionar offline)
+3. **Adicionar PWA (opcional)** — Se for necessário no futuro, pode ser adicionado como recurso opcional; atualmente não está habilitado.
 4. **Otimizar performance** (minificar JS/CSS)
 5. **Adicionar analytics** (Google Analytics)
 

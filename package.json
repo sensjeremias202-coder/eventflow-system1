@@ -1,7 +1,7 @@
 {
   "name": "eventflow-system1",
   "version": "1.0.0",
-  "description": "EventFlow System - Web app and Electron wrapper",
+  "description": "EventFlow System - Web app",
   "scripts": {
     "start": "http-server -p 8080 -c-1 .",
     

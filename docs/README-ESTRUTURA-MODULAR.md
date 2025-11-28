@@ -203,7 +203,7 @@ showModularPage('events');
 - [ ] Criar módulo de login separado
 - [ ] Adicionar loading indicators
 - [ ] Implementar transições entre páginas
-- [ ] Otimizar cache com Service Worker (PWA)
+ - [ ] Otimizar cache com Service Worker (opcional)
 
 ### 📊 Versão Atual
 

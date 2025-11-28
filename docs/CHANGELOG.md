@@ -133,7 +133,7 @@
 - [ ] Swipe gestures para navegação de cards
 - [ ] Pull-to-refresh em listas
 - [ ] Lazy loading de imagens e componentes
-- [ ] Service Worker para PWA
+ - [ ] Service Worker (opcional)
 - [ ] Notificações push
 - [ ] Dark mode toggle
 - [ ] Testes de acessibilidade WCAG 2.1
