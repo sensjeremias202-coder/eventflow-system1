@@ -6,6 +6,7 @@
   "scripts": {
     "start": "http-server -p 8080 -c-1 .",
     "start:electron": "electron .",
+    "dev": "powershell -ExecutionPolicy Bypass -File scripts/start-dev.ps1",
     "build:windows": "electron-builder --win",
     "build:mac": "electron-builder --mac",
     "build:linux": "electron-builder --linux"

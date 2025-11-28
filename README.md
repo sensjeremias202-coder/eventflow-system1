@@ -93,6 +93,35 @@ eventflow-system1/
 
 3. **Navegar** pelo sistema usando o menu lateral
 
+## 🧪 Rodando em desenvolvimento (servidor local + Electron)
+
+1. **Instale o Node.js e npm** (requerido): https://nodejs.org/
+
+2. **Instalar dependências**
+```powershell
+cd "c:\Users\sensj\OneDrive\Documentos\GitHub\eventflow-system1"
+npm install
+```
+
+3. **Iniciar apenas o servidor local** (http://localhost:8080):
+```powershell
+npm start
+# or: npx http-server -p 8080 -c-1 .
+```
+
+4. **Iniciar o Electron apontando para o servidor local** (em outra janela do PowerShell):
+```powershell
+$env:ELECTRON_START_URL = "http://localhost:8080"
+npm run start:electron
+```
+
+5. **Atalho para desenvolvedor (instala dependências, inicia servidor e Electron)**:
+```powershell
+npm run dev
+```
+
+> Observação: O script `npm run dev` chama um script PowerShell `scripts/start-dev.ps1` que já faz as etapas acima automaticamente no Windows.
+
 ## 📚 Documentação
 
 Toda a documentação técnica está disponível na pasta [`docs/`](./docs/):
