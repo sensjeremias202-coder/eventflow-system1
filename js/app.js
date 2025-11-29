@@ -242,7 +242,7 @@ function setupButtons() {
         manageUsersBtn.addEventListener('click', function() {
             // Mostrar a página de usuários e carregar a tabela
             showPage('users');
-            if (typeof loadUsersTable === 'function') loadUsersTable();
+            // A tabela de usuários será carregada pelo page-loader em initializePage('users')
             // atualizar estado ativo nos links
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
             const nav = document.querySelector('[data-page="users"]');
