@@ -1,9 +1,9 @@
 // Sistema Multi-idiomas (i18n)
 class InternationalizationSystem {
     constructor() {
-        this.currentLanguage = localStorage.getItem('language') || this.detectLanguage();
-        this.translations = {};
         this.supportedLanguages = ['pt', 'en', 'es'];
+        this.translations = {};
+        this.currentLanguage = localStorage.getItem('language') || this.detectLanguage();
         this.init();
     }
 
@@ -15,8 +15,9 @@ class InternationalizationSystem {
 
     detectLanguage() {
         const navLang = navigator.language || navigator.userLanguage || 'pt-BR';
-        const browserLang = navLang.split('-')[0];
-        return this.supportedLanguages.includes(browserLang) ? browserLang : 'pt';
+        const browserLang = (typeof navLang === 'string' ? navLang : 'pt-BR').split('-')[0];
+        const supported = Array.isArray(this.supportedLanguages) ? this.supportedLanguages : ['pt', 'en', 'es'];
+        return supported.includes(browserLang) ? browserLang : 'pt';
     }
 
     loadTranslations() {
