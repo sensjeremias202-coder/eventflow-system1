@@ -5,15 +5,20 @@
  * Interface para solicitações de alterações no site
  */
 
-// Estado do assistente
-let aiConversation = [];
-let pendingChanges = null;
+// Estado do assistente (evitar redefinições em recarregamentos)
+window.aiConversation = window.aiConversation || [];
+window.pendingChanges = window.pendingChanges || null;
+window.aiAssistantInitialized = window.aiAssistantInitialized || false;
 
 /**
  * Inicializa o Assistente AI
  */
 function initAiAssistant() {
     console.log('[ai-assistant] 🤖 Inicializando Assistente AI...');
+    if (window.aiAssistantInitialized) {
+        console.log('[ai-assistant] ℹ️ Já inicializado, ignorando re-inicialização');
+        return;
+    }
     
     // Setup do formulário de chat
     setupAiChatForm();
@@ -31,36 +36,34 @@ function initAiAssistant() {
     setupAutoResize();
     
     console.log('[ai-assistant] ✅ Assistente AI pronto!');
+    window.aiAssistantInitialized = true;
 }
 
 /**
  * Setup do formulário de chat
  */
 function setupAiChatForm() {
-    const form = document.getElementById('aiChatForm');
-    const input = document.getElementById('aiChatInput');
+    const input = document.getElementById('aiInput') || document.getElementById('aiChatInput');
+    const sendBtn = document.getElementById('sendAiBtn');
     
-    if (!form || !input) {
-        console.warn('[ai-assistant] ⚠️ Formulário de chat não encontrado');
+    if (!input || !sendBtn) {
+        console.warn('[ai-assistant] ⚠️ Elementos de chat não encontrados');
         return;
     }
     
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        
-        const message = input.value.trim();
-        if (!message) return;
-        
-        // Adicionar mensagem do usuário
-        addUserMessage(message);
-        
-        // Limpar input
-        input.value = '';
-        input.style.height = 'auto';
-        
-        // Processar solicitação
-        processUserRequest(message);
-    });
+    if (!sendBtn.dataset.listenerAdded) {
+        sendBtn.dataset.listenerAdded = 'true';
+        sendBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const message = (input.value || '').trim();
+            if (!message) return;
+            
+            addUserMessage(message);
+            input.value = '';
+            input.style.height = 'auto';
+            processUserRequest(message);
+        });
+    }
 }
 
 /**
