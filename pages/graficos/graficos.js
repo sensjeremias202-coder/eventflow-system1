@@ -32,8 +32,14 @@ function loadGraficos() {
     
     // Definir mês e ano atual
     const now = new Date();
-    document.getElementById('selectMonth').value = now.getMonth();
-    document.getElementById('selectYear').value = now.getFullYear();
+    const monthEl = document.getElementById('selectMonth');
+    const yearEl = document.getElementById('selectYear');
+    if (!monthEl || !yearEl) {
+        console.warn('[graficos] Elementos de filtro não encontrados (selectMonth/selectYear). Abortando init.');
+        return;
+    }
+    monthEl.value = now.getMonth();
+    yearEl.value = now.getFullYear();
     
     // Event listeners
     setupChartListeners();
@@ -50,6 +56,10 @@ function loadEventsListForChart() {
         .filter(e => e !== null && e !== undefined && typeof e === 'object');
     
     const selectEvent = document.getElementById('selectEventChart');
+    if (!selectEvent) {
+        console.warn('[graficos] selectEventChart não encontrado. Pulando lista de eventos.');
+        return;
+    }
     selectEvent.innerHTML = '<option value="">Todos os eventos</option>';
     
     events.forEach((event, index) => {

@@ -53,7 +53,13 @@ function loadCurrentSettings() {
     // Carregar idioma atual
     const savedLang = localStorage.getItem('eventflow_language') || 'pt-BR';
     if (window.i18nSystem) {
-        window.i18nSystem.setLanguage(savedLang);
+        // Ajuste: usar a API disponível do i18n
+        if (typeof window.i18nSystem.setLanguage === 'function') {
+            window.i18nSystem.setLanguage(savedLang);
+        } else if (typeof window.i18nSystem.changeLanguage === 'function') {
+            // InternationalizationSystem expõe changeLanguage
+            window.i18nSystem.changeLanguage(savedLang.split('-')[0]);
+        }
     }
     
     // Atualizar interface com valores atuais

@@ -368,8 +368,10 @@ async function processUserRequest(message) {
         // Processar com IA real
         const result = await processWithAI(message);
         
-        // Remover loading
-        loadingMsg.remove();
+        // Remover loading com segurança
+        if (loadingMsg && typeof loadingMsg.remove === 'function') {
+            loadingMsg.remove();
+        }
         
         // Mostrar resposta
         addAssistantMessage(result.response);
@@ -384,7 +386,9 @@ async function processUserRequest(message) {
         
     } catch (error) {
         console.error('[ai-assistant] Erro ao processar:', error);
-        loadingMsg.remove();
+        if (loadingMsg && typeof loadingMsg.remove === 'function') {
+            loadingMsg.remove();
+        }
         addAssistantMessage(`❌ Desculpe, ocorreu um erro ao processar sua solicitação: ${error.message}`);
         updateAiStatus('Erro', 'error');
     }
@@ -401,6 +405,15 @@ async function processWithAI(userMessage) {
     const apiKey = localStorage.getItem('ai-api-key');
     const apiProvider = localStorage.getItem('ai-provider') || 'ollama'; // ollama é local e grátis
     
+    // Se estiver rodando via file:// ou em domínio diferente de localhost, evitar chamadas ao Ollama
+    const isFileProtocol = location.protocol === 'file:';
+    const isLocalhost = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+
+    if (isFileProtocol || !isLocalhost) {
+        console.warn('[ai-assistant] Ambiente sem servidor local (file:// ou domínio externo). Usando processamento local.');
+        return await processLocally(userMessage, context);
+    }
+
     if (apiProvider === 'ollama') {
         // Usar Ollama local (não precisa de API key)
         return await processWithOllama(userMessage, context);

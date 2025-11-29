@@ -43,10 +43,13 @@ function initFirebase() {
         firebaseApp = firebase.initializeApp(firebaseConfig);
         database = firebase.database();
         
-        // Inicializar Analytics
-        if (firebase.analytics) {
+        // Inicializar Analytics (evitar em file://)
+        const isFile = location.protocol === 'file:';
+        if (firebase.analytics && !isFile) {
             analytics = firebase.analytics();
             console.log('[firebase] 📊 Analytics inicializado');
+        } else if (isFile) {
+            console.warn('[firebase] ⚠️ Analytics desativado em file:// para evitar avisos de protocolo');
         }
 
         console.log('[firebase] ✅ Firebase inicializado com sucesso');
@@ -71,9 +74,13 @@ window.firebaseAnalytics = analytics;
 
 // Função para registrar eventos no Analytics
 function logAnalyticsEvent(eventName, params = {}) {
-    if (analytics) {
+    const isFile = location.protocol === 'file:';
+    if (analytics && !isFile) {
         analytics.logEvent(eventName, params);
         console.log(`[analytics] 📊 Evento registrado: ${eventName}`, params);
+    } else if (isFile) {
+        // Silenciar no file://, mas manter log limpo
+        // console.debug(`[analytics] (silenciado em file://) ${eventName}`);
     }
 }
 

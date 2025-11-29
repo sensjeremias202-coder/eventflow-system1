@@ -1,5 +1,11 @@
-let currentChatUser = null;
-let autoMessageInterval = null;
+if (typeof window.currentChatUser === 'undefined') {
+    window.currentChatUser = null;
+}
+if (typeof window.autoMessageInterval === 'undefined') {
+    window.autoMessageInterval = null;
+}
+let currentChatUser = window.currentChatUser;
+let autoMessageInterval = window.autoMessageInterval;
 
 function loadChatUsers() {
     const chatUsers = document.getElementById('chatUsers');
@@ -52,6 +58,7 @@ function selectChatUser(userId) {
     if (!user) return;
     
     currentChatUser = user;
+    window.currentChatUser = user;
     
     // Atualizar interface
     document.querySelectorAll('.chat-user').forEach(u => u.classList.remove('active'));
@@ -137,6 +144,17 @@ function loadChatMessages(userId) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
+// Utilitário robusto para formatar horário
+function formatTime(dateInput) {
+    try {
+        const d = (dateInput instanceof Date) ? dateInput : new Date(dateInput);
+        if (isNaN(d.getTime())) return '-';
+        return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    } catch {
+        return '-';
+    }
+}
+
 // Configurar envio de mensagens
 function setupChat() {
     const sendMessageBtn = document.getElementById('sendMessageBtn');
@@ -162,13 +180,13 @@ function setupChat() {
         });
         
         // Desativar inicialmente apenas se não houver usuário selecionado
-        if (!currentChatUser) {
+        if (!window.currentChatUser) {
             document.getElementById('chatInput').disabled = true;
         }
     }
     
     const btnElement = document.getElementById('sendMessageBtn');
-    if (btnElement && !currentChatUser) {
+    if (btnElement && !window.currentChatUser) {
         btnElement.disabled = true;
     }
 }
@@ -184,7 +202,7 @@ function sendMessage() {
         return;
     }
     
-    if (!currentChatUser) {
+    if (!window.currentChatUser) {
         showNotification('Selecione um usuário para enviar mensagem.', 'error');
         return;
     }
@@ -193,7 +211,7 @@ function sendMessage() {
     const newMessage = {
         id: messages.length > 0 ? Math.max(...messages.map(m => m.id)) + 1 : 1,
         from: currentUser.id,
-        to: currentChatUser.id,
+        to: window.currentChatUser.id,
         content: message,
         timestamp: new Date().toISOString(),
         auto: false
@@ -213,7 +231,7 @@ function sendMessage() {
     }
     
     // Atualizar chat
-    loadChatMessages(currentChatUser.id);
+    loadChatMessages(window.currentChatUser.id);
     
     // Limpar input
     input.value = '';
@@ -226,8 +244,8 @@ function sendMessage() {
 
 // Parar mensagens automáticas quando sair da página de chat
 function stopAutoMessages() {
-    if (autoMessageInterval) {
-        clearInterval(autoMessageInterval);
-        autoMessageInterval = null;
+    if (window.autoMessageInterval) {
+        clearInterval(window.autoMessageInterval);
+        window.autoMessageInterval = null;
     }
 }
