@@ -4,7 +4,8 @@
   "description": "EventFlow System - Web app",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "bump": "node scripts/bump-version.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
