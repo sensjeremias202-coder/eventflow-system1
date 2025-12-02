@@ -83,9 +83,25 @@ window.showNotificationToast = showNotification;
                 try { evts = JSON.parse(localStorage.getItem('events')) || []; } catch {}
             }
             if (listEl) {
-                const upcoming = Array.isArray(evts) ? evts.filter(e => !!e.date).slice(0, 5) : [];
+                let upcoming = Array.isArray(evts) ? evts.filter(e => !!e.date).slice(0, 5) : [];
                 if (upcoming.length === 0) {
-                    listEl.innerHTML = '<p style="color:#666;">Nenhum evento cadastrado no momento.</p>';
+                    // Fallback: tentar carregar eventos públicos de um JSON estático
+                    try {
+                        fetch('public-events.json?v=' + (window.APP_VERSION || Date.now()))
+                            .then(r => r.ok ? r.json() : [])
+                            .then(data => {
+                                if (Array.isArray(data) && data.length > 0) {
+                                    window.__publicEventsCache = data;
+                                    upcoming = data.filter(e => !!e.date).slice(0, 5);
+                                    window.renderPublicEvents && window.renderPublicEvents(upcoming);
+                                } else {
+                                    listEl.innerHTML = '<p style="color:#666;">Nenhum evento disponível no momento.</p>';
+                                }
+                            })
+                            .catch(() => { listEl.innerHTML = '<p style="color:#666;">Nenhum evento disponível no momento.</p>'; });
+                    } catch {
+                        listEl.innerHTML = '<p style="color:#666;">Nenhum evento disponível no momento.</p>';
+                    }
                 } else {
                     listEl.innerHTML = upcoming.map(e => {
                         const enrolled = Array.isArray(e.enrolled) ? e.enrolled.length : 0;

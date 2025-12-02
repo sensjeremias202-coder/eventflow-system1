@@ -142,6 +142,19 @@ function cancelEnrollment(eventId, userId) {
     
     saveDataWithSync();
     showNotification('Inscrição cancelada', 'info');
+    // Auditoria simples
+    try {
+        const logsRaw = localStorage.getItem('auditLogs');
+        const logs = logsRaw ? JSON.parse(logsRaw) : [];
+        logs.push({
+            type: 'cancel_enrollment',
+            by: (typeof window !== 'undefined' && window.currentUser) ? window.currentUser.id : null,
+            userId,
+            eventId,
+            at: new Date().toISOString()
+        });
+        localStorage.setItem('auditLogs', JSON.stringify(logs));
+    } catch {}
     
     return true;
 }
