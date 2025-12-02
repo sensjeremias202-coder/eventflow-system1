@@ -97,15 +97,17 @@ window.showNotificationToast = showNotification;
                     `).join('');
                 }
             }
-            // Parametrizar links de doação (substitua pelos seus)
-            const paypal = document.getElementById('donatePaypal');
-            const coffee = document.getElementById('donateCoffee');
-            if (paypal && !paypal.href || (paypal && paypal.href === '#')) {
-                paypal.href = 'https://www.paypal.com/donate';
-            }
-            if (coffee && !coffee.href || (coffee && coffee.href === '#')) {
-                coffee.href = 'https://buymeacoffee.com/';
-            }
+            // Parametrizar links de redes sociais (substitua pelos seus)
+            const ig = document.getElementById('socialInstagram');
+            const em = document.getElementById('socialEmail');
+            const wa = document.getElementById('socialWhatsApp');
+            // Permite definir via localStorage para personalizar sem editar código
+            const lsIg = localStorage.getItem('SOCIAL_INSTAGRAM_URL');
+            const lsEm = localStorage.getItem('SOCIAL_EMAIL_URL');
+            const lsWa = localStorage.getItem('SOCIAL_WHATSAPP_URL');
+            if (ig) ig.href = lsIg || 'https://instagram.com/seuusuario';
+            if (em) em.href = lsEm || 'mailto:seuemail@exemplo.com';
+            if (wa) wa.href = lsWa || 'https://wa.me/5500000000000';
             // Configurar PIX
             const pixBtn = document.getElementById('donatePixBtn');
             if (pixBtn) {
