@@ -63,6 +63,17 @@ window.showNotificationToast = showNotification;
             publicHome.style.display = 'block';
             if (loginScreen) loginScreen.style.display = 'none';
             if (appEl) appEl.style.display = 'none';
+            // Configurar imagem QR Pix via localStorage (opcional) ou default externo
+            try {
+                const storedPixImg = localStorage.getItem('PIX_QR_IMAGE_URL');
+                if (storedPixImg) {
+                    window.PIX_QR_IMAGE_URL = storedPixImg;
+                } else {
+                    // Default: imagem QR gerada por serviço público usando o payload
+                    const encoded = encodeURIComponent('00020126580014BR.GOV.BCB.PIX01367ff75fa1-d260-48e9-a82c-28d8751e3113520400005303986540510.005802BR5922Sens Jeremias Francois6009SAO PAULO62140510by2vmxwgfc6304D190');
+                    window.PIX_QR_IMAGE_URL = `https://api.qrserver.com/v1/create-qr-code/?data=${encoded}&size=240x240`;
+                }
+            } catch {}
             // Popular lista pública de próximos eventos
             const listEl = document.getElementById('publicEventsList');
             let evts = (typeof window !== 'undefined' && window.events) ? window.events : [];
@@ -99,11 +110,17 @@ window.showNotificationToast = showNotification;
             const pixBtn = document.getElementById('donatePixBtn');
             if (pixBtn) {
                 window.PIX_PAYLOAD = '00020126580014BR.GOV.BCB.PIX01367ff75fa1-d260-48e9-a82c-28d8751e3113520400005303986540510.005802BR5922Sens Jeremias Francois6009SAO PAULO62140510by2vmxwgfc6304D190';
+                // Se você tiver uma imagem oficial do QR, defina window.PIX_QR_IMAGE_URL com a URL
+                // Ex.: window.PIX_QR_IMAGE_URL = 'https://.../meu_qr.png';
                 pixBtn.onclick = function(){
                     const modal = document.getElementById('pixModal');
                     const textEl = document.getElementById('pixPayloadText');
                     const qrEl = document.getElementById('pixQr');
                     if (textEl) textEl.textContent = window.PIX_PAYLOAD;
+                    // Se houver uma imagem de QR fornecida, usar diretamente
+                    if (qrEl && window.PIX_QR_IMAGE_URL) {
+                        qrEl.innerHTML = `<img alt="QR Pix" width="240" height="240" style="display:block; border-radius:8px;" src="${window.PIX_QR_IMAGE_URL}"/>`;
+                    } else {
                     function tryRenderQR(){
                         if (qrEl && window.PIX_PAYLOAD && typeof QRCode !== 'undefined') {
                             try {
@@ -122,8 +139,14 @@ window.showNotificationToast = showNotification;
                             attempts++;
                             if (tryRenderQR() || attempts > 20) {
                                 clearInterval(timer);
+                                // Fallback via imagem se não renderizou
+                                if (!tryRenderQR() && qrEl && window.PIX_PAYLOAD) {
+                                    const encoded = encodeURIComponent(window.PIX_PAYLOAD);
+                                    qrEl.innerHTML = `<img alt="QR Pix" width="240" height="240" style="display:block; margin:0 auto;" src="https://api.qrserver.com/v1/create-qr-code/?data=${encoded}&size=240x240"/>`;
+                                }
                             }
                         }, 100);
+                    }
                     }
                     if (modal) modal.style.display = 'block';
                 };
