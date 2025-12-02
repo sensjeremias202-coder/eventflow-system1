@@ -213,7 +213,7 @@ body::before {
     opacity: 1;
     pointer-events: none;
     z-index: 0;
-    animation: floatPattern 60s linear infinite;
+    animation: none;
 }
 
 /* Cruz decorativa sutil no centro */
@@ -289,7 +289,7 @@ body::after {
     opacity: 0.03;
     z-index: 1;
     pointer-events: none;
-    animation: rotate3d 60s linear infinite;
+    animation: none;
     perspective: 2000px;
     transform-style: preserve-3d;
     filter: drop-shadow(0 0 50px rgba(108, 99, 255, 0.5));
@@ -306,6 +306,7 @@ body::after {
     z-index: 2;
     transform-style: preserve-3d;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    animation: none;
 }
 
 .container {
