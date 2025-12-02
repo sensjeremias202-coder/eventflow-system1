@@ -476,6 +476,20 @@ function showApp() {
                 if (isProfileVisible && typeof window.loadProfile === 'function') {
                     window.loadProfile();
                 }
+                // Retomar inscrição pendente, se houver
+                try {
+                    const pendingId = localStorage.getItem('pendingEnrollmentEventId');
+                    if (pendingId) {
+                        localStorage.removeItem('pendingEnrollmentEventId');
+                        // Garantir que a página de eventos esteja ativa antes de tentar inscrever
+                        showModularPage('events');
+                        setTimeout(() => {
+                            if (typeof window.enrollInEvent === 'function') {
+                                window.enrollInEvent(pendingId);
+                            }
+                        }, 300);
+                    }
+                } catch {}
             }, 200);
         }, 100);
     } else {
@@ -489,6 +503,15 @@ function showApp() {
             if (typeof loadUsersTable === 'function') loadUsersTable();
             if (typeof loadCategoriesTable === 'function') loadCategoriesTable();
         }
+
+        // Retomar inscrição pendente no modo fallback
+        try {
+            const pendingId = localStorage.getItem('pendingEnrollmentEventId');
+            if (pendingId && typeof window.enrollInEvent === 'function') {
+                localStorage.removeItem('pendingEnrollmentEventId');
+                setTimeout(() => window.enrollInEvent(pendingId), 200);
+            }
+        } catch {}
     }
     
     // Configurar modais
@@ -511,6 +534,9 @@ function saveData() {
         try {
             if (typeof window.renderPublicEvents === 'function') {
                 window.renderPublicEvents(Array.isArray(events) ? events : []);
+            }
+            if (typeof window.renderEnrollmentOverview === 'function') {
+                window.renderEnrollmentOverview();
             }
         } catch (e) {
             console.warn('[saveData] Não foi possível atualizar eventos públicos:', e);

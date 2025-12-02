@@ -87,16 +87,22 @@ window.showNotificationToast = showNotification;
                 if (upcoming.length === 0) {
                     listEl.innerHTML = '<p style="color:#666;">Nenhum evento cadastrado no momento.</p>';
                 } else {
-                    listEl.innerHTML = upcoming.map(e => `
+                    listEl.innerHTML = upcoming.map(e => {
+                        const enrolled = Array.isArray(e.enrolled) ? e.enrolled.length : 0;
+                        const max = e.maxParticipants ? parseInt(e.maxParticipants) : null;
+                        const remaining = max != null ? Math.max(0, max - enrolled) : null;
+                        const full = max != null && remaining === 0;
+                        return `
                         <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #eee;">
                             <div>
                                 <strong>${e.title || e.name || 'Evento'}</strong>
                                 <div style="color:#666; font-size:13px;"><i class="fas fa-calendar"></i> ${e.date} • <i class="fas fa-clock"></i> ${e.time || ''}</div>
                                 <div style="color:#666; font-size:13px;"><i class="fas fa-map-marker-alt"></i> ${e.location || ''}</div>
+                                ${max != null ? `<div style="color:${full ? '#f72585' : '#2a9d8f'}; font-size:12px; margin-top:4px;">${full ? 'Lotado' : `${remaining} vagas restantes`} • ${enrolled}/${max} inscritos</div>` : ''}
                             </div>
-                            <a class="btn btn-outline" href="#" onclick="document.getElementById('loginScreen').style.display='block'; document.getElementById('publicHome').style.display='none';">Inscrever-se</a>
-                        </div>
-                    `).join('');
+                            <a class="btn ${full ? 'btn-outline' : 'btn-outline'}" href="#" ${full ? 'style="opacity:0.6; pointer-events:none;"' : ''} onclick="window.requestEnrollment && window.requestEnrollment('${e.id}')">Inscrever-se</a>
+                        </div>`;
+                    }).join('');
                 }
             }
             // Parametrizar links de redes sociais (substitua pelos seus)
@@ -199,20 +205,38 @@ window.renderPublicEvents = function(evts){
         if (upcoming.length === 0) {
             listEl.innerHTML = '<p style="color:#666;">Nenhum evento cadastrado no momento.</p>';
         } else {
-            listEl.innerHTML = upcoming.map(e => `
+            listEl.innerHTML = upcoming.map(e => {
+                const enrolled = Array.isArray(e.enrolled) ? e.enrolled.length : 0;
+                const max = e.maxParticipants ? parseInt(e.maxParticipants) : null;
+                const remaining = max != null ? Math.max(0, max - enrolled) : null;
+                const full = max != null && remaining === 0;
+                return `
                 <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #eee;">
                     <div>
                         <strong>${e.title || e.name || 'Evento'}</strong>
                         <div style="color:#666; font-size:13px;"><i class="fas fa-calendar"></i> ${e.date} • <i class="fas fa-clock"></i> ${e.time || ''}</div>
                         <div style="color:#666; font-size:13px;"><i class="fas fa-map-marker-alt"></i> ${e.location || ''}</div>
+                        ${max != null ? `<div style="color:${full ? '#f72585' : '#2a9d8f'}; font-size:12px; margin-top:4px;">${full ? 'Lotado' : `${remaining} vagas restantes`} • ${enrolled}/${max} inscritos</div>` : ''}
                     </div>
-                    <a class="btn btn-outline" href="#" onclick="document.getElementById('loginScreen').style.display='block'; document.getElementById('publicHome').style.display='none';">Inscrever-se</a>
-                </div>
-            `).join('');
+                    <a class="btn ${full ? 'btn-outline' : 'btn-outline'}" href="#" ${full ? 'style="opacity:0.6; pointer-events:none;"' : ''} onclick="window.requestEnrollment && window.requestEnrollment('${e.id}')">Inscrever-se</a>
+                </div>`;
+            }).join('');
         }
     } catch(e){
         console.warn('[public] Falha ao renderizar eventos:', e);
     }
+};
+
+// Fluxo público: solicitar inscrição com redirecionamento ao login e retomada
+window.requestEnrollment = function(eventId){
+    try {
+        localStorage.setItem('pendingEnrollmentEventId', String(eventId));
+    } catch {}
+    const loginScreen = document.getElementById('loginScreen');
+    const publicHome = document.getElementById('publicHome');
+    if (publicHome) publicHome.style.display = 'none';
+    if (loginScreen) loginScreen.style.display = 'block';
+    if (typeof showLoginForm === 'function') showLoginForm();
 };
 
 // ============================================
@@ -544,6 +568,7 @@ function validateEventForm() {
     const location = document.getElementById('eventLocation')?.value.trim();
     const description = document.getElementById('eventDescription')?.value.trim();
     const category = document.getElementById('eventCategory')?.value;
+    const maxStr = document.getElementById('eventMaxParticipants')?.value?.trim();
     
     if (!title) {
         showNotification('Título do evento é obrigatório', 'error');
@@ -578,6 +603,14 @@ function validateEventForm() {
     if (!category) {
         showNotification('Categoria do evento é obrigatória', 'error');
         return false;
+    }
+    
+    if (maxStr) {
+        const max = parseInt(maxStr, 10);
+        if (isNaN(max) || max < 1) {
+            showNotification('Número de vagas deve ser um inteiro maior que 0', 'error');
+            return false;
+        }
     }
     
     return true;

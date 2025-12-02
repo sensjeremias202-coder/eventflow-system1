@@ -33,6 +33,10 @@ function loadEvents() {
         const today = new Date();
         const isUpcoming = eventDate >= today;
         const daysUntil = Math.ceil((eventDate - today) / (1000 * 60 * 60 * 24));
+        const enrolledCount = Array.isArray(event.enrolled) ? event.enrolled.length : 0;
+        const max = event.maxParticipants ? parseInt(event.maxParticipants) : null;
+        const remaining = max != null ? Math.max(0, max - enrolledCount) : null;
+        const full = max != null && remaining === 0;
         
         return `
             <div class="event-card ${!isUpcoming ? 'past-event' : ''}" data-event-id="${event.id}">
@@ -42,7 +46,7 @@ function loadEvents() {
                 </div>
                 <div class="event-content">
                     <div class="event-header">
-                        <h3>${event.name}</h3>
+                        <h3>${event.title || event.name}</h3>
                         <span class="event-category ${event.category}">${getCategoryName(event.category)}</span>
                     </div>
                     <p class="event-description">${event.description}</p>
@@ -69,18 +73,18 @@ function loadEvents() {
                     <div class="event-stats">
                         <div class="stat">
                             <i class="fas fa-users"></i>
-                            <span>${event.enrolled ? event.enrolled.length : 0} inscritos</span>
+                            <span>${enrolledCount} inscritos</span>
                         </div>
-                        ${event.maxParticipants ? `
+                        ${max != null ? `
                             <div class="stat">
                                 <i class="fas fa-user-check"></i>
-                                <span>${event.maxParticipants} vagas</span>
+                                <span>${max} vagas • ${remaining} restantes</span>
                             </div>
                         ` : ''}
                     </div>
                     <div class="event-actions">
                         ${isUpcoming ? `
-                            <button class="btn btn-primary" onclick="enrollInEvent('${event.id}')">
+                            <button class="btn btn-primary" ${full ? 'disabled title="Lotado"' : ''} onclick="enrollInEvent('${event.id}')">
                                 <i class="fas fa-user-plus"></i> Inscrever-se
                             </button>
                         ` : ''}
@@ -131,12 +135,20 @@ function formatDate(dateString) {
 
 // Inscrever em evento
 function enrollInEvent(eventId) {
+    // Garantir tipos compatíveis
+    const idStr = String(eventId);
     if (!currentUser) {
-        showNotification('Faça login para se inscrever', 'error');
+        try { localStorage.setItem('pendingEnrollmentEventId', idStr); } catch {}
+        showNotification('Faça login para se inscrever', 'warning');
+        const loginScreen = document.getElementById('loginScreen');
+        const app = document.getElementById('app');
+        if (app) app.style.display = 'none';
+        if (loginScreen) loginScreen.style.display = 'flex';
+        if (typeof showLoginForm === 'function') showLoginForm();
         return;
     }
     
-    const event = events.find(e => e.id === eventId);
+    const event = events.find(e => String(e.id) === idStr);
     if (!event) return;
     
     // Verificar se já está inscrito
@@ -155,8 +167,12 @@ function enrollInEvent(eventId) {
     if (!event.enrolled) event.enrolled = [];
     event.enrolled.push(currentUser.id);
     
-    // Salvar no localStorage
-    localStorage.setItem('events', JSON.stringify(events));
+    // Salvar pelos utilitários centrais (atualiza páginas públicas também)
+    if (typeof saveData === 'function') {
+        saveData();
+    } else {
+        localStorage.setItem('events', JSON.stringify(events));
+    }
     
     showNotification('Inscrição realizada com sucesso!', 'success');
     loadEvents();
@@ -223,7 +239,7 @@ function setupEventHandlers() {
             // Filtrar eventos do usuário atual
             if (window.currentUser) {
                 const userEvents = events.filter(e => 
-                    e.enrolled && e.enrolled.includes(window.currentUser.email)
+                    Array.isArray(e.enrolled) && e.enrolled.includes(window.currentUser.id)
                 );
                 renderEventsList(userEvents);
                 showNotification(`Mostrando ${userEvents.length} eventos inscritos`, 'info');

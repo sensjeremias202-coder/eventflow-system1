@@ -21,6 +21,8 @@ function createEvent() {
     const location = document.getElementById('eventLocation').value;
     const description = document.getElementById('eventDescription').value;
     const category = parseInt(document.getElementById('eventCategory').value);
+    const maxStr = document.getElementById('eventMaxParticipants')?.value?.trim();
+    const maxParticipants = maxStr ? parseInt(maxStr, 10) : null;
 
     console.log('[events] Dados do formulário:', { title, date, time, location, description, category });
     
@@ -41,6 +43,8 @@ function createEvent() {
         description: description.trim(),
         category,
         createdBy: currentUser.id,
+        enrolled: [],
+        maxParticipants: maxParticipants || null,
         ratings: [],
         createdAt: new Date().toISOString()
     };
@@ -103,6 +107,8 @@ function updateEvent(eventId) {
     const location = document.getElementById('eventLocation').value.trim();
     const description = document.getElementById('eventDescription').value.trim();
     const category = parseInt(document.getElementById('eventCategory').value);
+    const maxStr = document.getElementById('eventMaxParticipants')?.value?.trim();
+    const maxParticipants = maxStr ? parseInt(maxStr, 10) : null;
 
     events[idx] = {
         ...events[idx],
@@ -112,6 +118,7 @@ function updateEvent(eventId) {
         location,
         description,
         category,
+        maxParticipants: maxParticipants || null,
         updatedAt: new Date().toISOString()
     };
 
