@@ -505,6 +505,18 @@ function initProfilePage() {
         changePassBtn.parentNode.replaceChild(newChangeBtn, changePassBtn);
         document.getElementById('changePasswordBtn').addEventListener('click', changePassword);
     }
+
+    // Importar/Exportar
+    const exportBtn = document.getElementById('exportDataBtn');
+    const importInput = document.getElementById('importDataInput');
+    if (exportBtn && !exportBtn.dataset.listenerAdded) {
+        exportBtn.dataset.listenerAdded = 'true';
+        exportBtn.addEventListener('click', exportAppData);
+    }
+    if (importInput && !importInput.dataset.listenerAdded) {
+        importInput.dataset.listenerAdded = 'true';
+        importInput.addEventListener('change', importAppData);
+    }
     
     // Carregar dados do perfil
     loadProfile();
@@ -526,4 +538,56 @@ if (typeof window !== 'undefined') {
     window.deleteAccount = deleteAccount;
     window.editProfile = editProfile;
     window.changePassword = changePassword;
+    window.exportAppData = exportAppData;
+    window.importAppData = importAppData;
+}
+
+function exportAppData() {
+    try {
+        const data = {
+            events: JSON.parse(localStorage.getItem('events') || '[]'),
+            users: JSON.parse(localStorage.getItem('users') || '[]'),
+            categories: JSON.parse(localStorage.getItem('categories') || '[]'),
+            exportedAt: new Date().toISOString()
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        const ts = new Date().toISOString().replace(/[:.]/g, '-');
+        a.download = `backup-eventflow-${ts}.json`;
+        a.click();
+        showNotification && showNotification('Backup exportado com sucesso.', 'success');
+    } catch (e) {
+        showNotification && showNotification('Falha ao exportar dados.', 'error');
+    }
+}
+
+function importAppData(evt) {
+    const file = evt.target.files && evt.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function() {
+        try {
+            const json = JSON.parse(reader.result);
+            if (!json || typeof json !== 'object') throw new Error('Arquivo inválido');
+            // Mesclar substituindo (simples):
+            if (Array.isArray(json.events)) localStorage.setItem('events', JSON.stringify(json.events));
+            if (Array.isArray(json.users)) localStorage.setItem('users', JSON.stringify(json.users));
+            if (Array.isArray(json.categories)) localStorage.setItem('categories', JSON.stringify(json.categories));
+            // Atualizar memória vivo se existir
+            if (typeof window !== 'undefined') {
+                window.events = json.events || window.events;
+                window.users = json.users || window.users;
+                window.categories = json.categories || window.categories;
+            }
+            if (typeof saveData === 'function') saveData();
+            showNotification && showNotification('Dados importados com sucesso.', 'success');
+            // Recarregar seções
+            loadMyEventsProfile && loadMyEventsProfile();
+            loadMyEnrollmentsProfile && loadMyEnrollmentsProfile();
+        } catch (e) {
+            showNotification && showNotification('Falha ao importar dados.', 'error');
+        }
+    };
+    reader.readAsText(file);
 }
