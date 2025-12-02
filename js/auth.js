@@ -507,6 +507,14 @@ function saveData() {
             localStorage.setItem('events', JSON.stringify(events));
             localStorage.setItem('messages', JSON.stringify(messages));
         }
+        // Atualizar lista pública de eventos na landing, se disponível
+        try {
+            if (typeof window.renderPublicEvents === 'function') {
+                window.renderPublicEvents(Array.isArray(events) ? events : []);
+            }
+        } catch (e) {
+            console.warn('[saveData] Não foi possível atualizar eventos públicos:', e);
+        }
     } catch (error) {
         console.error('Erro ao salvar dados:', error);
         showNotification('Erro ao salvar dados', 'error');
