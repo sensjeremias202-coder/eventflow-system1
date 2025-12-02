@@ -570,15 +570,30 @@ function importAppData(evt) {
         try {
             const json = JSON.parse(reader.result);
             if (!json || typeof json !== 'object') throw new Error('Arquivo inválido');
-            // Mesclar substituindo (simples):
-            if (Array.isArray(json.events)) localStorage.setItem('events', JSON.stringify(json.events));
-            if (Array.isArray(json.users)) localStorage.setItem('users', JSON.stringify(json.users));
-            if (Array.isArray(json.categories)) localStorage.setItem('categories', JSON.stringify(json.categories));
+            // Mesclar por id (sem duplicar) preservando itens locais quando não existirem no import
+            function mergeById(localArr, importedArr) {
+                const map = new Map();
+                (Array.isArray(localArr) ? localArr : []).forEach(it => { if (it && it.id != null) map.set(String(it.id), it); });
+                (Array.isArray(importedArr) ? importedArr : []).forEach(it => { if (it && it.id != null) map.set(String(it.id), { ...(map.get(String(it.id)) || {}), ...it }); });
+                return Array.from(map.values());
+            }
+
+            const localEvents = JSON.parse(localStorage.getItem('events') || '[]');
+            const localUsers = JSON.parse(localStorage.getItem('users') || '[]');
+            const localCats = JSON.parse(localStorage.getItem('categories') || '[]');
+
+            const mergedEvents = mergeById(localEvents, Array.isArray(json.events) ? json.events : []);
+            const mergedUsers = mergeById(localUsers, Array.isArray(json.users) ? json.users : []);
+            const mergedCats = mergeById(localCats, Array.isArray(json.categories) ? json.categories : []);
+
+            localStorage.setItem('events', JSON.stringify(mergedEvents));
+            localStorage.setItem('users', JSON.stringify(mergedUsers));
+            localStorage.setItem('categories', JSON.stringify(mergedCats));
             // Atualizar memória vivo se existir
             if (typeof window !== 'undefined') {
-                window.events = json.events || window.events;
-                window.users = json.users || window.users;
-                window.categories = json.categories || window.categories;
+                window.events = mergedEvents;
+                window.users = mergedUsers;
+                window.categories = mergedCats;
             }
             if (typeof saveData === 'function') saveData();
             showNotification && showNotification('Dados importados com sucesso.', 'success');
