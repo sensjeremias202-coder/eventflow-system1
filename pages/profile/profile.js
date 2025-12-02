@@ -3,22 +3,14 @@
 function loadProfile() {
     let user = typeof window !== 'undefined' ? window.currentUser : (typeof currentUser !== 'undefined' ? currentUser : null);
     if (!user) {
-        // Fallback: tentar recuperar do localStorage
+        // Recuperar apenas o usuário logado explicitamente; não assumir o primeiro da lista
         try {
             const storedUser = localStorage.getItem('currentUser');
             if (storedUser) {
                 user = JSON.parse(storedUser);
-            } else {
-                const storedUsers = localStorage.getItem('users');
-                if (storedUsers) {
-                    const arr = JSON.parse(storedUsers);
-                    if (Array.isArray(arr) && arr.length > 0) {
-                        user = arr[0];
-                    }
+                if (user && typeof window !== 'undefined') {
+                    window.currentUser = user;
                 }
-            }
-            if (user && typeof window !== 'undefined') {
-                window.currentUser = user;
             }
         } catch (e) {
             console.error('[profile] Erro ao recuperar usuário do localStorage:', e);

@@ -52,7 +52,19 @@ function initVolunteers() {
     }
 
     function getRegisteredVolunteers() {
-        const usersArr = Array.isArray(window.users) ? window.users : (Array.isArray(users) ? users : []);
+        // Usar a fonte localStorage se disponível para consistência; sem login/admin, evitar mostrar dados sensíveis
+        let usersArr = [];
+        try {
+            const raw = localStorage.getItem('users');
+            if (raw) usersArr = JSON.parse(raw) || [];
+            else usersArr = Array.isArray(window.users) ? window.users : [];
+        } catch { usersArr = Array.isArray(window.users) ? window.users : []; }
+
+        const actor = typeof window !== 'undefined' ? window.currentUser : null;
+        if (!actor) {
+            // Não exibir lista completa sem login
+            return [];
+        }
         // Considerar 'jovens' como voluntários cadastrados por padrão
         return usersArr.filter(u => (u.role === 'jovens'));
     }
