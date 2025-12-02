@@ -19,7 +19,7 @@ function initSync() {
     
     // Aguardar um momento para Firebase ser inicializado
     setTimeout(() => {
-        const FIREBASE_ENABLED = window.firebaseInitialized || false;
+        const FIREBASE_ENABLED = (window.firebaseInitialized || false) && !window.FORCE_LOCAL_MODE;
         
         console.log('[sync] Firebase habilitado:', FIREBASE_ENABLED);
         console.log('[sync] Firebase database:', !!window.firebaseDatabase);
@@ -343,8 +343,8 @@ function saveDataWithSync() {
         localStorage.setItem('messages', JSON.stringify(messages));
         console.log('[sync] Dados salvos no localStorage');
         
-        // Verificar se Firebase está habilitado
-        const FIREBASE_ENABLED = window.firebaseInitialized || false;
+        // Verificar se Firebase está habilitado (respeitando modo local forçado)
+        const FIREBASE_ENABLED = (window.firebaseInitialized || false) && !window.FORCE_LOCAL_MODE;
         
         console.log('[sync] Firebase habilitado:', FIREBASE_ENABLED);
         
