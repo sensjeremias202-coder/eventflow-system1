@@ -50,8 +50,14 @@ window.showNotificationToast = showNotification;
     const host = location.host || '(local file)';
     const mode = isFile ? 'offline-file' : (host.includes('github.io') ? 'github-pages' : 'http-server');
     console.log(`[runtime] 🛰️ Modo: ${mode} — host: ${host}`);
-        // Forçar modo local (desativa Firebase mesmo que esteja configurado)
-        window.FORCE_LOCAL_MODE = true;
+        // Modo local/online controlado por flag persistente
+        try {
+            const onlineSync = localStorage.getItem('ONLINE_SYNC') === 'true';
+            window.FORCE_LOCAL_MODE = !onlineSync;
+            console.log(`[runtime] 🔁 ONLINE_SYNC=${onlineSync} → FORCE_LOCAL_MODE=${window.FORCE_LOCAL_MODE}`);
+        } catch {
+            window.FORCE_LOCAL_MODE = true;
+        }
     if (isFile) {
         console.log('[runtime] ℹ️ Recursos limitados: sem cookies/Analytics e sem Ollama (CORS).');
     }
