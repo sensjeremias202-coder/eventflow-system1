@@ -105,9 +105,21 @@ window.showNotificationToast = showNotification;
             const lsIg = localStorage.getItem('SOCIAL_INSTAGRAM_URL');
             const lsEm = localStorage.getItem('SOCIAL_EMAIL_URL');
             const lsWa = localStorage.getItem('SOCIAL_WHATSAPP_URL');
-            if (ig) ig.href = lsIg || 'https://instagram.com/seuusuario';
-            if (em) em.href = lsEm || 'mailto:seuemail@exemplo.com';
-            if (wa) wa.href = lsWa || 'https://wa.me/5500000000000';
+            if (ig) {
+                ig.href = lsIg || 'https://instagram.com/seuusuario';
+                const igUser = (lsIg || '').split('instagram.com/')[1];
+                if (igUser) ig.textContent = `Instagram @${igUser}`;
+            }
+            if (em) {
+                em.href = lsEm || 'mailto:seuemail@exemplo.com';
+                const emAddr = (lsEm || '').startsWith('mailto:') ? (lsEm || '').replace('mailto:','') : '';
+                if (emAddr) em.textContent = `E-mail ${emAddr}`;
+            }
+            if (wa) {
+                wa.href = lsWa || 'https://wa.me/5500000000000';
+                const waNum = (lsWa || '').includes('wa.me/') ? (lsWa || '').split('wa.me/')[1] : '';
+                if (waNum) wa.textContent = `WhatsApp +${waNum}`;
+            }
             // Configurar PIX
             const pixBtn = document.getElementById('donatePixBtn');
             if (pixBtn) {
