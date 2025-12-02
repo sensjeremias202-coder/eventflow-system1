@@ -102,23 +102,20 @@ window.showNotificationToast = showNotification;
             const em = document.getElementById('socialEmail');
             const wa = document.getElementById('socialWhatsApp');
             // Permite definir via localStorage para personalizar sem editar código
-            const lsIg = localStorage.getItem('SOCIAL_INSTAGRAM_URL');
-            const lsEm = localStorage.getItem('SOCIAL_EMAIL_URL');
-            const lsWa = localStorage.getItem('SOCIAL_WHATSAPP_URL');
+            const lsIg = localStorage.getItem('SOCIAL_INSTAGRAM_URL') || 'https://instagram.com/ssn_ef';
+            const lsEm = localStorage.getItem('SOCIAL_EMAIL_URL') || 'mailto:sensjeremias@gmail.com';
+            const lsWa = localStorage.getItem('SOCIAL_WHATSAPP_URL') || 'https://wa.me/5511988657266';
             if (ig) {
-                ig.href = lsIg || 'https://instagram.com/seuusuario';
-                const igUser = (lsIg || '').split('instagram.com/')[1];
-                if (igUser) ig.textContent = `Instagram @${igUser}`;
+                ig.href = lsIg;
+                ig.textContent = 'Instagram @ssn_ef';
             }
             if (em) {
-                em.href = lsEm || 'mailto:seuemail@exemplo.com';
-                const emAddr = (lsEm || '').startsWith('mailto:') ? (lsEm || '').replace('mailto:','') : '';
-                if (emAddr) em.textContent = `E-mail ${emAddr}`;
+                em.href = lsEm;
+                em.textContent = 'E-mail sensjeremias@gmail.com';
             }
             if (wa) {
-                wa.href = lsWa || 'https://wa.me/5500000000000';
-                const waNum = (lsWa || '').includes('wa.me/') ? (lsWa || '').split('wa.me/')[1] : '';
-                if (waNum) wa.textContent = `WhatsApp +${waNum}`;
+                wa.href = lsWa;
+                wa.textContent = 'WhatsApp +5511988657266';
             }
             // Configurar PIX
             const pixBtn = document.getElementById('donatePixBtn');
