@@ -25,7 +25,8 @@ function initVolunteers() {
 
     // Renderizar visão de inscritos por evento
     try {
-        renderEnrollmentOverview();
+        setupVolunteersTabs();
+        // Inicialmente, manter a aba de Voluntários ativa; a de inscritos renderiza ao ser aberta
         setupVolunteersFilters();
     } catch (e) {
         console.warn('[volunteers-page] Aviso ao renderizar visão de inscritos:', e);
@@ -39,7 +40,7 @@ console.log('[volunteers-page] ✅ Módulo de voluntários carregado');
 
 // Renderiza um resumo dos inscritos por evento na página de voluntários
 function renderEnrollmentOverview(filterText) {
-    const containerRoot = document.getElementById('volunteers-container');
+    const containerRoot = document.getElementById('enrollment-container');
     if (!containerRoot) return;
     const grid = containerRoot.querySelector('.volunteers-grid') || containerRoot;
 
@@ -53,6 +54,9 @@ function renderEnrollmentOverview(filterText) {
     const query = norm(filterText);
     const filtered = query ? evts.filter(e => norm(e.title || e.name).includes(query)) : evts;
 
+    // Estado expandido por evento (memorizado em window para persistir ao re-render)
+    window.__enrollmentExpanded = window.__enrollmentExpanded || {};
+
     grid.innerHTML = filtered.map(e => {
         const enrolledIds = Array.isArray(e.enrolled) ? e.enrolled : [];
         const max = e.maxParticipants != null ? parseInt(e.maxParticipants, 10) : null;
@@ -61,9 +65,20 @@ function renderEnrollmentOverview(filterText) {
         const enrolledUsers = enrolledIds
             .map(uid => (Array.isArray(window.users) ? window.users.find(u => u.id === uid) : null))
             .filter(Boolean);
-        const listHtml = enrolledUsers.length
-            ? enrolledUsers.map(u => `<li>${u.name}</li>`).join('')
-            : '<li style="color:var(--gray);">Nenhum inscrito</li>';
+        const eid = String(e.id);
+        const MAX_VISIBLE = 10;
+        const isExpanded = !!window.__enrollmentExpanded[eid];
+        const visible = isExpanded ? enrolledUsers : enrolledUsers.slice(0, MAX_VISIBLE);
+        const hidden = isExpanded ? [] : enrolledUsers.slice(MAX_VISIBLE);
+        let listHtml = '';
+        if (enrolledUsers.length === 0) {
+            listHtml = '<li style="color:var(--gray);">Nenhum inscrito</li>';
+        } else {
+            listHtml = visible.map(u => `<li>${u.name}</li>`).join('');
+            if (hidden.length > 0) {
+                listHtml += hidden.map(u => `<li class="enr-extra enr-extra-${eid}" style="display:none;">${u.name}</li>`).join('');
+            }
+        }
 
         return `
             <div class="card">
@@ -80,7 +95,12 @@ function renderEnrollmentOverview(filterText) {
                             </div>
                         </div>
                     </div>
-                    <ul style="margin-top:10px; padding-left:18px;">${listHtml}</ul>
+                    <ul id="enr-list-${eid}" style="margin-top:10px; padding-left:18px;">${listHtml}</ul>
+                    ${enrolledUsers.length > MAX_VISIBLE ? `
+                        <button class="btn btn-sm btn-outline" data-toggle-id="${eid}" onclick="window.toggleEnrollmentList && window.toggleEnrollmentList('${eid}')">
+                            ${isExpanded ? 'Mostrar menos' : `Mostrar mais (${enrolledUsers.length - MAX_VISIBLE})`}
+                        </button>
+                    ` : ''}
                 </div>
             </div>
         `;
@@ -98,3 +118,60 @@ function setupVolunteersFilters() {
 
 // Expor para que outras partes possam atualizar a visão após salvar
 window.renderEnrollmentOverview = renderEnrollmentOverview;
+
+// Abas: alternar entre Voluntários e Inscritos por Evento
+function setupVolunteersTabs() {
+    const btnVol = document.getElementById('tabVolunteersBtn');
+    const btnEnr = document.getElementById('tabEnrolledBtn');
+    const tabVol = document.getElementById('tab-volunteers');
+    const tabEnr = document.getElementById('tab-enrollment');
+    const filters = document.getElementById('enrollmentFilters');
+    if (!btnVol || !btnEnr || !tabVol || !tabEnr) return;
+
+    function activate(tab) {
+        const isVol = tab === 'vol';
+        tabVol.style.display = isVol ? 'block' : 'none';
+        tabEnr.style.display = isVol ? 'none' : 'block';
+        if (filters) filters.style.display = isVol ? 'none' : 'block';
+        btnVol.classList.toggle('active', isVol);
+        btnEnr.classList.toggle('active', !isVol);
+        // Renderizar overview ao abrir a aba
+        if (!isVol) {
+            renderEnrollmentOverview();
+        }
+    }
+
+    if (!btnVol.dataset.listenerAdded) {
+        btnVol.dataset.listenerAdded = 'true';
+        btnVol.addEventListener('click', () => activate('vol'));
+    }
+    if (!btnEnr.dataset.listenerAdded) {
+        btnEnr.dataset.listenerAdded = 'true';
+        btnEnr.addEventListener('click', () => activate('enr'));
+    }
+
+    // Estado inicial: mostrar aba Voluntários e ocultar filtros
+    activate('vol');
+}
+
+// Toggle "ver mais/menos" para inscritos por evento
+window.toggleEnrollmentList = function(eventId) {
+    try {
+        const eid = String(eventId);
+        window.__enrollmentExpanded = window.__enrollmentExpanded || {};
+        const isExpanded = !!window.__enrollmentExpanded[eid];
+        const extras = document.querySelectorAll(`.enr-extra-${eid}`);
+        const btn = document.querySelector(`[data-toggle-id="${eid}"]`);
+        extras.forEach(li => li.style.display = isExpanded ? 'none' : 'list-item');
+        if (btn) {
+            // Atualiza o texto do botão (contagem precisa do total - MAX_VISIBLE)
+            const total = (Array.isArray(window.events) ? window.events : []).find(ev => String(ev.id) === eid)?.enrolled?.length || 0;
+            const MAX_VISIBLE = 10;
+            const remaining = Math.max(0, total - MAX_VISIBLE);
+            btn.textContent = isExpanded ? (remaining > 0 ? `Mostrar mais (${remaining})` : 'Mostrar mais') : 'Mostrar menos';
+        }
+        window.__enrollmentExpanded[eid] = !isExpanded;
+    } catch (e) {
+        console.warn('[volunteers-page] toggleEnrollmentList falhou:', e);
+    }
+};
