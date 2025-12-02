@@ -241,6 +241,11 @@ function loadEvents() {
             ? (ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length).toFixed(1)
             : 0;
         const userRating = ratings.find(r => r.userId === currentUser?.id);
+        const enrolledCount = Array.isArray(ev.enrolled) ? ev.enrolled.length : 0;
+        const max = ev.maxParticipants != null ? parseInt(ev.maxParticipants, 10) : null;
+        const remaining = max != null ? Math.max(0, max - enrolledCount) : null;
+        const full = max != null && remaining === 0;
+        const alreadyEnrolled = Array.isArray(ev.enrolled) && currentUser && ev.enrolled.includes(currentUser.id);
         
         const card = document.createElement('div');
         card.className = 'event-card card';
@@ -258,6 +263,10 @@ function loadEvents() {
                         <span class="count">(${ratings.length} ${ratings.length === 1 ? 'avaliação' : 'avaliações'})</span>
                     </div>
                 ` : ''}
+                <div style="margin-top:6px; color:var(--gray);">
+                    <i class="fas fa-users"></i> ${enrolledCount}${max != null ? ` / ${max}` : ''}
+                    ${remaining != null ? ` • ${remaining} vagas ${full ? '(lotado)' : 'restantes'}` : ''}
+                </div>
             </div>
             <div class="card-footer">
                 <span class="category-badge" style="background:${category.color};">${escapeHtml(category.name)}</span>
@@ -271,6 +280,9 @@ function loadEvents() {
                     ${ratings.length > 0 ? `<button class="btn btn-outline btn-sm view-comments" data-id="${ev.id}" title="Ver comentários"><i class="fas fa-comments"></i> ${ratings.filter(r => r.comment && r.comment.trim()).length}</button>` : ''}
                     <button class="btn btn-outline btn-sm rate-event" data-id="${ev.id}" title="${userRating ? 'Atualizar avaliação' : 'Avaliar evento'}">
                         <i class="fa${userRating ? 's' : 'r'} fa-star"></i> ${userRating ? 'Sua avaliação' : 'Avaliar'}
+                    </button>
+                    <button class="btn btn-sm ${alreadyEnrolled ? 'btn-success' : 'btn-primary'}" data-enroll-id="${ev.id}" ${full && !alreadyEnrolled ? 'disabled' : ''} title="${full && !alreadyEnrolled ? 'Lotado' : ''}">
+                        <i class="fas fa-user-plus"></i> ${alreadyEnrolled ? 'Inscrito' : 'Inscrever-se'}
                     </button>
                 </div>`}
             </div>
@@ -314,6 +326,19 @@ function loadEvents() {
             });
         });
     }
+
+    // Listeners de inscrição nos cards
+    document.querySelectorAll('[data-enroll-id]').forEach(btn => {
+        if (!btn.dataset.listenerAdded) {
+            btn.dataset.listenerAdded = 'true';
+            btn.addEventListener('click', function() {
+                const id = this.getAttribute('data-enroll-id');
+                if (typeof window.enrollInEvent === 'function') {
+                    window.enrollInEvent(id);
+                }
+            });
+        }
+    });
 }
 
 function escapeHtml(str) {

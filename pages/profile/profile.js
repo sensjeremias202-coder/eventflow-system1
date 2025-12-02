@@ -81,6 +81,11 @@ function loadProfile() {
     
     // Carregar avaliações do usuário
     loadMyRatingsProfile();
+
+    // Carregar inscrições do usuário
+    if (typeof loadMyEnrollmentsProfile === 'function') {
+        loadMyEnrollmentsProfile();
+    }
 }
 
 function loadMyEventsProfile() {
@@ -141,6 +146,59 @@ function loadMyEventsProfile() {
     });
     html += '</div>';
     
+    container.innerHTML = html;
+}
+
+function loadMyEnrollmentsProfile() {
+    const container = document.getElementById('myEnrollmentsProfile');
+    const countEl = document.getElementById('enrollmentsCountProfile');
+    if (!container) return;
+    const user = typeof window !== 'undefined' ? window.currentUser : (typeof currentUser !== 'undefined' ? currentUser : null);
+    const evts = typeof window !== 'undefined' && window.events ? window.events : (typeof events !== 'undefined' ? events : []);
+    const cats = typeof window !== 'undefined' && window.categories ? window.categories : (typeof categories !== 'undefined' ? categories : []);
+
+    const enrolledEvents = evts.filter(e => Array.isArray(e.enrolled) && user && e.enrolled.includes(user.id));
+
+    if (countEl) {
+        countEl.textContent = `(${enrolledEvents.length})`;
+    }
+
+    if (enrolledEvents.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color: #666;">Você ainda não está inscrito em nenhum evento.</p>';
+        return;
+    }
+
+    let html = '<div class="events-list">';
+    enrolledEvents.forEach(event => {
+        const category = cats.find(c => c.id === event.category);
+        const enrolledCount = Array.isArray(event.enrolled) ? event.enrolled.length : 0;
+        const max = event.maxParticipants != null ? parseInt(event.maxParticipants, 10) : null;
+        const remaining = max != null ? Math.max(0, max - enrolledCount) : null;
+
+        html += `
+            <div class="event-card" style="margin-bottom: 15px; padding: 15px; border: 1px solid #ddd; border-radius: 8px;">
+                <h3 style="margin: 0 0 10px 0;">${event.title || event.name}</h3>
+                <p style="color: #666; margin: 5px 0;">
+                    <i class="fas fa-calendar"></i> ${event.date}
+                    <span style="margin-left: 15px;"><i class="fas fa-clock"></i> ${event.time || ''}</span>
+                </p>
+                <p style="color: #666; margin: 5px 0;">
+                    <i class="fas fa-map-marker-alt"></i> ${event.location || ''}
+                </p>
+                <p style="margin: 5px 0;">
+                    <span class="badge" style="background: ${category ? category.color : '#999'};">
+                        ${category ? category.name : 'Sem categoria'}
+                    </span>
+                </p>
+                <p style="margin: 5px 0; color:#555;">
+                    <i class="fas fa-users"></i> ${enrolledCount}${max != null ? ` / ${max}` : ''}
+                    ${remaining != null ? ` • ${remaining} vagas ${remaining === 0 ? '(lotado)' : 'restantes'}` : ''}
+                </p>
+            </div>
+        `;
+    });
+    html += '</div>';
+
     container.innerHTML = html;
 }
 
@@ -470,6 +528,7 @@ if (typeof window !== 'undefined') {
     window.initProfilePage = initProfilePage;
     window.loadProfile = loadProfile;
     window.loadMyEventsProfile = loadMyEventsProfile;
+    window.loadMyEnrollmentsProfile = loadMyEnrollmentsProfile;
     window.loadMyRatingsProfile = loadMyRatingsProfile;
     window.deleteRating = deleteRating;
     window.deleteAccount = deleteAccount;

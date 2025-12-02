@@ -52,7 +52,13 @@ function renderEnrollmentOverview(filterText) {
 
     const norm = (s) => (s || '').toString().toLowerCase();
     const query = norm(filterText);
-    const filtered = query ? evts.filter(e => norm(e.title || e.name).includes(query)) : evts;
+    let filtered = query ? evts.filter(e => norm(e.title || e.name).includes(query)) : evts;
+
+    // Se for usuário "jovens": mostrar apenas eventos em que está inscrito
+    const cu = window.currentUser;
+    if (cu && cu.role === 'jovens') {
+        filtered = filtered.filter(e => Array.isArray(e.enrolled) && e.enrolled.includes(cu.id));
+    }
 
     // Estado expandido por evento (memorizado em window para persistir ao re-render)
     window.__enrollmentExpanded = window.__enrollmentExpanded || {};
@@ -62,9 +68,13 @@ function renderEnrollmentOverview(filterText) {
         const max = e.maxParticipants != null ? parseInt(e.maxParticipants, 10) : null;
         const remaining = max != null ? Math.max(0, max - enrolledIds.length) : null;
         const full = max != null && remaining === 0;
-        const enrolledUsers = enrolledIds
+        let enrolledUsers = enrolledIds
             .map(uid => (Array.isArray(window.users) ? window.users.find(u => u.id === uid) : null))
             .filter(Boolean);
+        // Para "jovens", listar apenas ele mesmo
+        if (cu && cu.role === 'jovens') {
+            enrolledUsers = enrolledUsers.filter(u => u.id === cu.id);
+        }
         const eid = String(e.id);
         const MAX_VISIBLE = 10;
         const isExpanded = !!window.__enrollmentExpanded[eid];
@@ -150,8 +160,15 @@ function setupVolunteersTabs() {
         btnEnr.addEventListener('click', () => activate('enr'));
     }
 
-    // Estado inicial: mostrar aba Voluntários e ocultar filtros
-    activate('vol');
+    // Para "jovens": esconder aba Voluntários e abrir diretamente a de Inscritos
+    const cu = window.currentUser;
+    if (cu && cu.role === 'jovens') {
+        btnVol.style.display = 'none';
+        activate('enr');
+    } else {
+        // Estado inicial: mostrar aba Voluntários e ocultar filtros
+        activate('vol');
+    }
 }
 
 // Toggle "ver mais/menos" para inscritos por evento

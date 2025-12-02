@@ -162,20 +162,53 @@ function enrollInEvent(eventId) {
         showNotification('Evento lotado!', 'error');
         return;
     }
-    
-    // Inscrever usuário
-    if (!event.enrolled) event.enrolled = [];
-    event.enrolled.push(currentUser.id);
-    
-    // Salvar pelos utilitários centrais (atualiza páginas públicas também)
-    if (typeof saveData === 'function') {
-        saveData();
-    } else {
-        localStorage.setItem('events', JSON.stringify(events));
+    // Se estamos retomando pós-login, pular modal e inscrever direto
+    if (window.__resumeEnrollment) {
+        try { delete window.__resumeEnrollment; } catch {}
+        if (!event.enrolled) event.enrolled = [];
+        event.enrolled.push(currentUser.id);
+        if (typeof saveData === 'function') {
+            saveData();
+        } else {
+            localStorage.setItem('events', JSON.stringify(events));
+        }
+        showNotification('Inscrição realizada com sucesso!', 'success');
+        loadEvents();
+        return;
     }
-    
-    showNotification('Inscrição realizada com sucesso!', 'success');
-    loadEvents();
+
+    // Exibir modal com informação de vagas antes de confirmar
+    const enrolledCount = Array.isArray(event.enrolled) ? event.enrolled.length : 0;
+    const max = event.maxParticipants != null ? parseInt(event.maxParticipants) : null;
+    const remaining = max != null ? Math.max(0, max - enrolledCount) : null;
+    const infoText = max != null
+        ? `${enrolledCount} / ${max} inscritos • ${remaining} vagas ${remaining === 0 ? '(lotado)' : 'restantes'}`
+        : `${enrolledCount} inscritos • vagas ilimitadas`;
+
+    const proceedEnroll = () => {
+        if (!event.enrolled) event.enrolled = [];
+        event.enrolled.push(currentUser.id);
+        if (typeof saveData === 'function') {
+            saveData();
+        } else {
+            localStorage.setItem('events', JSON.stringify(events));
+        }
+        showNotification('Inscrição realizada com sucesso!', 'success');
+        loadEvents();
+    };
+
+    if (typeof showConfirm === 'function') {
+        showConfirm(
+            `Deseja se inscrever em "${event.title || event.name}"?\n\n${infoText}`,
+            'Confirmar Inscrição',
+            { type: 'primary' }
+        ).then(confirmed => {
+            if (!confirmed) return;
+            proceedEnroll();
+        });
+    } else {
+        proceedEnroll();
+    }
 }
 
 // Ver detalhes do evento

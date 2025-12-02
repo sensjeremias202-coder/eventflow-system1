@@ -484,6 +484,7 @@ function showApp() {
                         // Garantir que a página de eventos esteja ativa antes de tentar inscrever
                         showModularPage('events');
                         setTimeout(() => {
+                            if (typeof window !== 'undefined') window.__resumeEnrollment = true;
                             if (typeof window.enrollInEvent === 'function') {
                                 window.enrollInEvent(pendingId);
                             }
@@ -509,6 +510,7 @@ function showApp() {
             const pendingId = localStorage.getItem('pendingEnrollmentEventId');
             if (pendingId && typeof window.enrollInEvent === 'function') {
                 localStorage.removeItem('pendingEnrollmentEventId');
+                if (typeof window !== 'undefined') window.__resumeEnrollment = true;
                 setTimeout(() => window.enrollInEvent(pendingId), 200);
             }
         } catch {}
