@@ -23,13 +23,64 @@ function initVolunteers() {
         showNotification('Erro ao carregar sistema de voluntários', 'error');
     }
 
-    // Renderizar visão de inscritos por evento
-    try {
-        setupVolunteersTabs();
-        // Inicialmente, manter a aba de Voluntários ativa; a de inscritos renderiza ao ser aberta
-        setupVolunteersFilters();
-    } catch (e) {
-        console.warn('[volunteers-page] Aviso ao renderizar visão de inscritos:', e);
+        const tabs = document.getElementById('volunteersTabs');
+        if (tabs) tabs.style.display = 'none';
+        const addBtn = document.getElementById('addVolunteerBtn');
+        if (addBtn) addBtn.style.display = 'none';
+
+        const root = document.getElementById('volunteer-dashboard');
+        const list = getRegisteredVolunteers();
+        if (root) {
+            root.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title" id="volunteersListTrigger" style="cursor:pointer;">
+                            <i class="fas fa-users"></i> Voluntários cadastrados (${list.length})
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p style="color: var(--gray);">Clique no título para ver a lista completa.</p>
+                    </div>
+                </div>
+            `;
+            const trigger = document.getElementById('volunteersListTrigger');
+            if (trigger && !trigger.dataset.listenerAdded) {
+                trigger.dataset.listenerAdded = 'true';
+                trigger.addEventListener('click', () => showVolunteersModal(list));
+            }
+        }
+    }
+
+    function getRegisteredVolunteers() {
+        const usersArr = Array.isArray(window.users) ? window.users : (Array.isArray(users) ? users : []);
+        // Considerar 'jovens' como voluntários cadastrados por padrão
+        return usersArr.filter(u => (u.role === 'jovens'));
+    }
+
+    function showVolunteersModal(volunteers) {
+        const modal = document.createElement('div');
+        modal.className = 'modal active';
+        const items = volunteers.map(v => `
+            <li style="padding:8px 0; border-bottom:1px solid #eee;">
+                <strong>${escapeHtml(v.name || 'Sem nome')}</strong>
+                ${v.phone ? `<span style="color:var(--gray);"> • ${escapeHtml(v.phone)}</span>` : ''}
+                ${v.email ? `<div style="color:var(--gray); font-size:0.9em;">${escapeHtml(v.email)}</div>` : ''}
+            </li>
+        `).join('');
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2><i class="fas fa-users"></i> Lista de Voluntários (${volunteers.length})</h2>
+                    <button class="modal-close" onclick="this.closest('.modal').remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body" style="max-height:60vh; overflow:auto;">
+                    <ul style="list-style:none; padding:0; margin:0;">${items}</ul>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
     }
 }
 
