@@ -93,6 +93,15 @@ function enrollInEventWithValidation(eventId, userId) {
 
 // Cancelar inscrição
 function cancelEnrollment(eventId, userId) {
+    // Permitir remoção apenas por administradores
+    try {
+        const actor = typeof window !== 'undefined' ? window.currentUser : (typeof currentUser !== 'undefined' ? currentUser : null);
+        if (!actor || actor.role !== 'admin') {
+            showNotification && showNotification('Apenas administradores podem remover inscrições.', 'error');
+            return false;
+        }
+    } catch {}
+
     const event = events.find(e => e.id === eventId);
     if (!event) return false;
     
