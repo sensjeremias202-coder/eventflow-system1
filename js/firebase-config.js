@@ -45,11 +45,17 @@ function initFirebase() {
         
         // Inicializar Analytics (evitar em file://)
         const isFile = location.protocol === 'file:';
-        if (firebase.analytics && !isFile) {
+        const consent = (typeof localStorage !== 'undefined') ? localStorage.getItem('cookieConsent') : null;
+        const consentAccepted = consent === 'yes';
+        if (firebase.analytics && !isFile && consentAccepted) {
             analytics = firebase.analytics();
             console.log('[firebase] 📊 Analytics inicializado');
-        } else if (isFile) {
-            console.warn('[firebase] ⚠️ Analytics desativado em file:// para evitar avisos de protocolo');
+        } else {
+            if (isFile) {
+                console.warn('[firebase] ⚠️ Analytics desativado em file:// para evitar avisos de protocolo');
+            } else if (!consentAccepted) {
+                console.warn('[firebase] ⚠️ Analytics desativado — consentimento não aceito');
+            }
         }
 
         console.log('[firebase] ✅ Firebase inicializado com sucesso');
@@ -75,12 +81,14 @@ window.firebaseAnalytics = analytics;
 // Função para registrar eventos no Analytics
 function logAnalyticsEvent(eventName, params = {}) {
     const isFile = location.protocol === 'file:';
-    if (analytics && !isFile) {
+    const consent = (typeof localStorage !== 'undefined') ? localStorage.getItem('cookieConsent') : null;
+    const consentAccepted = consent === 'yes';
+    if (analytics && !isFile && consentAccepted) {
         analytics.logEvent(eventName, params);
         console.log(`[analytics] 📊 Evento registrado: ${eventName}`, params);
-    } else if (isFile) {
-        // Silenciar no file://, mas manter log limpo
-        // console.debug(`[analytics] (silenciado em file://) ${eventName}`);
+    } else {
+        // Silenciar sem consentimento ou em file://
+        // console.debug(`[analytics] (silenciado) ${eventName}`);
     }
 }
 

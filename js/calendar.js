@@ -230,6 +230,24 @@ class CalendarSystem {
         `).join('');
     }
 
+    // API pública para trocar a visão pelo UI externo (ex.: botões no index)
+    changeView(view) {
+        if (!['month', 'week', 'day'].includes(view)) return;
+        this.view = view;
+        this.renderCalendar();
+    }
+
+    // API pública para navegar meses
+    next() {
+        this.currentDate.setMonth(this.currentDate.getMonth() + 1);
+        this.renderCalendar();
+    }
+
+    prev() {
+        this.currentDate.setMonth(this.currentDate.getMonth() - 1);
+        this.renderCalendar();
+    }
+
     getEventsForDate(date) {
         return this.events.filter(event => {
             const eventDate = new Date(event.start);

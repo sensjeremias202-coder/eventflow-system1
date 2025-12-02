@@ -1,12 +1,38 @@
 // Gerenciamento de perfil do usuário
 
 function loadProfile() {
-    if (!currentUser) {
+    let user = typeof window !== 'undefined' ? window.currentUser : (typeof currentUser !== 'undefined' ? currentUser : null);
+    if (!user) {
+        // Fallback: tentar recuperar do localStorage
+        try {
+            const storedUser = localStorage.getItem('currentUser');
+            if (storedUser) {
+                user = JSON.parse(storedUser);
+            } else {
+                const storedUsers = localStorage.getItem('users');
+                if (storedUsers) {
+                    const arr = JSON.parse(storedUsers);
+                    if (Array.isArray(arr) && arr.length > 0) {
+                        user = arr[0];
+                    }
+                }
+            }
+            if (user && typeof window !== 'undefined') {
+                window.currentUser = user;
+            }
+        } catch (e) {
+            console.error('[profile] Erro ao recuperar usuário do localStorage:', e);
+        }
+    }
+    if (!user) {
         console.error('[profile] Usuário não está logado');
+        if (typeof showNotification === 'function') {
+            showNotification('Nenhum usuário ativo. Faça login.', 'error');
+        }
         return;
     }
     
-    console.log('[profile] Carregando perfil do usuário:', currentUser.name);
+    console.log('[profile] Carregando perfil do usuário:', user.name);
     
     // Preencher dados do perfil com verificação de elementos
     const profileName = document.getElementById('profileName');
@@ -15,15 +41,15 @@ function loadProfile() {
     const profileRole = document.getElementById('profileRole');
     const profileRegistered = document.getElementById('profileRegistered');
     
-    if (profileName) profileName.value = currentUser.name || '';
-    if (profileId) profileId.value = currentUser.identificationNumber || 'Não disponível';
-    if (profileEmail) profileEmail.value = currentUser.email || '';
+    if (profileName) profileName.value = user.name || '';
+    if (profileId) profileId.value = user.identificationNumber || 'Não disponível';
+    if (profileEmail) profileEmail.value = user.email || '';
     if (profileRole) {
-        const roleText = currentUser.role === 'admin' ? 'Administrador' : 
-                        (currentUser.role === 'treasurer' ? 'Tesoureiro' : 'Jovens');
+        const roleText = user.role === 'admin' ? 'Administrador' : 
+                        (user.role === 'treasurer' ? 'Tesoureiro' : 'Jovens');
         profileRole.value = roleText;
     }
-    if (profileRegistered) profileRegistered.value = currentUser.registered || 'Não disponível';
+    if (profileRegistered) profileRegistered.value = user.registered || 'Não disponível';
     
     // Adicionar funcionalidade ao botão de copiar ID
     const copyBtn = document.getElementById('copyIdBtn');
@@ -60,9 +86,12 @@ function loadProfile() {
 function loadMyEventsProfile() {
     const container = document.getElementById('myEventsProfile');
     if (!container) return;
+    const user = typeof window !== 'undefined' ? window.currentUser : (typeof currentUser !== 'undefined' ? currentUser : null);
+    const evts = typeof window !== 'undefined' && window.events ? window.events : (typeof events !== 'undefined' ? events : []);
+    const cats = typeof window !== 'undefined' && window.categories ? window.categories : (typeof categories !== 'undefined' ? categories : []);
     
     // Filtrar eventos criados pelo usuário
-    const myEvents = events.filter(e => e.organizerId === currentUser.id);
+    const myEvents = evts.filter(e => user && e.organizerId === user.id);
     
     if (myEvents.length === 0) {
         container.innerHTML = '<p style="text-align:center; color: #666;">Você ainda não criou nenhum evento.</p>';
@@ -71,8 +100,12 @@ function loadMyEventsProfile() {
     
     let html = '<div class="events-list">';
     myEvents.forEach(event => {
-        const category = categories.find(c => c.id === event.categoryId);
-        const avgRating = calculateAverageRating(event);
+        const category = cats.find(c => c.id === event.categoryId);
+        const avgRating = typeof calculateAverageRating !== 'undefined' ? calculateAverageRating(event) : (function(evt){
+            if (!evt || !evt.ratings || !evt.ratings.length) return 0;
+            const sum = evt.ratings.reduce((acc, r) => acc + (r.rating || 0), 0);
+            return sum / evt.ratings.length;
+        })(event);
         
         html += `
             <div class="event-card" style="margin-bottom: 15px; padding: 15px; border: 1px solid #ddd; border-radius: 8px;">
@@ -114,13 +147,15 @@ function loadMyEventsProfile() {
 function loadMyRatingsProfile() {
     const container = document.getElementById('myRatingsProfile');
     if (!container) return;
+    const user = typeof window !== 'undefined' ? window.currentUser : (typeof currentUser !== 'undefined' ? currentUser : null);
+    const evts = typeof window !== 'undefined' && window.events ? window.events : (typeof events !== 'undefined' ? events : []);
     
     // Encontrar todas as avaliações do usuário
     const myRatings = [];
-    events.forEach(event => {
+    evts.forEach(event => {
         if (event.ratings) {
             event.ratings.forEach(rating => {
-                if (rating.userId === currentUser.id) {
+                if (user && rating.userId === user.id) {
                     myRatings.push({
                         event: event,
                         rating: rating
@@ -164,21 +199,23 @@ function loadMyRatingsProfile() {
 }
 
 function deleteRating(eventId) {
+    const user = typeof window !== 'undefined' ? window.currentUser : (typeof currentUser !== 'undefined' ? currentUser : null);
+    const evts = typeof window !== 'undefined' && window.events ? window.events : (typeof events !== 'undefined' ? events : []);
     if (!confirm('Tem certeza que deseja excluir esta avaliação?')) return;
     
-    const eventIdx = events.findIndex(e => e.id === eventId);
+    const eventIdx = evts.findIndex(e => e.id === eventId);
     if (eventIdx === -1) return;
     
-    if (events[eventIdx].ratings) {
-        events[eventIdx].ratings = events[eventIdx].ratings.filter(r => r.userId !== currentUser.id);
-        saveData();
+    if (evts[eventIdx].ratings) {
+        evts[eventIdx].ratings = evts[eventIdx].ratings.filter(r => user && r.userId !== user.id);
+        if (typeof saveData === 'function') saveData();
         
         showNotification('Avaliação excluída com sucesso!', 'success');
         loadMyRatingsProfile();
         
         // Registrar no Analytics
-        if (window.logAnalyticsEvent) {
-            logAnalyticsEvent('delete_rating', { event_id: eventId });
+        if (window && window.logAnalyticsEvent) {
+            window.logAnalyticsEvent('delete_rating', { event_id: eventId });
         }
     }
 }
@@ -187,6 +224,16 @@ function editProfile() {
     const name = document.getElementById('profileName');
     const email = document.getElementById('profileEmail');
     const editBtn = document.getElementById('editProfileBtn');
+    console.log('[profile] editProfile() acionado');
+    if (!name || !email || !editBtn) {
+        console.warn('[profile] Campos ou botão não encontrados:', { name: !!name, email: !!email, editBtn: !!editBtn });
+        if (typeof showNotification === 'function') {
+            showNotification('Elementos de perfil não encontrados.', 'error');
+        }
+        return;
+    }
+    const user = typeof window !== 'undefined' ? window.currentUser : (typeof currentUser !== 'undefined' ? currentUser : null);
+    const userList = typeof window !== 'undefined' && window.users ? window.users : (typeof users !== 'undefined' ? users : []);
     
     if (name.hasAttribute('readonly')) {
         // Modo edição
@@ -200,44 +247,50 @@ function editProfile() {
         // Salvar alterações
         const newName = name.value.trim();
         const newEmail = email.value.trim();
+        console.log('[profile] Tentando salvar alterações:', { newName, newEmail });
         
         if (!newName || !newEmail) {
-            showNotification('Preencha todos os campos!', 'error');
+            if (typeof showNotification === 'function') showNotification('Preencha todos os campos!', 'error');
             return;
         }
         
         if (!newEmail.includes('@')) {
-            showNotification('E-mail inválido!', 'error');
+            if (typeof showNotification === 'function') showNotification('E-mail inválido!', 'error');
             return;
         }
         
         // Verificar se email já existe (exceto o próprio)
-        const emailExists = users.find(u => u.email === newEmail && u.id !== currentUser.id);
+        const emailExists = userList.find(u => u.email === newEmail && u.id !== (user ? user.id : null));
         if (emailExists) {
-            showNotification('Este e-mail já está em uso!', 'error');
+            if (typeof showNotification === 'function') showNotification('Este e-mail já está em uso!', 'error');
             return;
         }
         
         // Atualizar usuário
-        const userIdx = users.findIndex(u => u.id === currentUser.id);
+        const userIdx = userList.findIndex(u => user && u.id === user.id);
         if (userIdx !== -1) {
-            users[userIdx].name = newName;
-            users[userIdx].email = newEmail;
-            currentUser.name = newName;
-            currentUser.email = newEmail;
+            userList[userIdx].name = newName;
+            userList[userIdx].email = newEmail;
+            if (user) {
+                user.name = newName;
+                user.email = newEmail;
+                window.currentUser = user;
+            }
             
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            saveData();
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            if (typeof saveData === 'function') saveData();
             
             // Atualizar nome no header
-            document.getElementById('userName').textContent = newName;
+            const userNameEl = document.getElementById('userName');
+            if (userNameEl) userNameEl.textContent = newName;
             
-            showNotification('Perfil atualizado com sucesso!', 'success');
+            if (typeof showNotification === 'function') showNotification('Perfil atualizado com sucesso!', 'success');
             
             // Registrar no Analytics
-            if (window.logAnalyticsEvent) {
-                logAnalyticsEvent('update_profile', {});
+            if (window && window.logAnalyticsEvent) {
+                window.logAnalyticsEvent('update_profile', {});
             }
+            console.log('[profile] Alterações salvas com sucesso');
         }
         
         // Voltar modo visualização
@@ -249,7 +302,73 @@ function editProfile() {
     }
 }
 
+function changePassword() {
+    const currentInput = document.getElementById('currentPassword');
+    const newInput = document.getElementById('newPassword');
+    const confirmInput = document.getElementById('confirmPassword');
+    const user = typeof window !== 'undefined' ? window.currentUser : (typeof currentUser !== 'undefined' ? currentUser : null);
+    const userList = typeof window !== 'undefined' && window.users ? window.users : (typeof users !== 'undefined' ? users : []);
+
+    if (!user) {
+        showNotification('Você precisa estar logado para alterar a senha.', 'error');
+        return;
+    }
+
+    const currentPwd = (currentInput && currentInput.value) ? currentInput.value : '';
+    const newPwd = (newInput && newInput.value) ? newInput.value : '';
+    const confirmPwd = (confirmInput && confirmInput.value) ? confirmInput.value : '';
+
+    if (!currentPwd || !newPwd || !confirmPwd) {
+        showNotification('Preencha todos os campos de senha.', 'error');
+        return;
+    }
+
+    // validação simples local
+    const userIdx = userList.findIndex(u => u.id === user.id);
+    if (userIdx === -1) {
+        showNotification('Usuário não encontrado.', 'error');
+        return;
+    }
+
+    const storedPwd = userList[userIdx].password || '';
+    if (storedPwd && currentPwd !== storedPwd) {
+        showNotification('Senha atual incorreta.', 'error');
+        return;
+    }
+
+    if (newPwd.length < 6) {
+        showNotification('A nova senha deve ter pelo menos 6 caracteres.', 'error');
+        return;
+    }
+
+    if (newPwd !== confirmPwd) {
+        showNotification('A confirmação não corresponde à nova senha.', 'error');
+        return;
+    }
+
+    // atualizar senha
+    userList[userIdx].password = newPwd;
+    if (typeof window !== 'undefined') window.users = userList;
+    localStorage.setItem('users', JSON.stringify(userList));
+    if (typeof saveData === 'function') saveData();
+
+    // limpar campos
+    if (currentInput) currentInput.value = '';
+    if (newInput) newInput.value = '';
+    if (confirmInput) confirmInput.value = '';
+
+    showNotification('Senha alterada com sucesso!', 'success');
+
+    if (window && window.logAnalyticsEvent) {
+        window.logAnalyticsEvent('change_password', {});
+    }
+}
+
 function deleteAccount() {
+    const user = typeof window !== 'undefined' ? window.currentUser : (typeof currentUser !== 'undefined' ? currentUser : null);
+    let evts = typeof window !== 'undefined' && window.events ? window.events : (typeof events !== 'undefined' ? events : []);
+    let msgs = typeof window !== 'undefined' && window.messages ? window.messages : (typeof messages !== 'undefined' ? messages : []);
+    let userList = typeof window !== 'undefined' && window.users ? window.users : (typeof users !== 'undefined' ? users : []);
     if (!confirm('⚠️ ATENÇÃO: Esta ação é irreversível!\n\nTem certeza que deseja excluir sua conta permanentemente?\n\nTodos os seus dados, eventos e avaliações serão apagados.')) {
         return;
     }
@@ -259,8 +378,8 @@ function deleteAccount() {
     }
     
     // Não permitir excluir conta admin se for o único
-    if (currentUser.role === 'admin') {
-        const admins = users.filter(u => u.role === 'admin');
+    if (user && user.role === 'admin') {
+        const admins = userList.filter(u => u.role === 'admin');
         if (admins.length === 1) {
             showNotification('Não é possível excluir a única conta de administrador!', 'error');
             return;
@@ -268,33 +387,38 @@ function deleteAccount() {
     }
     
     // Remover eventos do usuário
-    events = events.filter(e => e.organizerId !== currentUser.id);
+    evts = evts.filter(e => user && e.organizerId !== user.id);
     
     // Remover avaliações do usuário
-    events.forEach(event => {
+    evts.forEach(event => {
         if (event.ratings) {
-            event.ratings = event.ratings.filter(r => r.userId !== currentUser.id);
+            event.ratings = event.ratings.filter(r => user && r.userId !== user.id);
         }
     });
     
     // Remover mensagens do usuário
-    messages = messages.filter(m => m.from !== currentUser.id && m.to !== currentUser.id);
+    msgs = msgs.filter(m => user && m.from !== user.id && m.to !== user.id);
     
     // Remover usuário
-    users = users.filter(u => u.id !== currentUser.id);
+    userList = userList.filter(u => user && u.id !== user.id);
+    if (typeof window !== 'undefined') {
+        window.events = evts;
+        window.messages = msgs;
+        window.users = userList;
+    }
     
-    saveData();
+    if (typeof saveData === 'function') saveData();
     
     // Registrar no Analytics
-    if (window.logAnalyticsEvent) {
-        logAnalyticsEvent('delete_account', {
-            user_role: currentUser.role
+    if (window && window.logAnalyticsEvent) {
+        window.logAnalyticsEvent('delete_account', {
+            user_role: user ? user.role : 'unknown'
         });
     }
     
     // Fazer logout
     localStorage.removeItem('currentUser');
-    currentUser = null;
+    if (typeof window !== 'undefined') window.currentUser = null;
     
     showNotification('Sua conta foi excluída. Você será redirecionado para o login.', 'success');
     
@@ -310,6 +434,7 @@ function initProfilePage() {
     // Configurar event listeners
     const editBtn = document.getElementById('editProfileBtn');
     const deleteBtn = document.getElementById('deleteAccountBtn');
+    const changePassBtn = document.getElementById('changePasswordBtn');
     
     if (editBtn) {
         // Remover listeners antigos
@@ -325,14 +450,29 @@ function initProfilePage() {
         document.getElementById('deleteAccountBtn').addEventListener('click', deleteAccount);
     }
     
+    if (changePassBtn) {
+        const newChangeBtn = changePassBtn.cloneNode(true);
+        changePassBtn.parentNode.replaceChild(newChangeBtn, changePassBtn);
+        document.getElementById('changePasswordBtn').addEventListener('click', changePassword);
+    }
+    
     // Carregar dados do perfil
     loadProfile();
 }
 
 // Chamar inicialização quando a página for carregada
-if (typeof currentUser !== 'undefined' && currentUser) {
-    // Se já estiver na página, inicializar
-    if (document.getElementById('profileName')) {
-        initProfilePage();
-    }
+if (document.getElementById('profileName')) {
+    initProfilePage();
+}
+
+// Exportar funções globalmente
+if (typeof window !== 'undefined') {
+    window.initProfilePage = initProfilePage;
+    window.loadProfile = loadProfile;
+    window.loadMyEventsProfile = loadMyEventsProfile;
+    window.loadMyRatingsProfile = loadMyRatingsProfile;
+    window.deleteRating = deleteRating;
+    window.deleteAccount = deleteAccount;
+    window.editProfile = editProfile;
+    window.changePassword = changePassword;
 }

@@ -44,6 +44,141 @@ function showNotification(message, type = 'info', duration = 3000) {
 window.showNotification = showNotification;
 window.showNotificationToast = showNotification;
 
+// Indicador de modo de execução (diagnóstico)
+(function() {
+    const isFile = location.protocol === 'file:';
+    const host = location.host || '(local file)';
+    const mode = isFile ? 'offline-file' : (host.includes('github.io') ? 'github-pages' : 'http-server');
+    console.log(`[runtime] 🛰️ Modo: ${mode} — host: ${host}`);
+    if (isFile) {
+        console.log('[runtime] ℹ️ Recursos limitados: sem cookies/Analytics e sem Ollama (CORS).');
+    }
+    // Mostrar landing pública quando não houver usuário
+    try {
+        const publicHome = document.getElementById('publicHome');
+        const loginScreen = document.getElementById('loginScreen');
+        const appEl = document.getElementById('app');
+        const storedUser = localStorage.getItem('currentUser');
+        if (publicHome && !storedUser) {
+            publicHome.style.display = 'block';
+            if (loginScreen) loginScreen.style.display = 'none';
+            if (appEl) appEl.style.display = 'none';
+            // Popular lista pública de próximos eventos
+            const listEl = document.getElementById('publicEventsList');
+            let evts = (typeof window !== 'undefined' && window.events) ? window.events : [];
+            if ((!evts || evts.length === 0) && localStorage.getItem('events')) {
+                try { evts = JSON.parse(localStorage.getItem('events')) || []; } catch {}
+            }
+            if (listEl) {
+                const upcoming = Array.isArray(evts) ? evts.filter(e => !!e.date).slice(0, 5) : [];
+                if (upcoming.length === 0) {
+                    listEl.innerHTML = '<p style="color:#666;">Nenhum evento cadastrado no momento.</p>';
+                } else {
+                    listEl.innerHTML = upcoming.map(e => `
+                        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #eee;">
+                            <div>
+                                <strong>${e.title || e.name || 'Evento'}</strong>
+                                <div style="color:#666; font-size:13px;"><i class="fas fa-calendar"></i> ${e.date} • <i class="fas fa-clock"></i> ${e.time || ''}</div>
+                                <div style="color:#666; font-size:13px;"><i class="fas fa-map-marker-alt"></i> ${e.location || ''}</div>
+                            </div>
+                            <a class="btn btn-outline" href="#" onclick="document.getElementById('loginScreen').style.display='block'; document.getElementById('publicHome').style.display='none';">Inscrever-se</a>
+                        </div>
+                    `).join('');
+                }
+            }
+            // Parametrizar links de doação (substitua pelos seus)
+            const paypal = document.getElementById('donatePaypal');
+            const coffee = document.getElementById('donateCoffee');
+            if (paypal && !paypal.href || (paypal && paypal.href === '#')) {
+                paypal.href = 'https://www.paypal.com/donate';
+            }
+            if (coffee && !coffee.href || (coffee && coffee.href === '#')) {
+                coffee.href = 'https://buymeacoffee.com/';
+            }
+            // Configurar PIX
+            const pixBtn = document.getElementById('donatePixBtn');
+            if (pixBtn) {
+                window.PIX_PAYLOAD = '00020126580014BR.GOV.BCB.PIX01367ff75fa1-d260-48e9-a82c-28d8751e3113520400005303986540510.005802BR5922Sens Jeremias Francois6009SAO PAULO62140510by2vmxwgfc6304D190';
+                pixBtn.onclick = function(){
+                    const modal = document.getElementById('pixModal');
+                    const textEl = document.getElementById('pixPayloadText');
+                    const qrEl = document.getElementById('pixQr');
+                    if (textEl) textEl.textContent = window.PIX_PAYLOAD;
+                    function tryRenderQR(){
+                        if (qrEl && window.PIX_PAYLOAD && typeof QRCode !== 'undefined') {
+                            try {
+                                qrEl.innerHTML = '';
+                                new QRCode(qrEl, { text: window.PIX_PAYLOAD, width: 240, height: 240, correctLevel: (QRCode.CorrectLevel && QRCode.CorrectLevel.H) ? QRCode.CorrectLevel.H : 2 });
+                                return true;
+                            } catch(e){ console.warn('[pix] Falha ao gerar QR:', e); }
+                        }
+                        return false;
+                    }
+                    // Tenta render imediatamente; se a lib veio do CDN, aguarda carregar
+                    let rendered = tryRenderQR();
+                    if (!rendered) {
+                        let attempts = 0;
+                        const timer = setInterval(() => {
+                            attempts++;
+                            if (tryRenderQR() || attempts > 20) {
+                                clearInterval(timer);
+                            }
+                        }, 100);
+                    }
+                    if (modal) modal.style.display = 'block';
+                };
+            }
+        }
+    } catch (e) {
+        console.warn('[runtime] Landing pública não pôde ser exibida:', e);
+    }
+})();
+
+// Exibir banner de consentimento de cookies (Analytics)
+(function(){
+    try {
+        const consentEl = document.getElementById('cookieConsent');
+        if (!consentEl) return;
+        const consent = localStorage.getItem('cookieConsent');
+        if (!consent) {
+            consentEl.style.display = 'flex';
+        }
+        const acceptBtn = document.getElementById('cookiesAccept');
+        const rejectBtn = document.getElementById('cookiesReject');
+        const privacyBtn = document.getElementById('privacyBtn');
+        if (acceptBtn) acceptBtn.onclick = function(){ localStorage.setItem('cookieConsent','yes'); document.getElementById('cookieConsent').style.display='none'; window.cookieConsent='yes'; };
+        if (rejectBtn) rejectBtn.onclick = function(){ localStorage.setItem('cookieConsent','no'); document.getElementById('cookieConsent').style.display='none'; window.cookieConsent='no'; };
+        if (privacyBtn) privacyBtn.onclick = function(){ document.getElementById('privacyModal').style.display='block'; };
+    } catch(e) {
+        console.warn('[runtime] Cookie consent não pôde ser exibido:', e);
+    }
+})();
+
+// Renderer público (reutilizável) — pode ser chamado pelo sync
+window.renderPublicEvents = function(evts){
+    try {
+        const listEl = document.getElementById('publicEventsList');
+        if (!listEl) return;
+        const upcoming = Array.isArray(evts) ? evts.filter(e => !!e.date).slice(0, 5) : [];
+        if (upcoming.length === 0) {
+            listEl.innerHTML = '<p style="color:#666;">Nenhum evento cadastrado no momento.</p>';
+        } else {
+            listEl.innerHTML = upcoming.map(e => `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #eee;">
+                    <div>
+                        <strong>${e.title || e.name || 'Evento'}</strong>
+                        <div style="color:#666; font-size:13px;"><i class="fas fa-calendar"></i> ${e.date} • <i class="fas fa-clock"></i> ${e.time || ''}</div>
+                        <div style="color:#666; font-size:13px;"><i class="fas fa-map-marker-alt"></i> ${e.location || ''}</div>
+                    </div>
+                    <a class="btn btn-outline" href="#" onclick="document.getElementById('loginScreen').style.display='block'; document.getElementById('publicHome').style.display='none';">Inscrever-se</a>
+                </div>
+            `).join('');
+        }
+    } catch(e){
+        console.warn('[public] Falha ao renderizar eventos:', e);
+    }
+};
+
 // ============================================
 // SISTEMA DE CONFIRMAÇÃO
 // ============================================

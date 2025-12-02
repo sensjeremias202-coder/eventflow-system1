@@ -65,5 +65,33 @@
                 <!-- User's ratings will be loaded here -->
             </div>
         </div>
+
+        <div class="card" style="margin-top: 20px;">
+            <div class="card-header">
+                <div class="card-title"><i class="fas fa-key"></i> Alterar Senha</div>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label class="form-label" for="currentPassword">Senha Atual</label>
+                    <input type="password" class="form-control" id="currentPassword" placeholder="Digite sua senha atual">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="newPassword">Nova Senha</label>
+                    <input type="password" class="form-control" id="newPassword" placeholder="Mínimo de 6 caracteres">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="confirmPassword">Confirmar Nova Senha</label>
+                    <input type="password" class="form-control" id="confirmPassword" placeholder="Repita a nova senha">
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-warning" id="changePasswordBtn">
+                        <i class="fas fa-save"></i> Alterar Senha
+                    </button>
+                </div>
+                <small style="color: #666; display: block; margin-top: 5px;">
+                    A senha é armazenada localmente neste protótipo. Em produção, use provedor seguro.
+                </small>
+            </div>
+        </div>
     </div>
 </div>

@@ -381,9 +381,11 @@ function showApp() {
     console.log('[auth] showApp() — currentUser:', currentUser);
     const loginScreen = document.getElementById('loginScreen');
     const app = document.getElementById('app');
+    const publicHome = document.getElementById('publicHome');
     
     if (loginScreen) loginScreen.style.display = 'none';
     if (app) app.style.display = 'block';
+    if (publicHome) publicHome.style.display = 'none';
     
     // Atualizar interface com base no usuário atual
     const userNameElement = document.getElementById('userName');
@@ -468,6 +470,13 @@ function showApp() {
         // Sistema modular - carrega dinamicamente
         setTimeout(() => {
             showModularPage(initialPage);
+            // Se a página alvo for perfil ou já houver perfil visível, repopular dados
+            setTimeout(() => {
+                const isProfileVisible = document.getElementById('profileName') !== null;
+                if (isProfileVisible && typeof window.loadProfile === 'function') {
+                    window.loadProfile();
+                }
+            }, 200);
         }, 100);
     } else {
         // Fallback: sistema antigo

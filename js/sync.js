@@ -208,6 +208,15 @@ function initFirebaseSync() {
     setTimeout(() => {
         initialLoadDone = true;
         console.log('[firebase] ✅ Carga inicial concluída - sincronização ativa');
+        // Atualizar landing pública com eventos atuais
+        try {
+            if (typeof window.renderPublicEvents === 'function') {
+                const evts = (typeof window !== 'undefined' && window.events) ? window.events : [];
+                window.renderPublicEvents(evts);
+            }
+        } catch(e){
+            console.warn('[sync] Não foi possível atualizar eventos públicos:', e);
+        }
     }, 2000);
     
     console.log('[firebase] Listeners ativos para sincronização em tempo real');
