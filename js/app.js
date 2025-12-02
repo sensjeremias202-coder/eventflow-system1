@@ -107,15 +107,15 @@ window.showNotificationToast = showNotification;
             const lsWa = localStorage.getItem('SOCIAL_WHATSAPP_URL') || 'https://wa.me/5511988657266';
             if (ig) {
                 ig.href = lsIg;
-                ig.textContent = 'Instagram @ssn_ef';
+                ig.innerHTML = '<i class="fab fa-instagram"></i> Instagram @ssn_ef';
             }
             if (em) {
                 em.href = lsEm;
-                em.textContent = 'E-mail sensjeremias@gmail.com';
+                em.innerHTML = '<i class="fas fa-envelope"></i> E-mail sensjeremias@gmail.com';
             }
             if (wa) {
                 wa.href = lsWa;
-                wa.textContent = 'WhatsApp +5511988657266';
+                wa.innerHTML = '<i class="fab fa-whatsapp"></i> WhatsApp +5511988657266';
             }
             // Configurar PIX
             const pixBtn = document.getElementById('donatePixBtn');
