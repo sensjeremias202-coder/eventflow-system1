@@ -54,15 +54,7 @@ function initFirebaseSync() {
     
     console.log('[firebase] 🔄 Iniciando sincronização com Firebase...');
     console.log('[firebase] ✅ Database object válido:', typeof db);
-    console.log('[firebase] 📋 Limpando dados locais antigos do localStorage...');
-    
-    // Limpar localStorage completamente para forçar uso do Firebase
-    // Manter apenas o currentUser
-    const savedUser = localStorage.getItem('currentUser');
-    localStorage.clear();
-    if (savedUser) {
-        localStorage.setItem('currentUser', savedUser);
-    }
+    console.log('[firebase] 📋 Mantendo dados locais; não vamos limpar localStorage para preservar eventos existentes');
     
     // Listener para eventos
     firebaseListeners.events = db.ref('events').on('value', (snapshot) => {
@@ -95,8 +87,27 @@ function initFirebaseSync() {
             }
         } else {
             console.log('[firebase] ⚠️ Nenhum evento no Firebase');
-            events = [];
-            localStorage.setItem('events', JSON.stringify(events));
+            // Se existir eventos locais, manter e opcionalmente semear no Firebase
+            try {
+                const localEvts = JSON.parse(localStorage.getItem('events') || '[]');
+                if (Array.isArray(localEvts) && localEvts.length > 0) {
+                    console.log('[firebase] 🌱 Semear Firebase com eventos locais:', localEvts.length);
+                    events = localEvts;
+                    // semear remotamente se permitido
+                    if (window.firebaseInitialized && window.firebaseDatabase) {
+                        window.firebaseDatabase.ref('/events').set(localEvts).then(() => {
+                            console.log('[firebase] ✅ Eventos locais semeados no Firebase');
+                        }).catch(err => console.warn('[firebase] ❌ Falha ao semear eventos:', err));
+                    }
+                } else {
+                    events = [];
+                }
+                localStorage.setItem('events', JSON.stringify(events));
+            } catch(e) {
+                console.warn('[firebase] Erro ao ler eventos locais:', e);
+                events = [];
+                localStorage.setItem('events', JSON.stringify(events));
+            }
         }
     });
     
