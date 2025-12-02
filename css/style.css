@@ -1,3 +1,29 @@
+/* Layout base: remover margens e ocupar toda a largura */
+html, body {
+    height: 100%;
+}
+body {
+    margin: 0; /* remove margem padrão do navegador */
+}
+
+/* Containers ocupam 100% sem margens laterais */
+.container {
+    max-width: 100%;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+/* Área principal sem espaçamentos externos */
+.main-content {
+    margin: 0;
+    padding: 0;
+}
+
+/* Conteúdo genérico sem margens exteriores que criem bordas brancas */
+.content {
+    margin: 0;
+    padding: 0;
+}
 /* ============================================ */
 /* TEMA PROFISSIONAL CORPORATIVO - CORES E VARIÁVEIS */
 /* ============================================ */
