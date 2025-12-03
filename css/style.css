@@ -4,6 +4,8 @@ html, body {
 }
 body {
     margin: 0; /* remove margem padrão do navegador */
+    font-size: 16px; /* tipografia base um pouco maior */
+    line-height: 1.6;
 }
 
 /* Containers ocupam 100% sem margens laterais */
@@ -22,7 +24,7 @@ body {
 /* Conteúdo genérico sem margens exteriores que criem bordas brancas */
 .content {
     margin: 0;
-    padding: 0;
+    padding: 0 16px; /* espaçamento lateral padrão */
 }
 /* ============================================ */
 /* TEMA PROFISSIONAL CORPORATIVO - CORES E VARIÁVEIS */
@@ -39,6 +41,7 @@ body {
     --light: #ECF0F1;
     --dark: #2C3E50;
     --gray: #7F8C8D;
+    --gray-2: #6b7a83; /* texto secundário com mais contraste */
     
     /* Gradientes Discretos */
     --gradient-heaven: linear-gradient(135deg, #2C3E50 0%, #34495E 100%);
@@ -57,6 +60,63 @@ body {
     --transition-smooth: all 0.3s ease;
     --transition-bounce: all 0.4s ease;
     --transition-3d: all 0.3s ease;
+}
+
+/* Tipografia e espaçamentos internos */
+.page-title { font-size: 1.6rem; margin: 16px 0; }
+.section { padding: 16px 0; }
+.table { font-size: 0.95rem; }
+.form-group { margin-bottom: 12px; }
+.btn { line-height: 1.3; }
+
+/* Texto secundário mais legível */
+.text-muted { color: var(--gray-2); }
+
+/* CTA fixo na landing */
+.public-cta {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    display: flex;
+    gap: 8px;
+    z-index: 1000;
+}
+
+/* Chip de comunidade no header */
+.community-chip {
+    margin-left: 12px;
+    background: var(--light);
+    color: var(--dark);
+    border: 1px solid #dfe6e9;
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 0.85rem;
+}
+
+/* Banner de segurança do Firebase */
+.security-banner {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #fff3cd; /* amarelo claro */
+        color: #664d03;
+        border: 1px solid #ffecb5;
+        padding: 6px 10px;
+        border-radius: 6px;
+        margin-left: auto;
+}
+
+/* Painel de Status de Sync */
+.sync-status-panel {
+    background: #f8fafc;
+    border: 1px solid #eaeef2;
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin: 8px 16px;
+    font-size: 0.9rem;
 }
 
 /* Banner de segurança do Firebase */

@@ -9,6 +9,7 @@
                 <i class="fas fa-shield-alt"></i>
                 <span>Segurança do Firebase: verificação necessária</span>
                 <a href="README.md" class="btn btn-sm btn-outline" target="_blank" rel="noopener">Abrir guia</a>
+                <button id="testFirebaseAccessBtn" class="btn btn-sm btn-outline">Testar acesso</button>
                 <button id="dismissSecurityBanner" class="btn btn-sm btn-outline">Ocultar</button>
             </div>
     <!-- Favicon -->
@@ -241,6 +242,7 @@
             <div style="display:flex; align-items:center; gap:10px;">
                 <i class="fas fa-calendar-check" style="color:#4361ee; font-size: 20px;"></i>
                 <strong>EventFlow</strong>
+                <span id="communityChip" class="community-chip" style="display:none"></span>
             </div>
             <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                 <button id="createCommunityBtn" class="btn btn-outline"><i class="fas fa-users"></i> Criar Comunidade</button>
@@ -250,13 +252,30 @@
                 <button class="btn btn-primary" onclick="document.getElementById('loginScreen').style.display='block'; document.getElementById('publicHome').style.display='none';">Entrar</button>
             </div>
         </header>
-        <section style="padding: 32px; text-align: center;">
+                <section style="padding: 32px; text-align: center;">
             <h1 style="margin-bottom: 10px;">Eventos que conectam pessoas</h1>
             <p style="color:#666; max-width:720px; margin: 0 auto 20px;">Descubra e participe dos próximos encontros, cultos e atividades. Inscreva-se rapidamente e receba atualizações.</p>
             <div style="display:flex; justify-content:center; gap:10px;">
                 <a class="btn btn-success" href="#" onclick="document.getElementById('loginScreen').style.display='block'; document.getElementById('publicHome').style.display='none';">Inscreva-se</a>
                 <a class="btn btn-outline" href="https://sensjeremias202-coder.github.io/eventflow-system1/" target="_blank">Ver calendário</a>
             </div>
+                        <div class="section" id="howItWorks" style="margin-top:16px">
+                            <h3 class="page-title">Como funciona</h3>
+                            <div style="display:grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap:12px;">
+                                <div style="border:1px solid #eaeef2; border-radius:8px; padding:12px;">
+                                    <strong>1. Escolha sua comunidade</strong>
+                                    <p class="text-muted">Crie ou entre em uma comunidade para organizar seus eventos.</p>
+                                </div>
+                                <div style="border:1px solid #eaeef2; border-radius:8px; padding:12px;">
+                                    <strong>2. Veja os eventos</strong>
+                                    <p class="text-muted">Acompanhe próximos eventos, vagas e inscrições com facilidade.</p>
+                                </div>
+                                <div style="border:1px solid #eaeef2; border-radius:8px; padding:12px;">
+                                    <strong>3. Participe e ajude</strong>
+                                    <p class="text-muted">Inscreva-se como voluntário e receba atualizações em tempo real.</p>
+                                </div>
+                            </div>
+                        </div>
         </section>
         <section style="padding: 24px;">
             <div class="card">
@@ -277,6 +296,10 @@
             <small>© EventFlow. Painel de administração disponível após login.</small>
             <div style="margin-top:8px; color:#444;">
                 <span id="publicCommunityLabel"></span>
+            </div>
+            <div class="public-cta">
+              <a class="btn btn-primary" href="#" id="ctaEnterCommunity">Ver Comunidade / Entrar</a>
+              <a class="btn btn-outline" href="#" id="ctaCreateCommunity">Criar Comunidade</a>
             </div>
         </footer>
         <!-- Cookie Consent (simplificado) -->
@@ -332,6 +355,25 @@
                 }
             })();
         </script>
+                <!-- Modal Diagnóstico Firebase -->
+                <div id="firebaseDiagModal" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:10000;">
+                    <div class="modal-content" style="max-width:640px; margin:40px auto; background:#fff; border-radius:8px; padding:16px;">
+                        <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center;">
+                            <div class="card-title">Diagnóstico de Segurança do Firebase</div>
+                            <button class="modal-close" onclick="document.getElementById('firebaseDiagModal').style.display='none';">&times;</button>
+                        </div>
+                        <div class="modal-body" id="firebaseDiagBody" style="color:#333; font-size:0.95rem;">
+                            <p>Execute um teste rápido de acesso às regras do Realtime Database para a comunidade ativa.</p>
+                            <div style="margin:8px 0;">
+                                <code id="firebaseDiagPath"></code>
+                            </div>
+                            <div id="firebaseDiagResult" style="margin-top:8px; color:#444;"></div>
+                        </div>
+                        <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:8px;">
+                            <button class="btn btn-outline" onclick="document.getElementById('firebaseDiagModal').style.display='none';">Fechar</button>
+                        </div>
+                    </div>
+                </div>
     </div>
     <!-- Bot\u00e3o de Tema (Modo Escuro/Claro) -->
     <button id="themeToggle" onclick="toggleTheme()" title="Alternar Tema">

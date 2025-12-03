@@ -236,6 +236,67 @@ document.addEventListener('DOMContentLoaded', () => {
         updateSecurityBanner();
     });
     updateSecurityBanner();
+
+    // CTA na landing
+    const ctaEnter = document.getElementById('ctaEnterCommunity');
+    const ctaCreate = document.getElementById('ctaCreateCommunity');
+    if (ctaEnter) ctaEnter.addEventListener('click', (e) => { e.preventDefault(); try {
+        document.getElementById('loginScreen').style.display='block';
+        document.getElementById('publicHome').style.display='none';
+    } catch{}
+    });
+    if (ctaCreate) ctaCreate.addEventListener('click', (e) => { e.preventDefault(); try {
+        const btn = document.getElementById('createCommunityBtn');
+        if (btn) btn.click();
+    } catch{}
+    });
+
+    // Chip de comunidade ativa
+    try {
+        const chip = document.getElementById('communityChip');
+        const name = (window.communities && typeof window.communities.getActiveName==='function') ? window.communities.getActiveName() : (localStorage.getItem('activeCommunityName')||null);
+        if (chip && name) { chip.textContent = name; chip.style.display = 'inline-block'; }
+        window.addEventListener('community:changed', () => {
+          const n = (window.communities && typeof window.communities.getActiveName==='function') ? window.communities.getActiveName() : (localStorage.getItem('activeCommunityName')||'');
+          if (chip) { chip.textContent = n || ''; chip.style.display = n ? 'inline-block' : 'none'; }
+        });
+    } catch{}
+});
+
+// Modo diagnóstico: Testar acesso às regras
+document.addEventListener('DOMContentLoaded', () => {
+    const testBtn = document.getElementById('testFirebaseAccessBtn');
+    if (testBtn) {
+        testBtn.addEventListener('click', async () => {
+            try {
+                const cid = (window.communities && typeof window.communities.getActiveId==='function') ? window.communities.getActiveId() : (localStorage.getItem('activeCommunityId')||null);
+                const basePath = cid ? `communities/${cid}` : '';
+                const pathEl = document.getElementById('firebaseDiagPath');
+                const resultEl = document.getElementById('firebaseDiagResult');
+                const modal = document.getElementById('firebaseDiagModal');
+                if (pathEl) pathEl.textContent = basePath ? `${basePath}/_rules_probe` : '(sem comunidade ativa)';
+                if (resultEl) resultEl.textContent = 'Executando checagem...';
+                if (modal) modal.style.display = 'block';
+                if (!basePath) {
+                    if (resultEl) resultEl.textContent = 'Nenhuma comunidade ativa selecionada. Selecione antes de testar.';
+                    return;
+                }
+                const start = performance.now();
+                try {
+                    await window.checkDatabaseRulesStatus(basePath);
+                    const ms = Math.round(performance.now() - start);
+                    if (resultEl) resultEl.innerHTML = `<span style="color:#2a9d8f;">Acesso permitido</span> • ${ms}ms`;
+                } catch (err) {
+                    const ms = Math.round(performance.now() - start);
+                    const code = (err && err.code) ? err.code : 'erro_desconhecido';
+                    const msg = (err && err.message) ? err.message : String(err);
+                    if (resultEl) resultEl.innerHTML = `<span style="color:#f72585;">Acesso negado (${code})</span> • ${ms}ms<br/><small>${msg}</small>`;
+                }
+            } catch(e) {
+                showNotification('Falha ao executar diagnóstico: ' + e, 'error');
+            }
+        });
+    }
 });
 
 // Exibir banner de consentimento de cookies (Analytics)

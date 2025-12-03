@@ -285,6 +285,19 @@ function initFirebaseSync() {
     setTimeout(() => {
         initialLoadDone = true;
         console.log('[firebase] ✅ Carga inicial concluída - sincronização ativa');
+        try {
+            const communityName = (window.communities && typeof window.communities.getActiveName==='function') ? window.communities.getActiveName() : (localStorage.getItem('activeCommunityName')||'-');
+            const evts = (typeof window !== 'undefined' && window.events) ? window.events : [];
+            const usersCount = Array.isArray(window.users) ? window.users.length : '-';
+            const catsCount = Array.isArray(window.categories) ? window.categories.length : '-';
+            const syncPanel = document.getElementById('syncStatusPanel');
+            if (syncPanel) {
+                document.getElementById('syncCommunityName').textContent = communityName || '-';
+                document.getElementById('syncLastEvent').textContent = new Date().toLocaleString();
+                document.getElementById('syncCounts').textContent = `${(Array.isArray(evts)?evts.length:0)} eventos • ${usersCount} usuários • ${catsCount} categorias`;
+                syncPanel.style.display = 'grid';
+            }
+        } catch(e) { console.warn('[sync] status panel update error:', e); }
         // Atualizar landing pública com eventos atuais
         try {
             if (typeof window.renderPublicEvents === 'function') {

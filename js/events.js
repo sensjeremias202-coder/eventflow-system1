@@ -93,6 +93,11 @@ function loadEvents() {
                         <button class="btn btn-outline" onclick="viewEventDetails('${event.id}')">
                             <i class="fas fa-eye"></i> Ver Detalhes
                         </button>
+                        <div style="display:flex; gap:6px;">
+                          <button class="btn btn-sm btn-outline" onclick="exportEnrolledCSV('${event.id}','all')" title="Exportar inscritos (todos)"><i class="fas fa-file-csv"></i> CSV</button>
+                          <button class="btn btn-sm btn-outline" onclick="exportEnrolledCSV('${event.id}','confirmed')" title="Exportar confirmados"><i class="fas fa-check"></i></button>
+                          <button class="btn btn-sm btn-outline" onclick="exportEnrolledCSV('${event.id}','pending')" title="Exportar pendentes"><i class="fas fa-hourglass-half"></i></button>
+                        </div>
                         ${currentUser && currentUser.role === 'admin' ? `
                             <button class="btn btn-outline" onclick="editEvent('${event.id}')">
                                 <i class="fas fa-edit"></i> Editar
@@ -108,6 +113,37 @@ function loadEvents() {
     }).join('');
     
     console.log('[events] ✅ Eventos carregados:', events.length);
+}
+
+function exportEnrolledCSV(eventId, filter = 'all') {
+    try {
+        const evt = (Array.isArray(events) ? events.find(e => String(e.id) === String(eventId)) : null);
+        if (!evt) { showNotification('Evento não encontrado', 'error'); return; }
+        const list = Array.isArray(evt.enrolled) ? evt.enrolled : (Array.isArray(evt.enrolledUsers) ? evt.enrolledUsers : []);
+        let rows = list.map(u => ({
+            userId: u.id || u.userId || '',
+            name: u.name || u.fullName || '',
+            email: u.email || '',
+            status: u.status || (u.confirmed ? 'confirmed' : (u.pending ? 'pending' : 'unknown'))
+        }));
+        if (filter === 'confirmed') rows = rows.filter(r => r.status === 'confirmed');
+        if (filter === 'pending') rows = rows.filter(r => r.status === 'pending');
+        const header = ['userId','name','email','status'];
+        const csv = [header.join(','), ...rows.map(r => header.map(h => String(r[h]||'').replace(/"/g,'""')).map(v => `"${v}"`).join(','))].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `evento_${eventId}_inscritos_${filter}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showNotification('CSV exportado com sucesso', 'success');
+    } catch(e){
+        console.error('[events] export CSV error:', e);
+        showNotification('Falha ao exportar CSV', 'error');
+    }
 }
 
 // Carregar opções de categorias
