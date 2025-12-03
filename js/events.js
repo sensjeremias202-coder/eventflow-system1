@@ -39,7 +39,7 @@ function loadEvents() {
         const full = max != null && remaining === 0;
             const allEvents = getLocalEvents();
             const activeCommunityId = (window.communities && typeof window.communities.getActiveId==='function') ? window.communities.getActiveId() : (localStorage.getItem('activeCommunityId')||null);
-            const scopedEvents = Array.isArray(allEvents) ? allEvents.filter(e => !e.communityId || (activeCommunityId ? e.communityId === activeCommunityId : true)) : [];
+            let scopedEvents = Array.isArray(allEvents) ? allEvents.filter(e => !e.communityId || (activeCommunityId ? e.communityId === activeCommunityId : true)) : [];
         return `
             <div class="event-card ${!isUpcoming ? 'past-event' : ''}" data-event-id="${event.id}">
             if (!scopedEvents || scopedEvents.length === 0) {
@@ -63,8 +63,33 @@ function loadEvents() {
                         </div>
                         <div class="event-info-item">
                             <i class="fas fa-map-marker-alt"></i>
-                            <span>${event.location}</span>
-                        </div>
+                            // Busca com debounce + paginação
+                            const searchInput = document.getElementById('eventsSearch');
+                            const paginationEl = document.getElementById('eventsPagination');
+                            let q = '';
+                            let page = 1;
+                            const pageSize = 8;
+                            let debounceTimer = null;
+                            function filterAndPage() {
+                                const term = (q||'').toLowerCase();
+                                let data = scopedEvents;
+                                if (term) {
+                                    data = data.filter(e => (
+                                        (e.title||e.name||'').toLowerCase().includes(term) ||
+                                        (e.description||'').toLowerCase().includes(term) ||
+                                        String(e.id||'').toLowerCase().includes(term)
+                                    ));
+                                }
+                                const total = data.length;
+                                const pages = Math.max(1, Math.ceil(total / pageSize));
+                                page = Math.min(page, pages);
+                                const start = (page-1)*pageSize;
+                                const paged = data.slice(start, start+pageSize);
+                                renderEvents(paged);
+                                renderEventsPagination(total, pages);
+                            }
+                            function renderEvents(list) {
+                                eventsGrid.innerHTML = list.map(evt => {
                         ${event.price ? `
                             <div class="event-info-item">
                                 <i class="fas fa-ticket-alt"></i>
@@ -144,7 +169,30 @@ function exportEnrolledCSV(eventId, filter = 'all') {
         console.error('[events] export CSV error:', e);
         showNotification('Falha ao exportar CSV', 'error');
     }
-}
+                                }).join('');
+                            }
+                            function renderEventsPagination(total, pages) {
+                                if (!paginationEl) return;
+                                const prevDisabled = page<=1 ? 'disabled' : '';
+                                const nextDisabled = page>=pages ? 'disabled' : '';
+                                paginationEl.innerHTML = `
+                                  <button class="btn btn-sm btn-outline" ${prevDisabled} id="eventsPrev">Anterior</button>
+                                  <span style="padding:4px 8px;">Página ${page} de ${pages} • ${total} eventos</span>
+                                  <button class="btn btn-sm btn-outline" ${nextDisabled} id="eventsNext">Próxima</button>
+                                `;
+                                const prev = document.getElementById('eventsPrev');
+                                const next = document.getElementById('eventsNext');
+                                if (prev) prev.onclick = ()=>{ if (page>1) { page--; filterAndPage(); } };
+                                if (next) next.onclick = ()=>{ if (page<pages) { page++; filterAndPage(); } };
+                            }
+                            if (searchInput) {
+                                searchInput.addEventListener('input', (e) => {
+                                    q = e.target.value || '';
+                                    clearTimeout(debounceTimer);
+                                    debounceTimer = setTimeout(filterAndPage, 250);
+                                });
+                            }
+                            filterAndPage();
 
 // Carregar opções de categorias
 function loadCategoryOptions() {

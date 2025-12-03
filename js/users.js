@@ -21,7 +21,90 @@ function loadUsersTable() {
     
     // Filtrar por comunidade ativa
     const activeCommunityId = (window.communities && typeof window.communities.getActiveId==='function') ? window.communities.getActiveId() : (localStorage.getItem('activeCommunityId')||null);
-    const scopedUsers = Array.isArray(users) ? users.filter(u => !u.communityId || (activeCommunityId ? u.communityId === activeCommunityId : true)) : [];
+    let scopedUsers = Array.isArray(users) ? users.filter(u => !u.communityId || (activeCommunityId ? u.communityId === activeCommunityId : true)) : [];
+
+    // Busca com debounce
+    const searchInput = document.getElementById('usersSearch');
+    const paginationEl = document.getElementById('usersPagination');
+    let q = '';
+    let page = 1;
+    const pageSize = 10;
+    let debounceTimer = null;
+    function applySearch() {
+        const term = (q||'').toLowerCase();
+        let data = scopedUsers;
+        if (term) {
+            data = data.filter(u => (
+                (u.name||'').toLowerCase().includes(term) ||
+                (u.email||'').toLowerCase().includes(term) ||
+                String(u.id||'').toLowerCase().includes(term)
+            ));
+        }
+        const total = data.length;
+        const pages = Math.max(1, Math.ceil(total / pageSize));
+        page = Math.min(page, pages);
+        const start = (page-1)*pageSize;
+        const paged = data.slice(start, start+pageSize);
+        renderUsersRows(paged);
+        renderUsersPagination(total, pages);
+    }
+    function renderUsersRows(list) {
+        container.innerHTML = `
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>E-mail</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${list.map(user => `
+                            <tr>
+                                <td><code>${user.id}</code></td>
+                                <td><strong>${user.name||'-'}</strong></td>
+                                <td>${user.email||'-'}</td>
+                                <td>${user.active ? 'Ativo' : 'Inativo'}</td>
+                                <td>
+                                    <div style="display:flex; gap:8px;">
+                                        <button class="btn btn-sm btn-outline" onclick="editUser('${user.id}')" title="Editar"><i class="fas fa-edit"></i></button>
+                                        <button class="btn btn-sm btn-outline" onclick="toggleUserStatus('${user.id}')" title="Ativar/Inativar"><i class="fas fa-toggle-on"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
+    function renderUsersPagination(total, pages) {
+        if (!paginationEl) return;
+        const buttons = [];
+        const prevDisabled = page<=1 ? 'disabled' : '';
+        const nextDisabled = page>=pages ? 'disabled' : '';
+        buttons.push(`<button class="btn btn-sm btn-outline" ${prevDisabled} data-page="prev">Anterior</button>`);
+        buttons.push(`<span style="padding:4px 8px;">Página ${page} de ${pages} • ${total} usuários</span>`);
+        buttons.push(`<button class="btn btn-sm btn-outline" ${nextDisabled} data-page="next">Próxima</button>`);
+        paginationEl.innerHTML = buttons.join(' ');
+        paginationEl.querySelectorAll('button[data-page]').forEach(btn=>{
+            btn.onclick = () => {
+                const dir = btn.getAttribute('data-page');
+                if (dir==='prev' && page>1) page--; else if (dir==='next' && page<pages) page++;
+                applySearch();
+            };
+        });
+    }
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            q = e.target.value || '';
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(applySearch, 250);
+        });
+    }
 
     // Verificar se há usuários
     if (!scopedUsers || scopedUsers.length === 0) {
