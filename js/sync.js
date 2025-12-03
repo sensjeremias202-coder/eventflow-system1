@@ -35,11 +35,37 @@ function initSync() {
     
     // Listener para visibilidade da página
     document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Reexecutar sync ao trocar comunidade ativa
+    window.addEventListener('community:changed', function(e){
+        console.log('[sync] Comunidade alterada para:', e?.detail?.id);
+        try {
+            // Remover listeners anteriores
+            const FIREBASE_ENABLED = (window.firebaseInitialized || false) && !window.FORCE_LOCAL_MODE;
+            if (FIREBASE_ENABLED && window.firebaseDatabase) {
+                Object.keys(firebaseListeners).forEach(key => {
+                    window.firebaseDatabase.ref(key).off('value', firebaseListeners[key]);
+                });
+                firebaseListeners = {};
+            }
+            // Reiniciar modo correto
+            const FIREBASE = (window.firebaseInitialized || false) && !window.FORCE_LOCAL_MODE;
+            if (FIREBASE && window.firebaseDatabase) {
+                initFirebaseSync();
+            } else {
+                initLocalSync();
+            }
+            showSyncNotification('Sincronização atualizada para comunidade', 'success');
+        } catch(err){ console.warn('[sync] Falha ao reexecutar sync na troca de comunidade:', err); }
+    });
 }
 
 // Inicializar sincronização com Firebase
 function initFirebaseSync() {
     const db = window.firebaseDatabase;
+    const communityId = (window.communities && typeof window.communities.getActiveId === 'function') ? window.communities.getActiveId() : (localStorage.getItem('activeCommunityId')||null);
+    const basePath = communityId ? `communities/${communityId}` : '';
+    const refPath = (p)=> basePath ? `${basePath}/${p}` : p;
     
     if (!db) {
         console.error('[firebase] ❌ ERRO: Firebase Database não está disponível!');
@@ -57,7 +83,7 @@ function initFirebaseSync() {
     console.log('[firebase] 📋 Mantendo dados locais; não vamos limpar localStorage para preservar eventos existentes');
     
     // Listener para eventos
-    firebaseListeners.events = db.ref('events').on('value', (snapshot) => {
+    firebaseListeners.events = db.ref(refPath('events')).on('value', (snapshot) => {
         const data = snapshot.val();
         console.log('[firebase] 📥 Eventos recebidos do Firebase (raw):', data);
         
@@ -67,7 +93,16 @@ function initFirebaseSync() {
             if (Array.isArray(data)) {
                 remoteEvents = data.filter(e => e !== null && e !== undefined && typeof e === 'object');
             } else if (typeof data === 'object') {
-                remoteEvents = Object.values(data).filter(e => e !== null && e !== undefined && typeof e === 'object');
+            // Listener para eventos
+            // Verificar regras/publicação com uma checagem leve
+            checkDatabaseRulesStatus(basePath).catch(err => {
+                console.error('[sync] ⚠️ Checagem de regras falhou:', err);
+                showNotification('Falha ao validar regras de segurança do Firebase. Verifique a publicação das regras.', 'warning');
+                try {
+                    window.firebaseSecurityIssue = true;
+                    window.dispatchEvent(new CustomEvent('firebase:security-issue', { detail: { error: err } }));
+                } catch(e) { /* noop */ }
+            });
             }
             
             console.log('[firebase] 📊 Total de eventos válidos:', remoteEvents.length);
@@ -95,7 +130,7 @@ function initFirebaseSync() {
                     events = localEvts;
                     // semear remotamente se permitido
                     if (window.firebaseInitialized && window.firebaseDatabase) {
-                        window.firebaseDatabase.ref('/events').set(localEvts).then(() => {
+                        window.firebaseDatabase.ref(`/${refPath('events')}`).set(localEvts).then(() => {
                             console.log('[firebase] ✅ Eventos locais semeados no Firebase');
                         }).catch(err => console.warn('[firebase] ❌ Falha ao semear eventos:', err));
                     }
@@ -112,7 +147,7 @@ function initFirebaseSync() {
     });
     
     // Listener para mensagens do chat
-    firebaseListeners.messages = db.ref('messages').on('value', (snapshot) => {
+    firebaseListeners.messages = db.ref(refPath('messages')).on('value', (snapshot) => {
         const data = snapshot.val();
         console.log('[firebase] 💬 Mensagens recebidas do Firebase (raw):', data);
         
@@ -140,6 +175,37 @@ function initFirebaseSync() {
                 }
             }
         } else {
+
+        /**
+         * Executa uma checagem leve para validar publicação de regras.
+         * Tenta ler um nó seguro; se retornar permission_denied, exibe alerta.
+         */
+        async function checkDatabaseRulesStatus(basePath) {
+            return new Promise((resolve, reject) => {
+                try {
+                    const ref = firebaseDatabase.ref(`${basePath}/_rules_probe`);
+                    ref.once('value', () => {
+                        // Se conseguimos ler, regras estão publicadas e permitem leitura para membros
+                        console.log('[sync] ✅ Regras verificadas com sucesso');
+                        try {
+                            window.firebaseSecurityIssue = false;
+                            window.dispatchEvent(new CustomEvent('firebase:security-ok'));
+                        } catch(e) { /* noop */ }
+                        resolve();
+                    }, (error) => {
+                        // Tratar erros de permissão especificamente
+                        if (error && (error.code === 'PERMISSION_DENIED' || error.code === 'permission_denied')) {
+                            showNotification('Acesso negado pelo Firebase Database: regras possivelmente não publicadas ou usuário sem permissão.', 'error');
+                            reject(error);
+                        } else {
+                            reject(error || new Error('Erro desconhecido ao verificar regras'));
+                        }
+                    });
+                } catch (e) {
+                    reject(e);
+                }
+            });
+        }
             console.log('[firebase] ⚠️ Nenhuma mensagem no Firebase');
             messages = [];
             localStorage.setItem('messages', JSON.stringify(messages));
@@ -147,7 +213,7 @@ function initFirebaseSync() {
     });
     
     // Listener para categorias
-    firebaseListeners.categories = db.ref('categories').on('value', (snapshot) => {
+    firebaseListeners.categories = db.ref(refPath('categories')).on('value', (snapshot) => {
         const data = snapshot.val();
         console.log('[firebase] 📥 Categorias recebidas do Firebase (raw):', data);
         
@@ -180,7 +246,7 @@ function initFirebaseSync() {
     });
     
     // Listener para usuários
-    firebaseListeners.users = db.ref('users').on('value', (snapshot) => {
+    firebaseListeners.users = db.ref(refPath('users')).on('value', (snapshot) => {
         const data = snapshot.val();
         console.log('[firebase] 📥 Usuários recebidos do Firebase (raw):', data);
         
@@ -373,6 +439,13 @@ function saveDataWithSync() {
 // Salvar dados no Firebase
 function saveToFirebase() {
     const db = window.firebaseDatabase;
+    const communityId = (window.communities && typeof window.communities.getActiveId === 'function') ? window.communities.getActiveId() : (localStorage.getItem('activeCommunityId')||null);
+    if (!communityId) {
+        console.warn('[firebase] Bloqueado: tente salvar sem comunidade ativa');
+        showNotification('Selecione uma comunidade antes de sincronizar.', 'warning');
+        return;
+    }
+    const basePath = `/${'communities/'+communityId}`;
     const updates = {};
     
     console.log('[firebase] 💾 Preparando para salvar dados...');
@@ -384,11 +457,11 @@ function saveToFirebase() {
     });
     
     // Salvar diretamente como arrays para manter compatibilidade
-    updates['/events'] = events;
-    updates['/categories'] = categories;
-    updates['/users'] = users;
-    updates['/messages'] = messages;
-    updates['/lastUpdate'] = Date.now();
+    updates[`${basePath}events`] = events;
+    updates[`${basePath}categories`] = categories;
+    updates[`${basePath}users`] = users;
+    updates[`${basePath}messages`] = messages;
+    updates[`${basePath}lastUpdate`] = Date.now();
     
     console.log('[firebase] ☁️ Enviando para Firebase...');
     
@@ -557,6 +630,16 @@ window.addEventListener('beforeunload', () => {
 
 // Status de conexão Firebase
 const FIREBASE_ENABLED = window.firebaseInitialized || false;
+function getCommunitySuffix(){
+    const id = (window.communities && typeof window.communities.getActiveId==='function') ? window.communities.getActiveId() : (localStorage.getItem('activeCommunityId')||null);
+    if (!id) return '';
+    try {
+        const list = JSON.parse(localStorage.getItem('communities')||'[]');
+        const comm = list.find(c=>c.id===id);
+        const name = comm ? comm.name : id;
+        return ` — Comunidade ${name}`;
+    } catch { return ` — Comunidade ${id}`; }
+}
 if (FIREBASE_ENABLED && window.firebaseDatabase) {
     window.firebaseDatabase.ref('.info/connected').on('value', (snapshot) => {
         const statusEl = document.getElementById('syncStatus');
@@ -564,7 +647,7 @@ if (FIREBASE_ENABLED && window.firebaseDatabase) {
             console.log('[firebase] ✅ Conectado ao Firebase');
             if (statusEl) {
                 statusEl.className = 'sync-status online';
-                statusEl.innerHTML = '<i class="fas fa-circle"></i><span>Online</span>';
+                statusEl.innerHTML = `<i class="fas fa-circle"></i><span>Online${getCommunitySuffix()}</span>`;
                 statusEl.title = 'Sincronização em tempo real ativa';
             }
             showSyncNotification('Conectado - Sincronização ativa', 'success');
@@ -572,7 +655,7 @@ if (FIREBASE_ENABLED && window.firebaseDatabase) {
             console.log('[firebase] ❌ Desconectado do Firebase');
             if (statusEl) {
                 statusEl.className = 'sync-status offline';
-                statusEl.innerHTML = '<i class="fas fa-circle"></i><span>Offline</span>';
+                statusEl.innerHTML = `<i class="fas fa-circle"></i><span>Offline${getCommunitySuffix()}</span>`;
                 statusEl.title = 'Modo offline - reconectando...';
             }
             showSyncNotification('Modo offline - Dados locais', 'warning');
@@ -583,7 +666,7 @@ if (FIREBASE_ENABLED && window.firebaseDatabase) {
     const statusEl = document.getElementById('syncStatus');
     if (statusEl) {
         statusEl.className = 'sync-status local';
-        statusEl.innerHTML = '<i class="fas fa-circle"></i><span>Local</span>';
+        statusEl.innerHTML = `<i class="fas fa-circle"></i><span>Local${getCommunitySuffix()}</span>`;
         statusEl.title = 'Sincronização apenas entre abas (ative Firebase para sync entre dispositivos)';
     }
 }

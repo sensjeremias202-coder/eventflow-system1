@@ -37,16 +37,18 @@ function loadEvents() {
         const max = event.maxParticipants ? parseInt(event.maxParticipants) : null;
         const remaining = max != null ? Math.max(0, max - enrolledCount) : null;
         const full = max != null && remaining === 0;
-        
+            const allEvents = getLocalEvents();
+            const activeCommunityId = (window.communities && typeof window.communities.getActiveId==='function') ? window.communities.getActiveId() : (localStorage.getItem('activeCommunityId')||null);
+            const scopedEvents = Array.isArray(allEvents) ? allEvents.filter(e => !e.communityId || (activeCommunityId ? e.communityId === activeCommunityId : true)) : [];
         return `
             <div class="event-card ${!isUpcoming ? 'past-event' : ''}" data-event-id="${event.id}">
-                <div class="event-image" style="background-image: url('${event.image || 'https://via.placeholder.com/400x200?text=Evento'}')">
+            if (!scopedEvents || scopedEvents.length === 0) {
                     ${isUpcoming && daysUntil <= 7 ? `<span class="event-badge">Faltam ${daysUntil} dias</span>` : ''}
                     ${!isUpcoming ? '<span class="event-badge past">Encerrado</span>' : ''}
                 </div>
                 <div class="event-content">
                     <div class="event-header">
-                        <h3>${event.title || event.name}</h3>
+            eventsGrid.innerHTML = scopedEvents.map(evt => {
                         <span class="event-category ${event.category}">${getCategoryName(event.category)}</span>
                     </div>
                     <p class="event-description">${event.description}</p>
@@ -135,6 +137,12 @@ function formatDate(dateString) {
 
 // Inscrever em evento
 function enrollInEvent(eventId) {
+    // Guard: requires active community to operate writes
+    const activeCommunityId = (window.communities && typeof window.communities.getActiveId==='function') ? window.communities.getActiveId() : (localStorage.getItem('activeCommunityId')||null);
+    if (!activeCommunityId){
+        showNotification('Selecione uma comunidade antes de inscrever-se.', 'warning');
+        return;
+    }
     // Garantir tipos compatíveis
     const idStr = String(eventId);
     if (!currentUser) {
@@ -255,6 +263,11 @@ function setupEventHandlers() {
     if (addEventBtn && !addEventBtn.dataset.eventsListenerAdded) {
         addEventBtn.dataset.eventsListenerAdded = 'true';
         addEventBtn.addEventListener('click', () => {
+            const activeCommunityId = (window.communities && typeof window.communities.getActiveId==='function') ? window.communities.getActiveId() : (localStorage.getItem('activeCommunityId')||null);
+            if (!activeCommunityId){
+                showNotification('Selecione uma comunidade antes de criar eventos.', 'warning');
+                return;
+            }
             const addEventModal = document.getElementById('addEventModal');
             if (addEventModal) {
                 // Carregar categorias antes de abrir

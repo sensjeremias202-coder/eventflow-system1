@@ -59,6 +59,19 @@ body {
     --transition-3d: all 0.3s ease;
 }
 
+/* Banner de segurança do Firebase */
+.security-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff3cd; /* amarelo claro */
+    color: #664d03;
+    border: 1px solid #ffecb5;
+    padding: 6px 10px;
+    border-radius: 6px;
+    margin-left: auto;
+}
+
 /* ============================================ */
 /* ANIMAÇÕES GLOBAIS */
 /* ============================================ */

@@ -1,10 +1,16 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
+        <header>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EventFlow - Sistema de Agendamento de Eventos</title>
     
+            <div id="firebaseSecurityBanner" style="display:none;" class="security-banner" title="Verificação de regras do Firebase">
+                <i class="fas fa-shield-alt"></i>
+                <span>Segurança do Firebase: verificação necessária</span>
+                <a href="README.md" class="btn btn-sm btn-outline" target="_blank" rel="noopener">Abrir guia</a>
+                <button id="dismissSecurityBanner" class="btn btn-sm btn-outline">Ocultar</button>
+            </div>
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>📅</text></svg>">
     
@@ -236,7 +242,13 @@
                 <i class="fas fa-calendar-check" style="color:#4361ee; font-size: 20px;"></i>
                 <strong>EventFlow</strong>
             </div>
-            <button class="btn btn-primary" onclick="document.getElementById('loginScreen').style.display='block'; document.getElementById('publicHome').style.display='none';">Entrar</button>
+            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                <button id="createCommunityBtn" class="btn btn-outline"><i class="fas fa-users"></i> Criar Comunidade</button>
+                <button id="joinCommunityBtn" class="btn btn-outline"><i class="fas fa-sign-in-alt"></i> Entrar na Comunidade</button>
+                <span id="activeCommunityLabel" style="color:#666;"></span>
+                <button id="quickSwitchCommunityBtn" class="btn btn-sm btn-outline" title="Trocar Comunidade"><i class="fas fa-exchange-alt"></i></button>
+                <button class="btn btn-primary" onclick="document.getElementById('loginScreen').style.display='block'; document.getElementById('publicHome').style.display='none';">Entrar</button>
+            </div>
         </header>
         <section style="padding: 32px; text-align: center;">
             <h1 style="margin-bottom: 10px;">Eventos que conectam pessoas</h1>
@@ -248,7 +260,7 @@
         </section>
         <section style="padding: 24px;">
             <div class="card">
-                <div class="card-header"><div class="card-title"><i class="fas fa-bullhorn"></i> Próximos eventos</div></div>
+                <div class="card-header"><div class="card-title"><i class="fas fa-bullhorn"></i> <span id="publicEventsTitle">Próximos eventos</span></div></div>
                 <div class="card-body" id="publicEventsList">
                     <!-- preenchido pelo app.js se disponível -->
                     <p style="color:#666;">Faça login para ver detalhes e se inscrever.</p>
@@ -263,6 +275,9 @@
                 <button class="btn btn-sm btn-outline" id="donatePixBtn"><i class="fas fa-qrcode"></i> Doação</button>
             </div>
             <small>© EventFlow. Painel de administração disponível após login.</small>
+            <div style="margin-top:8px; color:#444;">
+                <span id="publicCommunityLabel"></span>
+            </div>
         </footer>
         <!-- Cookie Consent (simplificado) -->
         <div id="cookieConsent" style="position:fixed; bottom:20px; left:20px; right:20px; background:#1f2937; color:#fff; padding:12px 16px; border-radius:8px; display:none; z-index:9999;">
@@ -343,6 +358,11 @@
             <!-- Login Form -->
             <form id="loginForm">
                 <div class="form-group">
+                    <label class="form-label" for="loginCommunitySelect">Comunidade</label>
+                    <select class="form-control" id="loginCommunitySelect" placeholder="Selecione a comunidade"></select>
+                    <small style="color: var(--gray);">Escolha antes de entrar para sincronizar no espaço correto.</small>
+                </div>
+                <div class="form-group">
                     <label class="form-label" for="loginEmail">ID de Usuário ou E-mail</label>
                     <input type="text" class="form-control" id="loginEmail" placeholder="Seu ID (ex: EVT123456) ou email" required>
                 </div>
@@ -354,6 +374,12 @@
                 
                 <div class="form-group">
                     <button type="submit" class="btn btn-primary" style="width: 100%;">Entrar</button>
+                </div>
+                <div class="form-group" style="text-align:center;">
+                    <button type="button" id="emailLinkLoginBtn" class="btn btn-outline" style="width: 100%;">
+                        <i class="fas fa-link"></i> Entrar com Link por E-mail
+                    </button>
+                    <small style="display:block; color: var(--gray); margin-top:6px;">Envia um link seguro para seu e-mail. Sem senha.</small>
                 </div>
                 
                 <div style="text-align: center; margin-top: 15px;">
@@ -423,6 +449,9 @@
                     <div class="user-actions">
                         <div class="user-info">
                             <span>Olá, <strong id="userName">Usuário</strong></span>
+                            <span id="headerCommunityGuard" style="margin-left:10px; color:#b91c1c; display:none;">
+                                <i class="fas fa-exclamation-triangle"></i> Selecione uma comunidade
+                            </span>
                         </div>
                         <div id="syncStatus" class="sync-status" title="Status de sincronização">
                             <i class="fas fa-circle"></i>
@@ -610,6 +639,27 @@
                     <div class="profile-stats" style="margin-top: 30px;">
                         <h4 style="margin-bottom: 20px;">Minhas Inscrições <span id="enrollmentsCountProfile" style="color: var(--gray);"></span></h4>
                         <div id="myEnrollmentsProfile"></div>
+                    </div>
+
+                    <div class="profile-stats" style="margin-top: 30px;">
+                        <h4 style="margin-bottom: 10px;">Comunidade</h4>
+                        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                            <select id="communitySelect" class="form-control" style="max-width:280px;"></select>
+                            <button class="btn btn-outline" id="switchCommunityBtn"><i class="fas fa-exchange-alt"></i> Trocar Comunidade</button>
+                            <button class="btn btn-outline" id="copyCommunityIdBtn" title="Copiar ID da Comunidade"><i class="fas fa-copy"></i> Copiar ID</button>
+                            <span id="communitySwitchFeedback" style="color: var(--gray);"></span>
+                        </div>
+                        <div style="margin-top:8px; color: var(--gray);">
+                            Função nesta comunidade: <strong id="communityRoleLabel">-</strong>
+                        </div>
+                        <div class="card" style="margin-top:12px;">
+                            <div class="card-header">
+                                <div class="card-title">Solicitações Pendentes</div>
+                            </div>
+                            <div class="card-body" id="pendingMembersList">
+                                <p style="color: var(--gray);">Nenhuma solicitação.</p>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="profile-stats" style="margin-top: 30px;">
@@ -1282,6 +1332,46 @@
             </form>
         </div>
     </div>
+
+    <!-- Modal: Criar Comunidade -->
+    <div class="modal" id="createCommunityModal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Criar Comunidade</h3>
+                <button class="modal-close" onclick="document.getElementById('createCommunityModal').style.display='none'">&times;</button>
+            </div>
+            <div class="modal-body">
+                <label class="form-label">Nome da comunidade</label>
+                <input type="text" id="communityNameInput" class="form-control" placeholder="Ex.: Juventude Centro">
+                <label class="form-label" style="margin-top:8px;">Descrição (opcional)</label>
+                <textarea id="communityDescInput" class="form-control" rows="3" placeholder="Breve descrição"></textarea>
+                <div class="modal-footer" style="margin-top:12px; display:flex; gap:8px; justify-content:flex-end;">
+                    <button class="btn btn-outline" onclick="document.getElementById('createCommunityModal').style.display='none'">Cancelar</button>
+                    <button class="btn btn-primary" id="confirmCreateCommunity">Criar</button>
+                </div>
+                <p id="createCommunityFeedback" class="feedback" style="color:#4361ee; margin-top:8px;"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Entrar na Comunidade -->
+    <div class="modal" id="joinCommunityModal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Entrar na Comunidade</h3>
+                <button class="modal-close" onclick="document.getElementById('joinCommunityModal').style.display='none'">&times;</button>
+            </div>
+            <div class="modal-body">
+                <label class="form-label">ID da comunidade</label>
+                <input type="text" id="communityIdInput" class="form-control" placeholder="cole o ID recebido">
+                <div class="modal-footer" style="margin-top:12px; display:flex; gap:8px; justify-content:flex-end;">
+                    <button class="btn btn-outline" onclick="document.getElementById('joinCommunityModal').style.display='none'">Cancelar</button>
+                    <button class="btn btn-primary" id="confirmJoinCommunity">Entrar</button>
+                </div>
+                <p id="joinCommunityFeedback" class="feedback" style="color:#4361ee; margin-top:8px;"></p>
+            </div>
+        </div>
+    </div>
     
     <!-- Add User Modal -->
     <div class="modal" id="addUserModal">
@@ -1491,6 +1581,7 @@
     
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
     
@@ -1505,6 +1596,9 @@
     <script src="js/page-loader.js?v=20251202174651"></script>
     <script src="js/app.js?v=20251202174651"></script>
     <script src="js/firebase-init.js?v=20251202174651"></script>
+    <!-- Email Link Auth & Comunidades -->
+    <script src="js/email-auth.js?v=20251202174651"></script>
+    <script src="js/communities.js?v=20251202174651"></script>
     
     <!-- Scripts das páginas principais -->
     <script src="js/dashboard.js?v=20251202174651"></script>

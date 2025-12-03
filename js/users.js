@@ -19,8 +19,12 @@ function loadUsersTable() {
         return;
     }
     
+    // Filtrar por comunidade ativa
+    const activeCommunityId = (window.communities && typeof window.communities.getActiveId==='function') ? window.communities.getActiveId() : (localStorage.getItem('activeCommunityId')||null);
+    const scopedUsers = Array.isArray(users) ? users.filter(u => !u.communityId || (activeCommunityId ? u.communityId === activeCommunityId : true)) : [];
+
     // Verificar se há usuários
-    if (!users || users.length === 0) {
+    if (!scopedUsers || scopedUsers.length === 0) {
         container.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 40px;">Nenhum usuário cadastrado</p>';
         return;
     }
@@ -40,7 +44,7 @@ function loadUsersTable() {
                     </tr>
                 </thead>
                 <tbody>
-                    ${users.map(user => `
+                    ${scopedUsers.map(user => `
                         <tr>
                             <td><code>${user.id}</code></td>
                             <td>
@@ -108,6 +112,11 @@ function getRoleName(role) {
 
 // Editar usuário
 function editUser(userId) {
+    const activeCommunityId = (window.communities && typeof window.communities.getActiveId==='function') ? window.communities.getActiveId() : (localStorage.getItem('activeCommunityId')||null);
+    if (!activeCommunityId){
+        showNotification('Selecione uma comunidade antes de editar usuários.', 'warning');
+        return;
+    }
     const user = users.find(u => u.id === userId);
     if (!user) return;
     
@@ -117,6 +126,11 @@ function editUser(userId) {
 
 // Alternar status do usuário
 async function toggleUserStatus(userId) {
+    const activeCommunityId = (window.communities && typeof window.communities.getActiveId==='function') ? window.communities.getActiveId() : (localStorage.getItem('activeCommunityId')||null);
+    if (!activeCommunityId){
+        showNotification('Selecione uma comunidade antes de alterar usuários.', 'warning');
+        return;
+    }
     const user = users.find(u => u.id === userId);
     if (!user) return;
     
@@ -145,3 +159,30 @@ window.editUser = editUser;
 window.toggleUserStatus = toggleUserStatus;
 
 console.log('[users] ✅ Módulo de usuários carregado');
+// Handlers para criação de usuário com guarda de comunidade
+document.addEventListener('DOMContentLoaded', function(){
+    const addBtn = document.getElementById('addUserBtn');
+    if (addBtn && !addBtn.dataset.userListenerAdded){
+        addBtn.dataset.userListenerAdded = 'true';
+        addBtn.addEventListener('click', function(){
+            const activeCommunityId = (window.communities && typeof window.communities.getActiveId==='function') ? window.communities.getActiveId() : (localStorage.getItem('activeCommunityId')||null);
+            if (!activeCommunityId){
+                showNotification('Selecione uma comunidade antes de criar usuários.', 'warning');
+                return;
+            }
+            const modal = document.getElementById('addUserModal');
+            if (modal) { modal.classList.add('active'); }
+        });
+    }
+    const form = document.getElementById('addUserForm');
+    if (form && !form.dataset.userListenerAdded){
+        form.dataset.userListenerAdded = 'true';
+        form.addEventListener('submit', function(ev){
+            const activeCommunityId = (window.communities && typeof window.communities.getActiveId==='function') ? window.communities.getActiveId() : (localStorage.getItem('activeCommunityId')||null);
+            if (!activeCommunityId){
+                ev.preventDefault();
+                showNotification('Selecione uma comunidade antes de criar usuários.', 'warning');
+            }
+        });
+    }
+});

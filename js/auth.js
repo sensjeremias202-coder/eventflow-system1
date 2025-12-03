@@ -165,6 +165,50 @@ let messages = [];
 document.addEventListener('DOMContentLoaded', function() {
     initializeData();
     setupAuth();
+    // Email Link Auth button
+    const emailBtn = document.getElementById('emailLinkLoginBtn');
+    if (emailBtn && window.emailAuth){
+        emailBtn.onclick = async function(){
+            const emailInput = document.getElementById('loginEmail');
+            const email = (emailInput?.value||'').trim();
+            if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+                alert('Digite seu e-mail para enviar o link.');
+                return;
+            }
+            try {
+                await window.emailAuth.sendSignInLink(email);
+                alert('Enviamos um link de login para seu e-mail. Abra e confirme para entrar.');
+            } catch(e){
+                alert('Falha ao enviar link: '+(e.message||e));
+            }
+        };
+    }
+
+    // Guardar comunidade no login: exigir seleção
+    const loginForm = document.getElementById('loginForm');
+    const loginCommunitySelect = document.getElementById('loginCommunitySelect');
+    const loginSubmitBtn = loginForm ? loginForm.querySelector('button[type="submit"]') : null;
+    if (loginForm) {
+        // Disable submit until community selected
+        const updateSubmitState = function(){
+            const cid = (loginCommunitySelect && loginCommunitySelect.value) || '';
+            if (loginSubmitBtn) loginSubmitBtn.disabled = !cid;
+        };
+        updateSubmitState();
+        if (loginCommunitySelect){ loginCommunitySelect.addEventListener('change', updateSubmitState); }
+        loginForm.addEventListener('submit', function(ev){
+            const cid = (loginCommunitySelect && loginCommunitySelect.value) || localStorage.getItem('activeCommunityId');
+            if (!cid){
+                ev.preventDefault();
+                showNotification('Selecione uma comunidade antes de entrar.', 'warning');
+                return false;
+            }
+            // Persist selection
+            if (loginCommunitySelect && loginCommunitySelect.value) {
+                localStorage.setItem('activeCommunityId', loginCommunitySelect.value);
+            }
+        });
+    }
     
     // Registrar visita da página no Analytics
     if (window.logAnalyticsEvent) {

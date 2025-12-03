@@ -28,29 +28,31 @@ function loadCategoriesTable() {
     }
     
     // Verificar se há categorias
+        const activeCommunityId = (window.communities && typeof window.communities.getActiveId==='function') ? window.communities.getActiveId() : (localStorage.getItem('activeCommunityId')||null);
+        const scopedCategories = Array.isArray(categories) ? categories.filter(c => !c.communityId || (activeCommunityId ? c.communityId === activeCommunityId : true)) : [];
     if (!categories || categories.length === 0) {
         container.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 40px;">Nenhuma categoria cadastrada</p>';
-        return;
+        if (!scopedCategories || scopedCategories.length === 0) {
     }
     
     // Renderizar tabela
     container.innerHTML = `
         <div class="table-responsive">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nome</th>
-                        <th>Descrição</th>
-                        <th>Cor</th>
-                        <th>Eventos</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${categories.map(category => {
-                        const eventCount = events ? events.filter(e => e.category === category.id).length : 0;
-                        return `
+        container.innerHTML = `
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Descrição</th>
+                            <th>Cor</th>
+                            <th>Eventos</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${scopedCategories.map(cat => {
                             <tr>
                                 <td><code>${category.id}</code></td>
                                 <td>
@@ -139,6 +141,11 @@ function setupCategoryHandlers() {
     if (addCategoryBtn && !addCategoryBtn.dataset.categoriesListenerAdded) {
         addCategoryBtn.dataset.categoriesListenerAdded = 'true';
         addCategoryBtn.addEventListener('click', () => {
+            const activeCommunityId = (window.communities && typeof window.communities.getActiveId==='function') ? window.communities.getActiveId() : (localStorage.getItem('activeCommunityId')||null);
+            if (!activeCommunityId){
+                showNotification('Selecione uma comunidade antes de criar categorias.', 'warning');
+                return;
+            }
             const addCategoryModal = document.getElementById('addCategoryModal');
             if (addCategoryModal) {
                 addCategoryModal.classList.add('active');

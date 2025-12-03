@@ -89,7 +89,15 @@ window.showNotificationToast = showNotification;
                 try { evts = JSON.parse(localStorage.getItem('events')) || []; } catch {}
             }
             if (listEl) {
-                let upcoming = Array.isArray(evts) ? evts.filter(e => !!e.date).slice(0, 5) : [];
+                let upcoming = Array.isArray(evts) ? evts.filter(e => !!e.date) : [];
+                // Filtrar por comunidade ativa, se houver marcação nos eventos
+                try {
+                    const cid = (window.communities && typeof window.communities.getActiveId==='function') ? window.communities.getActiveId() : (localStorage.getItem('activeCommunityId')||null);
+                    if (cid){
+                        upcoming = upcoming.filter(e => !e.communityId || e.communityId === cid);
+                    }
+                } catch {}
+                upcoming = upcoming.slice(0,5);
                 if (upcoming.length === 0) {
                     // Fallback: tentar carregar eventos públicos de um JSON estático
                     try {
@@ -98,7 +106,12 @@ window.showNotificationToast = showNotification;
                             .then(data => {
                                 if (Array.isArray(data) && data.length > 0) {
                                     window.__publicEventsCache = data;
-                                    upcoming = data.filter(e => !!e.date).slice(0, 5);
+                                    let filtered = data.filter(e => !!e.date);
+                                    try {
+                                        const cid = (window.communities && typeof window.communities.getActiveId==='function') ? window.communities.getActiveId() : (localStorage.getItem('activeCommunityId')||null);
+                                        if (cid){ filtered = filtered.filter(e => !e.communityId || e.communityId === cid); }
+                                    } catch {}
+                                    upcoming = filtered.slice(0, 5);
                                     window.renderPublicEvents && window.renderPublicEvents(upcoming);
                                 } else {
                                     listEl.innerHTML = '<p style="color:#666;">Nenhum evento disponível no momento.</p>';
@@ -197,6 +210,33 @@ window.showNotificationToast = showNotification;
         console.warn('[runtime] Landing pública não pôde ser exibida:', e);
     }
 })();
+
+// Banner persistente de segurança do Firebase
+document.addEventListener('DOMContentLoaded', () => {
+    const banner = document.getElementById('firebaseSecurityBanner');
+    const dismissBtn = document.getElementById('dismissSecurityBanner');
+    let bannerDismissed = false;
+
+    function updateSecurityBanner() {
+        if (!banner) return;
+        const issue = !!window.firebaseSecurityIssue;
+        banner.style.display = (!bannerDismissed && issue) ? 'flex' : 'none';
+    }
+
+    if (dismissBtn) {
+        dismissBtn.addEventListener('click', () => {
+            bannerDismissed = true;
+            updateSecurityBanner();
+        });
+    }
+
+    window.addEventListener('firebase:security-issue', updateSecurityBanner);
+    window.addEventListener('firebase:security-ok', () => {
+        bannerDismissed = false;
+        updateSecurityBanner();
+    });
+    updateSecurityBanner();
+});
 
 // Exibir banner de consentimento de cookies (Analytics)
 (function(){
@@ -728,7 +768,36 @@ function setupModals() {
         if (e.target.id === 'addEventForm') {
             e.preventDefault();
             if (validateEventForm()) {
-                createEvent();
+                // Cria o evento anexando a comunidade ativa
+                const cid = (window.communities && typeof window.communities.getActiveId==='function') ? window.communities.getActiveId() : (localStorage.getItem('activeCommunityId')||null);
+                if (!cid){
+                    showNotification('Selecione uma comunidade antes de criar eventos.', 'warning');
+                    return;
+                }
+                const newEvent = {
+                    id: (events && events.length ? (Math.max(...events.map(e=>Number(e.id)||0))+1) : 1),
+                    title: document.getElementById('eventTitle')?.value.trim(),
+                    name: document.getElementById('eventTitle')?.value.trim(),
+                    date: document.getElementById('eventDate')?.value,
+                    time: document.getElementById('eventTime')?.value,
+                    location: document.getElementById('eventLocation')?.value.trim(),
+                    description: document.getElementById('eventDescription')?.value.trim(),
+                    category: parseInt(document.getElementById('eventCategory')?.value,10),
+                    maxParticipants: (function(){ const v = document.getElementById('eventMaxParticipants')?.value?.trim(); return v?parseInt(v,10):null; })(),
+                    image: '',
+                    createdBy: currentUser?.id || null,
+                    enrolled: [],
+                    communityId: cid
+                };
+                events = Array.isArray(events) ? [...events, newEvent] : [newEvent];
+                localStorage.setItem('events', JSON.stringify(events));
+                if (typeof saveData === 'function') saveData();
+                showNotification('Evento criado com sucesso!', 'success');
+                const addEventModal = document.getElementById('addEventModal');
+                if (addEventModal) addEventModal.classList.remove('active');
+                const form = document.getElementById('addEventForm');
+                if (form) form.reset();
+                if (typeof loadEvents === 'function') loadEvents();
             }
         }
         
@@ -736,7 +805,26 @@ function setupModals() {
         if (e.target.id === 'addUserForm') {
             e.preventDefault();
             if (validateUserForm()) {
-                createUser();
+                const cid = (window.communities && typeof window.communities.getActiveId==='function') ? window.communities.getActiveId() : (localStorage.getItem('activeCommunityId')||null);
+                if (!cid){
+                    showNotification('Selecione uma comunidade antes de criar usuários.', 'warning');
+                    return;
+                }
+                const name = document.getElementById('newUserName')?.value.trim();
+                const email = document.getElementById('newUserEmail')?.value.trim();
+                const password = document.getElementById('newUserPassword')?.value;
+                const role = document.getElementById('newUserRole')?.value || 'jovens';
+                const newId = (users && users.length ? (Math.max(...users.map(u=>Number(u.id)||0))+1) : 1);
+                const newUser = { id: newId, name, email, password, role, active: true, registered: new Date().toISOString().slice(0,10), communityId: cid };
+                users = Array.isArray(users) ? [...users, newUser] : [newUser];
+                localStorage.setItem('users', JSON.stringify(users));
+                if (typeof saveData === 'function') saveData();
+                showNotification('Usuário criado com sucesso!', 'success');
+                const modal = document.getElementById('addUserModal');
+                if (modal) modal.classList.remove('active');
+                const form = document.getElementById('addUserForm');
+                if (form) form.reset();
+                if (typeof loadUsersTable === 'function') loadUsersTable();
             }
         }
         
@@ -744,7 +832,25 @@ function setupModals() {
         if (e.target.id === 'addCategoryForm') {
             e.preventDefault();
             if (validateCategoryForm()) {
-                createCategory();
+                const cid = (window.communities && typeof window.communities.getActiveId==='function') ? window.communities.getActiveId() : (localStorage.getItem('activeCommunityId')||null);
+                if (!cid){
+                    showNotification('Selecione uma comunidade antes de criar categorias.', 'warning');
+                    return;
+                }
+                const name = document.getElementById('categoryName')?.value.trim();
+                const color = document.getElementById('categoryColor')?.value || '#4361ee';
+                const icon = document.getElementById('categoryIcon')?.value.trim();
+                const newId = (categories && categories.length ? (Math.max(...categories.map(c=>Number(c.id)||0))+1) : 1);
+                const newCategory = { id: newId, name, color, icon, communityId: cid };
+                categories = Array.isArray(categories) ? [...categories, newCategory] : [newCategory];
+                localStorage.setItem('categories', JSON.stringify(categories));
+                if (typeof saveData === 'function') saveData();
+                showNotification('Categoria criada com sucesso!', 'success');
+                const modal = document.getElementById('addCategoryModal');
+                if (modal) modal.classList.remove('active');
+                const form = document.getElementById('addCategoryForm');
+                if (form) form.reset();
+                if (typeof loadCategoriesTable === 'function') loadCategoriesTable();
             }
         }
         

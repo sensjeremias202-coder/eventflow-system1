@@ -1,0 +1,56 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "communities": {
+      "$communityId": {
+        // Public read for minimal landing data if you later decide
+        // to expose a whitelisted node like "publicEvents"
+        // otherwise keep reads guarded below.
+
+        ".read": "auth != null",
+        ".write": "auth != null",
+
+        // Events
+        "events": {
+          ".read": "auth != null",
+          ".write": "auth != null && (root.child('communities').child($communityId).child('members').child(auth.uid).child('role').val() == 'admin')",
+          "$eventId": {
+            "enrolled": {
+              ".write": "auth != null && root.child('communities').child($communityId).child('members').child(auth.uid).exists()"
+            }
+          }
+        },
+
+        // Categories (admin only)
+        "categories": {
+          ".read": "auth != null",
+          ".write": "auth != null && root.child('communities').child($communityId).child('members').child(auth.uid).child('role').val() == 'admin'"
+        },
+
+        // Users directory scoped by community (admin can create/update)
+        "users": {
+          ".read": "auth != null && root.child('communities').child($communityId).child('members').child(auth.uid).exists()",
+          ".write": "auth != null && root.child('communities').child($communityId).child('members').child(auth.uid).child('role').val() == 'admin'"
+        },
+
+        // Members and pending join requests
+        "members": {
+          ".read": "auth != null && root.child('communities').child($communityId).child('members').child(auth.uid).exists()",
+          ".write": "auth != null && root.child('communities').child($communityId).child('members').child(auth.uid).child('role').val() == 'admin'"
+        },
+        "pendings": {
+          ".read": "auth != null && root.child('communities').child($communityId).child('members').child(auth.uid).exists()",
+          ".write": "auth != null && root.child('communities').child($communityId).child('members').child(auth.uid).child('role').val() == 'admin'"
+        },
+
+        // Chat/messages within community (members can read/write)
+        "messages": {
+          ".read": "auth != null && root.child('communities').child($communityId).child('members').child(auth.uid).exists()",
+          ".write": "auth != null && root.child('communities').child($communityId).child('members').child(auth.uid).exists()"
+        }
+      }
+    }
+  }
+}
