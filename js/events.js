@@ -145,15 +145,18 @@ function exportEnrolledCSV(eventId, filter = 'all') {
         const evt = (Array.isArray(events) ? events.find(e => String(e.id) === String(eventId)) : null);
         if (!evt) { showNotification('Evento não encontrado', 'error'); return; }
         const list = Array.isArray(evt.enrolled) ? evt.enrolled : (Array.isArray(evt.enrolledUsers) ? evt.enrolledUsers : []);
-        let rows = list.map(u => ({
-            userId: u.id || u.userId || '',
+        const formatted = list.map(u => ({
+            userId: u.userId || u.id || '',
             name: u.name || u.fullName || '',
             email: u.email || '',
-            status: u.status || (u.confirmed ? 'confirmed' : (u.pending ? 'pending' : 'unknown'))
+            phone: u.phone || '',
+            status: (u.status || (u.confirmed ? 'confirmed' : (u.pending ? 'pending' : 'unknown'))),
+            enrolledAt: u.enrolledAt || u.createdAt || ''
         }));
+        let rows = formatted;
         if (filter === 'confirmed') rows = rows.filter(r => r.status === 'confirmed');
         if (filter === 'pending') rows = rows.filter(r => r.status === 'pending');
-        const header = ['userId','name','email','status'];
+        const header = ['userId','name','email','phone','status','enrolledAt'];
         const csv = [header.join(','), ...rows.map(r => header.map(h => String(r[h]||'').replace(/"/g,'""')).map(v => `"${v}"`).join(','))].join('\n');
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
@@ -279,7 +282,22 @@ function enrollInEvent(eventId) {
 
     const proceedEnroll = () => {
         if (!event.enrolled) event.enrolled = [];
-        event.enrolled.push(currentUser.id);
+        // Normalizar estrutura de inscrição como objeto
+        const enrollment = {
+            userId: currentUser.id,
+            name: currentUser.name || '',
+            email: currentUser.email || '',
+            phone: currentUser.phone || '',
+            status: 'pending',
+            enrolledAt: new Date().toISOString()
+        };
+        // Evitar duplicados se anteriormente era apenas ID
+        const already = Array.isArray(event.enrolled) && (event.enrolled.includes(currentUser.id) || event.enrolled.some(e => (e && (e.userId===currentUser.id || e.id===currentUser.id))));
+        if (already) {
+            showNotification('Você já está inscrito neste evento', 'info');
+            return;
+        }
+        event.enrolled.push(enrollment);
         if (typeof saveData === 'function') {
             saveData();
         } else {

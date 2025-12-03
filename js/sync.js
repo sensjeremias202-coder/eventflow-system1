@@ -79,6 +79,8 @@ function initFirebaseSync() {
     let initialLoadDone = false;
     
     console.log('[firebase] 🔄 Iniciando sincronização com Firebase...');
+    let lastPullAt = null;
+    let lastPushAt = null;
     console.log('[firebase] ✅ Database object válido:', typeof db);
     console.log('[firebase] 📋 Mantendo dados locais; não vamos limpar localStorage para preservar eventos existentes');
     
@@ -86,6 +88,7 @@ function initFirebaseSync() {
     firebaseListeners.events = db.ref(refPath('events')).on('value', (snapshot) => {
         const data = snapshot.val();
         console.log('[firebase] 📥 Eventos recebidos do Firebase (raw):', data);
+        lastPullAt = Date.now();
         
         if (data) {
             // Converter para array se necessário E REMOVER NULLS/UNDEFINED
@@ -132,6 +135,7 @@ function initFirebaseSync() {
                     if (window.firebaseInitialized && window.firebaseDatabase) {
                         window.firebaseDatabase.ref(`/${refPath('events')}`).set(localEvts).then(() => {
                             console.log('[firebase] ✅ Eventos locais semeados no Firebase');
+                            lastPushAt = Date.now();
                         }).catch(err => console.warn('[firebase] ❌ Falha ao semear eventos:', err));
                     }
                 } else {
@@ -293,7 +297,9 @@ function initFirebaseSync() {
             const syncPanel = document.getElementById('syncStatusPanel');
             if (syncPanel) {
                 document.getElementById('syncCommunityName').textContent = communityName || '-';
-                document.getElementById('syncLastEvent').textContent = new Date().toLocaleString();
+                const pull = lastPullAt ? new Date(lastPullAt).toLocaleString() : '-';
+                const push = lastPushAt ? new Date(lastPushAt).toLocaleString() : '-';
+                document.getElementById('syncLastEvent').textContent = `pull: ${pull} • push: ${push}`;
                 document.getElementById('syncCounts').textContent = `${(Array.isArray(evts)?evts.length:0)} eventos • ${usersCount} usuários • ${catsCount} categorias`;
                 syncPanel.style.display = 'grid';
             }
