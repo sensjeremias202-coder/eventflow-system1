@@ -252,15 +252,33 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Chip de comunidade ativa
-    try {
-        const chip = document.getElementById('communityChip');
-        const name = (window.communities && typeof window.communities.getActiveName==='function') ? window.communities.getActiveName() : (localStorage.getItem('activeCommunityName')||null);
-        if (chip && name) { chip.textContent = name; chip.style.display = 'inline-block'; }
-        window.addEventListener('community:changed', () => {
-          const n = (window.communities && typeof window.communities.getActiveName==='function') ? window.communities.getActiveName() : (localStorage.getItem('activeCommunityName')||'');
-          if (chip) { chip.textContent = n || ''; chip.style.display = n ? 'inline-block' : 'none'; }
-        });
-    } catch{}
+        try {
+                const chip = document.getElementById('communityChip');
+                const menu = document.getElementById('communityMenu');
+                const name = (window.communities && typeof window.communities.getActiveName==='function') ? window.communities.getActiveName() : (localStorage.getItem('activeCommunityName')||null);
+                if (chip && name) { chip.textContent = name; chip.style.display = 'inline-block'; }
+                window.addEventListener('community:changed', () => {
+                    const n = (window.communities && typeof window.communities.getActiveName==='function') ? window.communities.getActiveName() : (localStorage.getItem('activeCommunityName')||'');
+                    if (chip) { chip.textContent = n || ''; chip.style.display = n ? 'inline-block' : 'none'; }
+                });
+                if (chip && menu) {
+                    chip.addEventListener('click', (e) => {
+                        const rect = chip.getBoundingClientRect();
+                        menu.style.left = (rect.left) + 'px';
+                        menu.style.top = (rect.bottom + 6 + window.scrollY) + 'px';
+                        menu.style.display = (menu.style.display==='block'?'none':'block');
+                    });
+                    document.addEventListener('click', (e)=>{
+                        if (!menu.contains(e.target) && e.target !== chip) menu.style.display='none';
+                    });
+                    const switchBtn = document.getElementById('menuSwitchCommunity');
+                    const pendBtn = document.getElementById('menuViewPendings');
+                    const copyBtn = document.getElementById('menuCopyCommunityId');
+                    if (switchBtn) switchBtn.addEventListener('click',(e)=>{ e.preventDefault(); const btn=document.getElementById('quickSwitchCommunityBtn'); if(btn) btn.click(); menu.style.display='none'; });
+                    if (pendBtn) pendBtn.addEventListener('click',(e)=>{ e.preventDefault(); const list=document.getElementById('pendingsList'); if(list){ list.scrollIntoView({behavior:'smooth'});} menu.style.display='none'; });
+                    if (copyBtn) copyBtn.addEventListener('click',(e)=>{ e.preventDefault(); try{ const id=(window.communities && typeof window.communities.getActiveId==='function')?window.communities.getActiveId():localStorage.getItem('activeCommunityId'); navigator.clipboard.writeText(id||''); showNotification('ID da comunidade copiado','success'); }catch{} menu.style.display='none'; });
+                }
+        } catch{}
 });
 
 // Modo diagnóstico: Testar acesso às regras
@@ -281,17 +299,31 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (resultEl) resultEl.textContent = 'Nenhuma comunidade ativa selecionada. Selecione antes de testar.';
                     return;
                 }
-                const start = performance.now();
-                try {
-                    await window.checkDatabaseRulesStatus(basePath);
-                    const ms = Math.round(performance.now() - start);
-                    if (resultEl) resultEl.innerHTML = `<span style="color:#2a9d8f;">Acesso permitido</span> • ${ms}ms`;
-                } catch (err) {
-                    const ms = Math.round(performance.now() - start);
-                    const code = (err && err.code) ? err.code : 'erro_desconhecido';
-                    const msg = (err && err.message) ? err.message : String(err);
-                    if (resultEl) resultEl.innerHTML = `<span style="color:#f72585;">Acesso negado (${code})</span> • ${ms}ms<br/><small>${msg}</small>`;
-                }
+                                const start = performance.now();
+                                let output = '';
+                                const nodes = ['events','users','categories'];
+                                for (const n of nodes) {
+                                    try {
+                                        await window.checkDatabaseRulesStatus(`${basePath}`);
+                                        const ms = Math.round(performance.now() - start);
+                                        output += `<div><strong>${n}:</strong> <span style=\"color:#2a9d8f;\">ok</span> • ${ms}ms</div>`;
+                                    } catch (errNode) {
+                                        const ms = Math.round(performance.now() - start);
+                                        const code = (errNode && errNode.code) ? errNode.code : 'erro';
+                                        output += `<div><strong>${n}:</strong> <span style=\"color:#f72585;\">negado (${code})</span> • ${ms}ms</div>`;
+                                    }
+                                }
+                                try {
+                                    const ms = Math.round(performance.now() - start);
+                                    await window.checkDatabaseRulesStatus(basePath);
+                                    output = `<div><strong>base:</strong> <span style=\"color:#2a9d8f;\">ok</span> • ${ms}ms</div>` + output;
+                                    if (resultEl) resultEl.innerHTML = output;
+                                } catch (err) {
+                                    const ms = Math.round(performance.now() - start);
+                                    const code = (err && err.code) ? err.code : 'erro_desconhecido';
+                                    const msg = (err && err.message) ? err.message : String(err);
+                                    if (resultEl) resultEl.innerHTML = `<div><strong>base:</strong> <span style=\"color:#f72585;\">negado (${code})</span> • ${ms}ms</div><small>${msg}</small>` + output;
+                                }
             } catch(e) {
                 showNotification('Falha ao executar diagnóstico: ' + e, 'error');
             }

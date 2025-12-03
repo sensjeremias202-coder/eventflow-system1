@@ -39,7 +39,7 @@ function loadEvents() {
         const full = max != null && remaining === 0;
             const allEvents = getLocalEvents();
             const activeCommunityId = (window.communities && typeof window.communities.getActiveId==='function') ? window.communities.getActiveId() : (localStorage.getItem('activeCommunityId')||null);
-            let scopedEvents = Array.isArray(allEvents) ? allEvents.filter(e => !e.communityId || (activeCommunityId ? e.communityId === activeCommunityId : true)) : [];
+                let scopedEvents = Array.isArray(allEvents) ? (activeCommunityId ? allEvents.filter(e => e.communityId === activeCommunityId) : allEvents) : [];
         return `
             <div class="event-card ${!isUpcoming ? 'past-event' : ''}" data-event-id="${event.id}">
             if (!scopedEvents || scopedEvents.length === 0) {

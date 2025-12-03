@@ -21,7 +21,7 @@ function loadUsersTable() {
     
     // Filtrar por comunidade ativa
     const activeCommunityId = (window.communities && typeof window.communities.getActiveId==='function') ? window.communities.getActiveId() : (localStorage.getItem('activeCommunityId')||null);
-    let scopedUsers = Array.isArray(users) ? users.filter(u => !u.communityId || (activeCommunityId ? u.communityId === activeCommunityId : true)) : [];
+    let scopedUsers = Array.isArray(users) ? (activeCommunityId ? users.filter(u => u.communityId === activeCommunityId) : users) : [];
 
     // Busca com debounce
     const searchInput = document.getElementById('usersSearch');

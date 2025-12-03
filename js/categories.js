@@ -29,7 +29,7 @@ function loadCategoriesTable() {
     
     // Verificar se há categorias
         const activeCommunityId = (window.communities && typeof window.communities.getActiveId==='function') ? window.communities.getActiveId() : (localStorage.getItem('activeCommunityId')||null);
-        const scopedCategories = Array.isArray(categories) ? categories.filter(c => !c.communityId || (activeCommunityId ? c.communityId === activeCommunityId : true)) : [];
+        const scopedCategories = Array.isArray(categories) ? (activeCommunityId ? categories.filter(c => c.communityId === activeCommunityId) : categories) : [];
     if (!categories || categories.length === 0) {
         container.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 40px;">Nenhuma categoria cadastrada</p>';
         if (!scopedCategories || scopedCategories.length === 0) {
