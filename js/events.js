@@ -218,30 +218,7 @@ function exportEnrolledCSV(eventId, filter = 'all') {
         console.error('[events] export CSV error:', e);
         showNotification('Falha ao exportar CSV', 'error');
     }
-                                }).join('');
-                            }
-                            function renderEventsPagination(total, pages) {
-                                if (!paginationEl) return;
-                                const prevDisabled = page<=1 ? 'disabled' : '';
-                                const nextDisabled = page>=pages ? 'disabled' : '';
-                                paginationEl.innerHTML = `
-                                  <button class="btn btn-sm btn-outline" ${prevDisabled} id="eventsPrev">Anterior</button>
-                                  <span style="padding:4px 8px;">Página ${page} de ${pages} • ${total} eventos</span>
-                                  <button class="btn btn-sm btn-outline" ${nextDisabled} id="eventsNext">Próxima</button>
-                                `;
-                                const prev = document.getElementById('eventsPrev');
-                                const next = document.getElementById('eventsNext');
-                                if (prev) prev.onclick = ()=>{ if (page>1) { page--; filterAndPage(); } };
-                                if (next) next.onclick = ()=>{ if (page<pages) { page++; filterAndPage(); } };
-                            }
-                            if (searchInput) {
-                                searchInput.addEventListener('input', (e) => {
-                                    q = e.target.value || '';
-                                    clearTimeout(debounceTimer);
-                                    debounceTimer = setTimeout(filterAndPage, 250);
-                                });
-                            }
-                            filterAndPage();
+}
 
 // Carregar opções de categorias
 function loadCategoryOptions() {
