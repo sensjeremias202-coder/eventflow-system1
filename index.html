@@ -1,47 +1,46 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-        <header>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EventFlow - Sistema de Agendamento de Eventos</title>
-    
-            <div id="firebaseSecurityBanner" style="display:none;" class="security-banner" title="Verificação de regras do Firebase">
-                <i class="fas fa-shield-alt"></i>
-                <span>Segurança do Firebase: verificação necessária</span>
-                <a href="README.md" class="btn btn-sm btn-outline" target="_blank" rel="noopener">Abrir guia</a>
-                <button id="testFirebaseAccessBtn" class="btn btn-sm btn-outline">Testar acesso</button>
-                <button id="dismissSecurityBanner" class="btn btn-sm btn-outline">Ocultar</button>
-            </div>
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>📅</text></svg>">
-    
-    <!-- External CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css?v=20251211130030">
-    <link rel="stylesheet" href="css/features.css?v=20251211130030">
-    <link rel="stylesheet" href="css/new-features.css?v=20251211130030">
-    <link rel="stylesheet" href="css/theme-christian.css?v=20251211130030">
-    <!-- CSS dos módulos são carregados dinamicamente pelo page-loader.js -->
-    
-    <meta name="theme-color" content="#6C63FF">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="EventFlow">
-    
-    <!-- Google Fonts para fontes mais jovens -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- AI Assistant Styles -->
-    <style>
-        .ai-assistant-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: clamp(1rem, 2vw, 2rem);
-            min-height: 600px;
-        }
-        .ai-chat-panel, .ai-preview-panel {
+<head>
+    <!-- Font Awesome para ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-dY9lN3lE0HkGZcJYpQqV1rjvFfVbJkYkQv6G9zVtQJQ0wZJj9QmJ5k8zZ6vQwZ7f7VQZbGZtW5lX0JQ0Y6nU9w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <!-- CDN de backup (jsDelivr) -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" />
+        <script>
+            // Verifica se Font Awesome carregou; caso não, ativa fallback de ícones
+            (function(){
+                function faLoaded(){
+                    var test = document.createElement('i');
+                    test.className = 'fas fa-check';
+                    document.body.appendChild(test);
+                    var style = window.getComputedStyle(test);
+                    var ff = style.fontFamily || '';
+                    document.body.removeChild(test);
+                    return ff.indexOf('Font Awesome') !== -1;
+                }
+                function enableFallback(){
+                    document.documentElement.classList.add('icons-fallback');
+                }
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', function(){
+                        if (!faLoaded()) enableFallback();
+                    });
+                } else {
+                    if (!faLoaded()) enableFallback();
+                }
+            })();
+        </script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>EventFlow</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/theme-christian.css">
+    <link rel="stylesheet" href="css/features.css">
+    <link rel="stylesheet" href="css/new-features.css">
+</head>
+<body>
+    <header>
+                <style>
+            .ai-assistant-container {
             background: var(--card-bg);
             border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -238,7 +237,8 @@
 <body>
     <!-- Public Landing (visível para visitantes) -->
     <div id="publicHome" style="display: block;">
-        <header style="padding: 24px; display: flex; justify-content: space-between; align-items: center;">
+        <header>
+            <div class="container" style="display:flex; justify-content:space-between; align-items:center;">
             <div style="display:flex; align-items:center; gap:10px;">
                 <i class="fas fa-calendar-check" style="color:#4361ee; font-size: 20px;"></i>
                 <strong>EventFlow</strong>
@@ -249,54 +249,83 @@
                                     <a href="#" class="menu-item" id="menuCopyCommunityId"><i class="fas fa-copy"></i> Copiar ID</a>
                                 </div>
             </div>
-            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <div class="cta-bar" style="justify-content:flex-end;">
                 <button id="createCommunityBtn" class="btn btn-outline"><i class="fas fa-users"></i> Criar Comunidade</button>
                 <button id="joinCommunityBtn" class="btn btn-outline"><i class="fas fa-sign-in-alt"></i> Entrar na Comunidade</button>
                 <span id="activeCommunityLabel" style="color:#666;"></span>
                 <button id="quickSwitchCommunityBtn" class="btn btn-sm btn-outline" title="Trocar Comunidade"><i class="fas fa-exchange-alt"></i></button>
                 <button class="btn btn-primary" onclick="document.getElementById('loginScreen').style.display='block'; document.getElementById('publicHome').style.display='none';">Entrar</button>
             </div>
+            </div>
         </header>
-                <section style="padding: 32px; text-align: center;">
+                <section class="section">
+            <div class="container" style="text-align:center;">
             <h1 style="margin-bottom: 10px;">Eventos que conectam pessoas</h1>
             <p style="color:#666; max-width:720px; margin: 0 auto 20px;">Descubra e participe dos próximos encontros, cultos e atividades. Inscreva-se rapidamente e receba atualizações.</p>
-            <div style="display:flex; justify-content:center; gap:10px;">
+            <div class="cta-bar" style="justify-content:center;">
                 <a class="btn btn-success" href="#" onclick="document.getElementById('loginScreen').style.display='block'; document.getElementById('publicHome').style.display='none';">Inscreva-se</a>
                 <a class="btn btn-outline" href="https://sensjeremias202-coder.github.io/eventflow-system1/" target="_blank">Ver calendário</a>
             </div>
                         <div class="section" id="howItWorks" style="margin-top:16px">
                             <h3 class="page-title">Como funciona</h3>
-                            <div style="display:grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap:12px;">
-                                <div style="border:1px solid #eaeef2; border-radius:8px; padding:12px;">
+                            <div class="grid grid-3">
+                                <div class="card" style="padding:12px;">
                                     <strong>1. Escolha sua comunidade</strong>
                                     <p class="text-muted">Crie ou entre em uma comunidade para organizar seus eventos.</p>
                                 </div>
-                                <div style="border:1px solid #eaeef2; border-radius:8px; padding:12px;">
+                                <div class="card" style="padding:12px;">
                                     <strong>2. Veja os eventos</strong>
                                     <p class="text-muted">Acompanhe próximos eventos, vagas e inscrições com facilidade.</p>
                                 </div>
-                                <div style="border:1px solid #eaeef2; border-radius:8px; padding:12px;">
+                                <div class="card" style="padding:12px;">
                                     <strong>3. Participe e ajude</strong>
                                     <p class="text-muted">Inscreva-se como voluntário e receba atualizações em tempo real.</p>
                                 </div>
                             </div>
                         </div>
-        </section>
-        <section style="padding: 24px;">
-            <div class="card">
-                <div class="card-header"><div class="card-title"><i class="fas fa-bullhorn"></i> <span id="publicEventsTitle">Próximos eventos</span></div></div>
-                <div class="card-body" id="publicEventsList">
-                    <!-- preenchido pelo app.js se disponível -->
-                    <p style="color:#666;">Faça login para ver detalhes e se inscrever.</p>
-                </div>
             </div>
         </section>
-        <footer style="padding: 24px; text-align:center; color:#666;">
-            <div style="margin-bottom:10px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
-                <a class="btn btn-sm btn-outline" id="socialInstagram" href="#" target="_blank"><i class="fab fa-instagram"></i> Instagram</a>
-                <a class="btn btn-sm btn-outline" id="socialEmail" href="#" target="_blank"><i class="fas fa-envelope"></i> E-mail</a>
-                <a class="btn btn-sm btn-outline" id="socialWhatsApp" href="#" target="_blank"><i class="fab fa-whatsapp"></i> WhatsApp</a>
-                <button class="btn btn-sm btn-outline" id="donatePixBtn"><i class="fas fa-qrcode"></i> Doação</button>
+        <section class="section">
+            <div class="container">
+            <div class="card">
+                <div class="card-header"><div class="card-title"><i class="fas fa-bullhorn"></i> <span id="publicEventsTitle">Próximos eventos</span></div></div>
+                <div class="card-body" id="publicEventsList" role="region" aria-label="Lista de próximos eventos">
+                    <!-- Skeleton inicial (removido pelo JS ao carregar dados) -->
+                    <div class="grid grid-3" id="publicEventsSkeleton">
+                        <div class="card"><div class="card-body">
+                            <div class="skeleton skeleton-text" style="width:60%"></div>
+                            <div class="skeleton skeleton-text" style="width:80%"></div>
+                            <div class="skeleton skeleton-text" style="width:40%"></div>
+                        </div></div>
+                        <div class="card"><div class="card-body">
+                            <div class="skeleton skeleton-text" style="width:50%"></div>
+                            <div class="skeleton skeleton-text" style="width:70%"></div>
+                            <div class="skeleton skeleton-text" style="width:35%"></div>
+                        </div></div>
+                        <div class="card"><div class="card-body">
+                            <div class="skeleton skeleton-text" style="width:55%"></div>
+                            <div class="skeleton skeleton-text" style="width:75%"></div>
+                            <div class="skeleton skeleton-text" style="width:45%"></div>
+                        </div></div>
+                    </div>
+                    <!-- Empty state padrão (JS deve ocultar quando houver eventos) -->
+                    <div class="empty-state" id="publicEventsEmpty" style="display:none;">
+                        <i class="fas fa-calendar-times"></i>
+                        Nenhum evento público disponível no momento.
+                    </div>
+                    <!-- Mensagem padrão para visitantes -->
+                    <p class="text-muted">Faça login para ver detalhes e se inscrever.</p>
+                </div>
+            </div>
+            </div>
+        </section>
+        <footer class="footer" style="text-align:center; color:#666;">
+            <div class="container">
+            <div class="cta-bar" style="margin-bottom:10px; justify-content:center;">
+                <a class="btn btn-sm btn-outline" id="socialInstagram" href="#" target="_blank" aria-label="Abrir Instagram da comunidade"><i class="fab fa-instagram" aria-hidden="true"></i> Instagram</a>
+                <a class="btn btn-sm btn-outline" id="socialEmail" href="#" target="_blank" aria-label="Enviar e-mail para a comunidade"><i class="fas fa-envelope" aria-hidden="true"></i> E-mail</a>
+                <a class="btn btn-sm btn-outline" id="socialWhatsApp" href="#" target="_blank" aria-label="Abrir WhatsApp da comunidade"><i class="fab fa-whatsapp" aria-hidden="true"></i> WhatsApp</a>
+                <button class="btn btn-sm btn-outline" id="donatePixBtn" aria-label="Abrir modal de doação via Pix"><i class="fas fa-qrcode" aria-hidden="true"></i> Doação</button>
             </div>
             <small>© EventFlow. Painel de administração disponível após login.</small>
             <div style="margin-top:8px; color:#444;">
@@ -305,6 +334,7 @@
             <div class="public-cta">
               <a class="btn btn-primary" href="#" id="ctaEnterCommunity">Ver Comunidade / Entrar</a>
               <a class="btn btn-outline" href="#" id="ctaCreateCommunity">Criar Comunidade</a>
+            </div>
             </div>
         </footer>
         <!-- Cookie Consent (simplificado) -->
@@ -406,24 +436,33 @@
             <form id="loginForm">
                 <div class="form-group">
                     <label class="form-label" for="loginCommunitySelect">Comunidade</label>
-                    <select class="form-control" id="loginCommunitySelect" placeholder="Selecione a comunidade"></select>
-                    <small style="color: var(--gray);">Escolha antes de entrar para sincronizar no espaço correto.</small>
+                    <select class="form-control" id="loginCommunitySelect" placeholder="Selecione a comunidade" aria-describedby="loginCommunityHelp"></select>
+                    <small id="loginCommunityHelp" class="form-hint text-muted">Escolha antes de entrar para sincronizar no espaço correto.</small>
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="loginEmail">ID de Usuário ou E-mail</label>
-                    <input type="text" class="form-control" id="loginEmail" placeholder="Seu ID (ex: EVT123456) ou email" required>
+                    <input type="text" class="form-control" id="loginEmail" placeholder="Seu ID (ex: EVT123456) ou email" aria-describedby="loginEmailHelp loginEmailError" required>
+                    <small id="loginEmailHelp" class="form-hint text-muted">Use seu ID fornecido no cadastro ou seu e-mail.</small>
+                    <div id="loginEmailError" class="error-msg" style="display:none;">Informe um ID ou e-mail válido.</div>
                 </div>
                 
                 <div class="form-group">
                     <label class="form-label" for="loginPassword">Senha</label>
-                    <input type="password" class="form-control" id="loginPassword" placeholder="Sua senha" required>
+                    <input type="password" class="form-control" id="loginPassword" placeholder="Sua senha" aria-describedby="loginPasswordHelp loginPasswordError" required>
+                    <small id="loginPasswordHelp" class="form-hint text-muted">Mínimo 8 caracteres. Evite reutilizar senhas.</small>
+                    <div id="loginPasswordError" class="error-msg" style="display:none;">Verifique sua senha.</div>
+                </div>
+                <div class="form-group" style="display:flex; align-items:center; gap:8px;">
+                    <input type="checkbox" id="rememberMe" aria-describedby="rememberMeHelp">
+                    <label for="rememberMe">Manter conectado</label>
+                    <small id="rememberMeHelp" class="form-hint text-muted">Mantém apenas um sinalizador no dispositivo, nunca a senha.</small>
                 </div>
                 
                 <div class="form-group">
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">Entrar</button>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;" aria-busy="false" aria-live="polite">Entrar</button>
                 </div>
                 <div class="form-group" style="text-align:center;">
-                    <button type="button" id="emailLinkLoginBtn" class="btn btn-outline" style="width: 100%;">
+                    <button type="button" id="emailLinkLoginBtn" class="btn btn-outline" style="width: 100%;" aria-busy="false" aria-live="polite">
                         <i class="fas fa-link"></i> Entrar com Link por E-mail
                     </button>
                     <small style="display:block; color: var(--gray); margin-top:6px;">Envia um link seguro para seu e-mail. Sem senha.</small>
@@ -438,29 +477,36 @@
             <form id="registerForm" style="display: none;">
                 <div class="form-group">
                     <label class="form-label" for="registerName">Nome Completo</label>
-                    <input type="text" class="form-control" id="registerName" placeholder="Seu nome completo" required>
+                    <input type="text" class="form-control" id="registerName" placeholder="Seu nome completo" aria-describedby="registerNameHelp registerNameError" required>
+                    <small id="registerNameHelp" class="form-hint text-muted">Seu nome como deseja exibir para a comunidade.</small>
+                    <div id="registerNameError" class="error-msg" style="display:none;">Informe um nome válido.</div>
                 </div>
                 
                 <div class="form-group">
                     <label class="form-label" for="registerEmail">E-mail</label>
-                    <input type="email" class="form-control" id="registerEmail" placeholder="seu@email.com" required>
+                    <input type="email" class="form-control" id="registerEmail" placeholder="seu@email.com" aria-describedby="registerEmailHelp registerEmailError" required>
+                    <small id="registerEmailHelp" class="form-hint text-muted">Usaremos este e-mail para enviar links de acesso.</small>
+                    <div id="registerEmailError" class="error-msg" style="display:none;">Digite um e-mail válido.</div>
                 </div>
                 
                 <div class="form-group">
                     <label class="form-label" for="registerPassword">Senha</label>
-                    <input type="password" class="form-control" id="registerPassword" placeholder="Sua senha" required>
+                    <input type="password" class="form-control" id="registerPassword" placeholder="Sua senha" aria-describedby="registerPasswordHelp registerPasswordError" required>
+                    <small id="registerPasswordHelp" class="form-hint text-muted">Use 8+ caracteres, misturando letras e números.</small>
+                    <div id="registerPasswordError" class="error-msg" style="display:none;">Senha muito curta.</div>
                 </div>
                 
                 <div class="form-group">
                     <label class="form-label" for="registerRole">Tipo de Usuário</label>
-                    <select class="form-control" id="registerRole" required>
+                    <select class="form-control" id="registerRole" aria-describedby="registerRoleHelp" required>
                         <option value="user">Usuário Comum</option>
                         <option value="admin">Administrador</option>
                     </select>
+                    <small id="registerRoleHelp" class="form-hint text-muted">Você pode alterar seu papel com aprovação dos administradores.</small>
                 </div>
                 
                 <div class="form-group">
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">Cadastrar</button>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;" aria-busy="false" aria-live="polite">Cadastrar</button>
                 </div>
                 
                 <div id="registrationSuccess" style="display: none; background: #10b981; color: white; padding: 15px; border-radius: 8px; margin-top: 15px; text-align: center;">
@@ -530,24 +576,20 @@
         <div class="container">
             <div class="main-content">
                 <!-- Sidebar Navigation -->
-                <div class="sidebar">
+                <div class="sidebar" id="appSidebar" aria-label="Menu lateral">
                     <h3>Menu</h3>
                     <ul class="sidebar-menu">
-                        <li class="admin-treasurer-only" style="display: none;"><a href="#" class="sidebar-link active" data-page="dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                        <li class="admin-only" style="display: none;"><a href="#" class="sidebar-link" data-page="ai-assistant"><i class="fas fa-robot"></i> Assistente AI</a></li>
-                        <li><a href="#" class="sidebar-link" data-page="events"><i class="fas fa-calendar-alt"></i> Eventos</a></li>
-                        <li><a href="#" class="sidebar-link" data-page="calendar"><i class="fas fa-calendar"></i> Calendário</a></li>
-                        <li><a href="#" class="sidebar-link" data-page="profile"><i class="fas fa-user"></i> Meu Perfil</a></li>
-                        <li><a href="#" class="sidebar-link" data-page="chat"><i class="fas fa-comments"></i> Chat</a></li>
-                        <li><a href="#" class="sidebar-link" data-page="volunteers"><i class="fas fa-hands-helping"></i> Voluntários</a></li>
-                        <li class="admin-treasurer-only" style="display: none;"><a href="#" class="sidebar-link" data-page="financeiro"><i class="fas fa-coins"></i> Financeiro</a></li>
-                        <li class="admin-treasurer-only" style="display: none;"><a href="#" class="sidebar-link" data-page="graficos"><i class="fas fa-chart-line"></i> Gráficos</a></li>
-                        <li class="admin-treasurer-only" style="display: none;"><a href="#" class="sidebar-link" data-page="analytics"><i class="fas fa-chart-bar"></i> Analytics Avançado</a></li>
-                        <li class="admin-only" style="display: none;"><a href="#" class="sidebar-link" data-page="payments"><i class="fas fa-credit-card"></i> Pagamentos</a></li>
-                        <li class="admin-only" style="display: none;"><a href="#" class="sidebar-link" data-page="streaming"><i class="fas fa-video"></i> Transmissões</a></li>
-                        <li class="admin-only" style="display: none;"><a href="#" class="sidebar-link" data-page="settings"><i class="fas fa-cog"></i> Configurações</a></li>
-                        <li class="admin-only" style="display: none;"><a href="#" class="sidebar-link" data-page="users"><i class="fas fa-users"></i> Gerenciar Usuários</a></li>
-                        <li class="admin-only" style="display: none;"><a href="#" class="sidebar-link" data-page="categories"><i class="fas fa-tags"></i> Gerenciar Categorias</a></li>
+                        <li class="admin-treasurer-only" style="display: none;"><a href="#" class="sidebar-link" data-page="dashboard"><i class="fas fa-tachometer-alt" aria-hidden="true"></i> Dashboard</a></li>
+                        <li class="admin-only" style="display: none;"><a href="#" class="sidebar-link" data-page="ai-assistant"><i class="fas fa-robot" aria-hidden="true"></i> Assistente AI</a></li>
+                        <li><a href="#" class="sidebar-link" data-page="events"><i class="fas fa-calendar-alt" aria-hidden="true"></i> Eventos</a></li>
+                        <li><a href="#" class="sidebar-link" data-page="calendar"><i class="fas fa-calendar" aria-hidden="true"></i> Calendário</a></li>
+                        <li><a href="#" class="sidebar-link" data-page="profile"><i class="fas fa-user" aria-hidden="true"></i> Meu Perfil</a></li>
+                        <li><a href="#" class="sidebar-link" data-page="chat"><i class="fas fa-comments" aria-hidden="true"></i> Chat</a></li>
+                        <li><a href="#" class="sidebar-link" data-page="volunteers"><i class="fas fa-hands-helping" aria-hidden="true"></i> Voluntários</a></li>
+                        <li class="admin-treasurer-only" style="display: none;"><a href="#" class="sidebar-link" data-page="financeiro"><i class="fas fa-coins" aria-hidden="true"></i> Financeiro</a></li>
+                        <li class="admin-only" style="display: none;"><a href="#" class="sidebar-link" data-page="settings"><i class="fas fa-cog" aria-hidden="true"></i> Configurações</a></li>
+                        <li class="admin-only" style="display: none;"><a href="#" class="sidebar-link" data-page="users"><i class="fas fa-users" aria-hidden="true"></i> Gerenciar Usuários</a></li>
+                        <li class="admin-only" style="display: none;"><a href="#" class="sidebar-link" data-page="categories"><i class="fas fa-tags" aria-hidden="true"></i> Gerenciar Categorias</a></li>
                     </ul>
                     <div class="sidebar-scroll-hint" style="text-align: center; padding: 10px; color: var(--text-muted); font-size: 0.8rem; display: none;">
                         <i class="fas fa-chevron-down"></i> Role para ver mais
@@ -567,7 +609,7 @@
     <!-- PAGE TEMPLATES (Hidden HTML for dynamic loading) -->
     <!-- ============================================ -->
     <template id="template-dashboard">
-        <div class="stats-grid" id="statsGrid"></div>
+        <div class="grid grid-3" id="statsGrid"></div>
         <div class="card">
             <div class="card-header">
                 <div class="card-title">Análise de Comentários</div>
@@ -603,8 +645,43 @@
                 </div>
             </div>
             <div class="card-body">
+                <!-- Filtros visuais (chips) - sem lógica JS adicionada -->
+                <div class="filter-chips" role="tablist" aria-label="Filtros de eventos">
+                    <button type="button" class="chip active" data-filter="all" role="tab" aria-selected="true" aria-pressed="true"><i class="fas fa-layer-group" aria-hidden="true"></i> Todos</button>
+                    <button type="button" class="chip" data-filter="open" role="tab" aria-selected="false" aria-pressed="false"><i class="fas fa-door-open" aria-hidden="true"></i> Com vagas</button>
+                    <button type="button" class="chip" data-filter="full" role="tab" aria-selected="false" aria-pressed="false"><i class="fas fa-user-times" aria-hidden="true"></i> Lotados</button>
+                    <button type="button" class="chip" data-filter="mine" role="tab" aria-selected="false" aria-pressed="false"><i class="fas fa-user" aria-hidden="true"></i> Meus</button>
+                </div>
                 <!-- Barra de pesquisa removida conforme solicitação -->
-                <div class="events-grid" id="eventsGrid"></div>
+                <div class="grid grid-3 events-grid" id="eventsGrid" role="region" aria-label="Lista de eventos">
+                    <!-- Skeleton inicial -->
+                    <div class="card event-skeleton">
+                        <div class="card-body">
+                            <div class="skeleton skeleton-text" style="width:60%"></div>
+                            <div class="skeleton skeleton-text" style="width:80%"></div>
+                            <div class="skeleton skeleton-text" style="width:40%"></div>
+                        </div>
+                    </div>
+                    <div class="card event-skeleton">
+                        <div class="card-body">
+                            <div class="skeleton skeleton-text" style="width:55%"></div>
+                            <div class="skeleton skeleton-text" style="width:75%"></div>
+                            <div class="skeleton skeleton-text" style="width:45%"></div>
+                        </div>
+                    </div>
+                    <div class="card event-skeleton">
+                        <div class="card-body">
+                            <div class="skeleton skeleton-text" style="width:50%"></div>
+                            <div class="skeleton skeleton-text" style="width:70%"></div>
+                            <div class="skeleton skeleton-text" style="width:35%"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Empty state padrão -->
+                <div class="empty-state" id="eventsEmpty" style="display:none;">
+                    <i class="fas fa-calendar-times"></i>
+                    Nenhum evento encontrado com os filtros atuais.
+                </div>
                 <!-- Paginação removida juntamente com a busca -->
             </div>
         </div>
@@ -649,7 +726,7 @@
                         <p id="profileDisplayRole" style="text-align: center; color: var(--gray);">Cargo</p>
                     </div>
                     
-                    <div class="profile-form" style="max-width: 600px; margin: 30px auto;">
+                    <div class="profile-form stack-md" style="max-width: 600px; margin: 30px auto;">
                         <div class="form-group">
                             <label class="form-label" for="profileName">Nome Completo</label>
                             <input type="text" class="form-control" id="profileName" placeholder="Seu nome completo">
@@ -682,12 +759,12 @@
                     
                     <div class="profile-stats" style="margin-top: 40px;">
                         <h4 style="margin-bottom: 20px;">Meus Eventos</h4>
-                        <div id="userEventsContainer"></div>
+                        <div id="userEventsContainer" class="grid grid-3"></div>
                     </div>
 
                     <div class="profile-stats" style="margin-top: 30px;">
                         <h4 style="margin-bottom: 20px;">Minhas Inscrições <span id="enrollmentsCountProfile" style="color: var(--gray);"></span></h4>
-                        <div id="myEnrollmentsProfile"></div>
+                        <div id="myEnrollmentsProfile" class="grid grid-3"></div>
                     </div>
 
                     <div class="profile-stats" style="margin-top: 30px;">
@@ -701,7 +778,7 @@
                         <div style="margin-top:8px; color: var(--gray);">
                             Função nesta comunidade: <strong id="communityRoleLabel">-</strong>
                         </div>
-                        <div class="card" style="margin-top:12px;">
+                        <div class="card stack-md" style="margin-top:12px;">
                             <div class="card-header">
                                 <div class="card-title">Solicitações Pendentes</div>
                             </div>
@@ -751,19 +828,22 @@
             <div class="card-header">
                 <div class="card-title">Calendário de Eventos</div>
                 <div>
-                    <button class="btn btn-outline" onclick="window.calendarInstance?.changeView('month')">
+                    <button class="btn btn-outline" onclick="window.calendarInstance?.changeView('month')" aria-pressed="false" aria-label="Mostrar calendário mensal" title="Mês">
                         <i class="fas fa-calendar"></i> Mês
                     </button>
-                    <button class="btn btn-outline" onclick="window.calendarInstance?.changeView('week')">
+                    <button class="btn btn-outline" onclick="window.calendarInstance?.changeView('week')" aria-pressed="false" aria-label="Mostrar calendário semanal" title="Semana">
                         <i class="fas fa-calendar-week"></i> Semana
                     </button>
-                    <button class="btn btn-outline" onclick="window.calendarInstance?.changeView('day')">
+                    <button class="btn btn-outline" onclick="window.calendarInstance?.changeView('day')" aria-pressed="false" aria-label="Mostrar agenda do dia" title="Dia">
                         <i class="fas fa-calendar-day"></i> Dia
                     </button>
                 </div>
             </div>
             <div class="card-body">
-                <div id="calendar-container"></div>
+                <div id="calendar-container" role="region" aria-label="Calendário interativo">
+                    <!-- Skeleton placeholder de calendário -->
+                    <div class="skeleton" style="height: 240px; border-radius: 12px;" id="calendarSkeleton"></div>
+                </div>
             </div>
         </div>
     </template>
@@ -779,9 +859,54 @@
                 <button class="btn btn-primary admin-only" id="addVolunteerBtn" style="display: none;"></button>
             </div>
             <div class="card-body">
+                <!-- KPIs rápidos (placeholders visuais) -->
+                <div class="grid grid-3" aria-label="Indicadores de voluntariado" style="margin-bottom: 16px;">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="text-muted">Voluntários ativos</div>
+                            <div class="skeleton skeleton-text" style="width:40%; height: 18px;"></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="text-muted">Eventos com apoio</div>
+                            <div class="skeleton skeleton-text" style="width:50%; height: 18px;"></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="text-muted">Pendências</div>
+                            <div class="skeleton skeleton-text" style="width:30%; height: 18px;"></div>
+                        </div>
+                    </div>
+                </div>
                 <!-- Tab: Voluntários -->
                 <div id="tab-volunteers" style="display:block;">
-                    <div id="volunteer-dashboard"></div>
+                    <div id="volunteer-dashboard" role="region" aria-label="Painel de voluntários">
+                        <!-- Skeleton inicial de cards de voluntários -->
+                        <div class="grid grid-3" id="volunteersSkeleton">
+                            <div class="card"><div class="card-body">
+                                <div class="skeleton skeleton-text" style="width:65%"></div>
+                                <div class="skeleton skeleton-text" style="width:45%"></div>
+                                <div class="skeleton skeleton-text" style="width:55%"></div>
+                            </div></div>
+                            <div class="card"><div class="card-body">
+                                <div class="skeleton skeleton-text" style="width:60%"></div>
+                                <div class="skeleton skeleton-text" style="width:40%"></div>
+                                <div class="skeleton skeleton-text" style="width:50%"></div>
+                            </div></div>
+                            <div class="card"><div class="card-body">
+                                <div class="skeleton skeleton-text" style="width:70%"></div>
+                                <div class="skeleton skeleton-text" style="width:50%"></div>
+                                <div class="skeleton skeleton-text" style="width:60%"></div>
+                            </div></div>
+                        </div>
+                        <!-- Empty state padrão -->
+                        <div class="empty-state" id="volunteersEmpty" style="display:none;">
+                            <i class="fas fa-hands-helping"></i>
+                            Nenhum voluntário listado ainda.
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Tab: Inscritos por Evento -->
@@ -789,9 +914,22 @@
                     <div class="volunteers-filters" id="enrollmentFilters" style="margin-bottom: 20px;">
                         <input type="text" class="form-control" id="volunteerSearch" placeholder="Buscar evento..." style="max-width: 300px; display: inline-block;">
                     </div>
-                    <div id="enrollment-container">
-                        <div class="volunteers-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
-                            <!-- Inscritos por evento serão carregados aqui -->
+                    <div id="enrollment-container" role="region" aria-label="Inscritos por evento">
+                        <div class="volunteers-grid grid grid-3">
+                            <!-- Skeleton inicial de inscritos por evento -->
+                            <div class="card"><div class="card-body">
+                                <div class="skeleton skeleton-text" style="width:60%"></div>
+                                <div class="skeleton skeleton-text" style="width:40%"></div>
+                            </div></div>
+                            <div class="card"><div class="card-body">
+                                <div class="skeleton skeleton-text" style="width:55%"></div>
+                                <div class="skeleton skeleton-text" style="width:35%"></div>
+                            </div></div>
+                        </div>
+                        <!-- Empty state padrão -->
+                        <div class="empty-state" id="enrollmentEmpty" style="display:none;">
+                            <i class="fas fa-user-friends"></i>
+                            Nenhum inscrito por evento encontrado.
                         </div>
                     </div>
                 </div>
@@ -799,7 +937,7 @@
         </div>
     </template>
     
-    <template id="template-analytics">
+    <template id="template-analytics-removed">
         <div class="card">
             <div class="card-header">
                 <div class="card-title">
@@ -869,7 +1007,7 @@
         </div>
     </template>
     
-    <template id="template-payments">
+    <template id="template-payments-removed">
         <div class="card">
             <div class="card-header">
                 <div class="card-title">
@@ -946,7 +1084,7 @@
         </div>
     </template>
     
-    <template id="template-streaming">
+    <template id="template-streaming-removed">
         <div class="card">
             <div class="card-header">
                 <div class="card-title">
@@ -1010,7 +1148,25 @@
                 </div>
                 <div class="settings-section">
                     <h3>Idioma</h3>
-                    <select id="languageSelect" class="form-control">
+                    <div class="chat-messages" id="chatMessages" role="log" aria-live="polite">
+                        <!-- Skeleton inicial de mensagens -->
+                        <div class="card" id="chatSkeleton" style="max-width: 520px; margin: 0 auto;">
+                            <div class="card-body">
+                                <div style="display:flex; gap:12px; align-items:center;">
+                                    <div class="skeleton skeleton-avatar"></div>
+                                    <div style="flex:1;">
+                                        <div class="skeleton skeleton-text" style="width:70%"></div>
+                                        <div class="skeleton skeleton-text" style="width:55%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Placeholder quando nenhum contato estiver selecionado -->
+                        <div class="empty-state" id="chatEmpty" style="display:none;">
+                            <i class="fas fa-comments"></i>
+                            Selecione um contato na lista ao lado para começar.
+                        </div>
+                    </div>
                         <option value="pt-BR">Português (Brasil)</option>
                         <option value="en-US">English (US)</option>
                         <option value="es-ES">Español</option>
@@ -1036,7 +1192,28 @@
             </div>
             <div class="card-body">
                 <!-- Barra de pesquisa de usuários removida conforme solicitação -->
-                <div id="usersTable"></div>
+                <div id="usersTable" role="region" aria-label="Lista de usuários">
+                    <!-- Skeleton inicial de usuários -->
+                    <div class="grid grid-3" id="usersSkeleton">
+                        <div class="card"><div class="card-body">
+                            <div class="skeleton skeleton-text" style="width:60%"></div>
+                            <div class="skeleton skeleton-text" style="width:40%"></div>
+                        </div></div>
+                        <div class="card"><div class="card-body">
+                            <div class="skeleton skeleton-text" style="width:55%"></div>
+                            <div class="skeleton skeleton-text" style="width:35%"></div>
+                        </div></div>
+                        <div class="card"><div class="card-body">
+                            <div class="skeleton skeleton-text" style="width:50%"></div>
+                            <div class="skeleton skeleton-text" style="width:30%"></div>
+                        </div></div>
+                    </div>
+                    <!-- Empty state padrão -->
+                    <div class="empty-state" id="usersEmpty" style="display:none;">
+                        <i class="fas fa-users"></i>
+                        Nenhum usuário encontrado.
+                    </div>
+                </div>
                 <!-- Paginação de usuários removida juntamente com a busca -->
             </div>
         </div>
@@ -1144,7 +1321,7 @@
         </div>
     </template>
     
-    <template id="template-graficos">
+    <template id="template-graficos-removed">
         <div class="card">
             <div class="card-header">
                 <div class="card-title">
@@ -1156,25 +1333,11 @@
                     <div class="form-group" style="margin: 0;">
                         <label class="form-label">Tipo de Visualização</label>
                         <select class="form-control" id="chartType">
-                            <option value="event">Por Evento</option>
-                            <option value="monthly">Mensal</option>
-                            <option value="yearly">Anual</option>
-                        </select>
-                    </div>
-                    <div class="form-group" id="eventSelectorGroup" style="margin: 0;">
-                        <label class="form-label">Selecione o Evento</label>
-                        <select class="form-control" id="selectEventChart">
-                            <option value="">Todos os eventos</option>
-                        </select>
-                    </div>
-                    <div class="form-group" id="yearSelectorGroup" style="display: none; margin: 0;">
-                        <label class="form-label">Ano</label>
-                        <select class="form-control" id="selectYear"></select>
-                    </div>
-                </div>
-                
-                <div class="stats-grid" id="financialStats" style="margin-bottom: 30px;">
-                    <div class="stat-card">
+                    <select id="settingsLanguageSelect" class="form-control" aria-label="Selecionar idioma">
+                        <option value="pt-BR">Português (Brasil)</option>
+                        <option value="en-US">English (US)</option>
+                        <option value="es-ES">Español</option>
+                    </select>
                         <div class="stat-icon"><i class="fas fa-wallet"></i></div>
                         <div class="stat-details">
                             <span class="stat-label">Total Arrecadado</span>
@@ -1184,6 +1347,10 @@
                     <div class="stat-card">
                         <div class="stat-icon negative"><i class="fas fa-shopping-cart"></i></div>
                         <div class="stat-details">
+                    <div class="empty-state" id="settingsEmpty" style="display:none;">
+                        <i class="fas fa-cog"></i>
+                        Nenhuma configuração disponível.
+                    </div>
                             <span class="stat-label">Total de Gastos</span>
                             <span class="stat-value negative" id="totalExpenses">R$ 0,00</span>
                         </div>
@@ -1245,6 +1412,58 @@
         </div>
     </template>
 
+        <!-- Script leve para ativar visualmente os chips de filtro sem alterar lógica -->
+        <script>
+        (function(){
+            const container = document.querySelector('.filter-chips');
+            if (!container) return;
+            container.addEventListener('click', function(e){
+                const btn = e.target.closest('.chip');
+                if (!btn) return;
+                container.querySelectorAll('.chip').forEach(c => {
+                    c.classList.toggle('active', c === btn);
+                    c.setAttribute('aria-selected', c === btn ? 'true' : 'false');
+                    c.setAttribute('aria-pressed', c === btn ? 'true' : 'false');
+                });
+                const filter = btn.getAttribute('data-filter');
+                // Emite um evento customizado, caso o app queira escutar
+                const ev = new CustomEvent('events:filterChange', { detail: { filter } });
+                document.dispatchEvent(ev);
+            });
+        })();
+        // Sidebar: rota ativa por página e toggle mobile
+        (function(){
+            const sidebar = document.getElementById('appSidebar');
+            if (!sidebar) return;
+            const links = sidebar.querySelectorAll('.sidebar-link');
+            const setActive = () => {
+                const activePageEl = document.querySelector('.sidebar-link.active');
+                if (activePageEl) {
+                    links.forEach(l => l.classList.toggle('active', l === activePageEl));
+                }
+            };
+            setActive();
+            // Toggle para mobile: cria botão flutuante
+            const toggleWrapper = document.createElement('div');
+            toggleWrapper.className = 'sidebar-toggle';
+            toggleWrapper.setAttribute('aria-label','Alternar menu lateral');
+            toggleWrapper.setAttribute('aria-controls','appSidebar');
+            toggleWrapper.setAttribute('aria-expanded','false');
+            toggleWrapper.innerHTML = '<button class="btn btn-outline" id="toggleSidebarBtn"><span class="fa fa-bars" aria-hidden="true"></span><span class="sr-only">Abrir/fechar menu</span></button>';
+            document.body.appendChild(toggleWrapper);
+            const btn = document.getElementById('toggleSidebarBtn');
+            btn && btn.addEventListener('click', ()=>{
+                const isOpen = sidebar.classList.toggle('sidebar--open');
+                toggleWrapper.setAttribute('aria-expanded', String(isOpen));
+            });
+            // Fechar ao clicar em link
+            links.forEach(l => l.addEventListener('click', ()=>{
+                sidebar.classList.remove('sidebar--open');
+                toggleWrapper.setAttribute('aria-expanded','false');
+            }));
+        })();
+        </script>
+
     <!-- ============================================ -->
     <!-- MODALS -->
     <!-- ============================================ -->
@@ -1295,6 +1514,10 @@
                     <label class="form-label" for="streamScheduleDate">Data Agendada</label>
                     <input type="date" class="form-control" id="streamScheduleDate" required>
                 </div>
+                                    <!-- Sumário visual skeleton enquanto carrega -->
+                                    <div class="financial-summary" id="financialSummarySkeleton" style="display:block;">
+                                        <div class="card"><div class="card-body"><div class="skeleton skeleton-text" style="width:50%; height:18px;"></div></div></div>
+                                    </div>
                 
                 <div class="form-group">
                     <label class="form-label" for="streamScheduleTime">Horário</label>
@@ -1341,9 +1564,18 @@
                 </div>
                 
                 <div class="form-group">
-                    <label class="form-label" for="eventLocation">Local</label>
-                    <input type="text" class="form-control" id="eventLocation" placeholder="Digite o local do evento" required>
-                </div>
+                                            <div id="expensesList" role="region" aria-label="Lista de gastos">
+                                                <!-- Skeleton inicial de gastos -->
+                                                <div class="card"><div class="card-body">
+                                                    <div class="skeleton skeleton-text" style="width:60%"></div>
+                                                    <div class="skeleton skeleton-text" style="width:40%"></div>
+                                                </div></div>
+                                                <!-- Empty state padrão -->
+                                                <div class="empty-state" id="expensesEmpty" style="display:none;">
+                                                    <i class="fas fa-receipt"></i>
+                                                    Nenhum gasto registrado ainda.
+                                                </div>
+                                            </div>
                 
                 <div class="form-group">
                     <label class="form-label" for="eventDescription">Descrição</label>
@@ -1353,9 +1585,18 @@
                 <div class="form-group">
                     <label class="form-label" for="eventCategory">Categoria</label>
                     <select class="form-control" id="eventCategory" required>
-                        <option value="">Selecione uma categoria</option>
-                        <!-- Categories will be loaded here -->
-                    </select>
+                                            <div id="changesList" role="region" aria-label="Histórico de alterações">
+                                                <!-- Skeleton inicial de histórico -->
+                                                <div class="card"><div class="card-body">
+                                                    <div class="skeleton skeleton-text" style="width:50%"></div>
+                                                    <div class="skeleton skeleton-text" style="width:35%"></div>
+                                                </div></div>
+                                                <!-- Empty state padrão -->
+                                                <div class="empty-state" id="changesEmpty" style="display:none;">
+                                                    <i class="fas fa-history"></i>
+                                                    Nenhuma alteração registrada.
+                                                </div>
+                                            </div>
                     <!-- Inline category creation (hidden by default) -->
                     <div id="inlineCategoryForm" class="inline-category-form" style="display:none; margin-top:12px;">
                         <div class="form-row" style="display:flex; gap:8px;">

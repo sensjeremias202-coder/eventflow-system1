@@ -31,6 +31,7 @@ function loadEvents() {
 
     // Estado de paginação e termo
     let q = '';
+    let chipFilter = 'all';
     let page = 1;
     const pageSize = 8;
     let debounceTimer = null;
@@ -53,6 +54,11 @@ function loadEvents() {
                 <div class="event-content">
                     <div class="event-header">
                         <span class="event-category ${evt.category}">${getCategoryName(evt.category)}</span>
+                    </div>
+                    <div class="event-tags">
+                        ${max != null ? (
+                            full ? '<span class="tag danger">Lotado</span>' : '<span class="tag success">Com vagas</span>'
+                        ) : ''}
                     </div>
                     <p class="event-description">${evt.description||''}</p>
                     <div class="event-info">
@@ -148,6 +154,27 @@ function loadEvents() {
                 String(e.id||'').toLowerCase().includes(term)
             ));
         }
+        // Aplicar filtro visual dos chips
+        if (chipFilter !== 'all') {
+            data = data.filter(e => {
+                const enrolledCount = Array.isArray(e.enrolled) ? e.enrolled.length : 0;
+                const max = e.maxParticipants != null ? parseInt(e.maxParticipants) : null;
+                const full = max != null && enrolledCount >= max;
+                if (chipFilter === 'open') return !full;
+                if (chipFilter === 'full') return full;
+                if (chipFilter === 'mine') {
+                    // Mostrar eventos criados pelo usuário atual OU em que estou inscrito
+                    if (!currentUser) return false;
+                    const isCreator = String(e.createdBy) === String(currentUser.id);
+                    const isEnrolled = Array.isArray(e.enrolled) && (
+                        e.enrolled.includes(currentUser.id) ||
+                        e.enrolled.some(x => x && (String(x.userId) === String(currentUser.id) || String(x.id) === String(currentUser.id)))
+                    );
+                    return isCreator || isEnrolled;
+                }
+                return true;
+            });
+        }
         const total = data.length;
         const pages = Math.max(1, Math.ceil(total / pageSize));
         page = Math.min(page, pages);
@@ -181,6 +208,16 @@ function loadEvents() {
     }
     // primeira renderização
     filterAndPage();
+
+    // Ouvir mudança dos chips de filtro (evento customizado emitido pela UI)
+    document.addEventListener('events:filterChange', (ev) => {
+        try {
+            const f = ev && ev.detail ? ev.detail.filter : 'all';
+            chipFilter = f || 'all';
+            page = 1; // reset paginação ao trocar filtro
+            filterAndPage();
+        } catch(err){ console.warn('[events] filtro chips erro:', err); }
+    });
 
     console.log('[events] ✅ Eventos carregados:', scopedEvents.length);
 }

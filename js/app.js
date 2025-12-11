@@ -358,26 +358,37 @@ window.renderPublicEvents = function(evts){
         const listEl = document.getElementById('publicEventsList');
         if (!listEl) return;
         const upcoming = Array.isArray(evts) ? evts.filter(e => !!e.date).slice(0, 5) : [];
-        if (upcoming.length === 0) {
-            listEl.innerHTML = '<p style="color:#666;">Nenhum evento cadastrado no momento.</p>';
-        } else {
-            listEl.innerHTML = upcoming.map(e => {
-                const enrolled = Array.isArray(e.enrolled) ? e.enrolled.length : 0;
-                const max = e.maxParticipants ? parseInt(e.maxParticipants) : null;
-                const remaining = max != null ? Math.max(0, max - enrolled) : null;
-                const full = max != null && remaining === 0;
-                return `
-                <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #eee;">
-                    <div>
-                        <strong>${e.title || e.name || 'Evento'}</strong>
-                        <div style="color:#666; font-size:13px;"><i class="fas fa-calendar"></i> ${e.date} • <i class="fas fa-clock"></i> ${e.time || ''}</div>
-                        <div style="color:#666; font-size:13px;"><i class="fas fa-map-marker-alt"></i> ${e.location || ''}</div>
-                        ${max != null ? `<div style="color:${full ? '#f72585' : '#2a9d8f'}; font-size:12px; margin-top:4px;">${full ? 'Lotado' : `${remaining} vagas restantes`} • ${enrolled}/${max} inscritos</div>` : ''}
-                    </div>
-                    <a class="btn ${full ? 'btn-outline' : 'btn-outline'}" href="#" ${full ? 'style="opacity:0.6; pointer-events:none;"' : ''} onclick="window.requestEnrollment && window.requestEnrollment('${e.id}')">Inscrever-se</a>
-                </div>`;
-            }).join('');
-        }
+                if (upcoming.length === 0) {
+                        listEl.innerHTML = '<div class="empty-state"><i class="fas fa-calendar-times"></i>Nenhum evento cadastrado no momento.</div>';
+                } else {
+                        listEl.innerHTML = upcoming.map(e => {
+                                const enrolled = Array.isArray(e.enrolled) ? e.enrolled.length : 0;
+                                const max = e.maxParticipants ? parseInt(e.maxParticipants) : null;
+                                const remaining = max != null ? Math.max(0, max - enrolled) : null;
+                                const full = max != null && remaining === 0;
+                                const statusTag = max != null
+                                        ? `<span class="tag ${full ? 'warning' : 'success'}"><i class="fas ${full ? 'fa-user-times' : 'fa-door-open'}"></i> ${full ? 'Lotado' : (remaining + ' vagas')}</span>`
+                                        : '';
+                                return `
+                                <div class="event-card" data-event-id="${e.id}">
+                                    <div class="event-header">
+                                        <div class="event-title"><strong>${e.title || e.name || 'Evento'}</strong></div>
+                                        <div class="event-tags">${statusTag}</div>
+                                    </div>
+                                    <div class="event-body">
+                                        <div class="event-info">
+                                            <div class="event-info-item"><i class="fas fa-calendar"></i> <span>${e.date}</span></div>
+                                            <div class="event-info-item"><i class="fas fa-clock"></i> <span>${e.time || ''}</span></div>
+                                            <div class="event-info-item"><i class="fas fa-map-marker-alt"></i> <span>${e.location || ''}</span></div>
+                                        </div>
+                                        ${max != null ? `<div class="event-stats"><div class="stat"><i class="fas fa-users"></i> <span>${enrolled}/${max} inscritos</span></div></div>` : ''}
+                                        <div class="event-actions">
+                                            <a class="btn btn-outline" href="#" ${full ? 'style="opacity:0.6; pointer-events:none;"' : ''} onclick="window.requestEnrollment && window.requestEnrollment('${e.id}')">Inscrever-se</a>
+                                        </div>
+                                    </div>
+                                </div>`;
+                        }).join('');
+                }
     } catch(e){
         console.warn('[public] Falha ao renderizar eventos:', e);
     }
@@ -460,8 +471,8 @@ function showConfirm(message, title = 'Confirmação', options = {}) {
 function setupNavigation() {
     // Definir páginas permitidas por role
     const allowedPages = {
-        'admin': ['dashboard', 'events', 'profile', 'chat', 'calendar', 'volunteers', 'financeiro', 'graficos', 'analytics', 'payments', 'streaming', 'settings', 'users', 'categories', 'ai-assistant'],
-        'treasurer': ['dashboard', 'events', 'profile', 'chat', 'calendar', 'volunteers', 'financeiro', 'graficos', 'analytics', 'payments', 'users', 'categories'],
+        'admin': ['dashboard', 'events', 'profile', 'chat', 'calendar', 'volunteers', 'financeiro', 'settings', 'users', 'categories', 'ai-assistant'],
+        'treasurer': ['dashboard', 'events', 'profile', 'chat', 'calendar', 'volunteers', 'financeiro', 'users', 'categories'],
         'jovens': ['events', 'chat', 'profile', 'calendar', 'volunteers'] // Jovens: Eventos, Chat, Perfil, Calendário e Voluntários
     };
     
