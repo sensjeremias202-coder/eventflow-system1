@@ -216,12 +216,7 @@ async function initializePage(pageName) {
             }
             break;
             
-        case 'graficos':
-            // Carregar página de gráficos
-            if (typeof loadGraficos === 'function') {
-                loadGraficos();
-            }
-            break;
+        // Página 'graficos' desativada
             
         case 'users':
             // Carregar tabela de usuários (admin only)
@@ -266,38 +261,11 @@ async function initializePage(pageName) {
             }
             break;
             
-        case 'analytics':
-            // Inicializar analytics avançado
-            if (typeof initAdvancedAnalytics === 'function') {
-                initAdvancedAnalytics();
-            } else if (window.AdvancedAnalytics) {
-                // Fallback para instância global
-                window.analyticsInstance = window.analyticsInstance || new AdvancedAnalytics();
-                if (window.analyticsInstance.init) {
-                    window.analyticsInstance.init();
-                }
-            }
-            break;
+        // Página 'analytics' mantida conforme disponibilidade
             
-        case 'payments':
-            // Inicializar sistema de pagamentos
-            if (typeof initPayments === 'function') {
-                initPayments();
-            } else if (window.PaymentSystem) {
-                // Fallback para instância global
-                window.paymentInstance = window.paymentInstance || new PaymentSystem();
-            }
-            break;
+        // Página 'payments' desativada
             
-        case 'streaming':
-            // Inicializar sistema de transmissões ao vivo
-            if (typeof initStreaming === 'function') {
-                initStreaming();
-            } else if (window.LiveStreamingSystem) {
-                // Fallback para instância global
-                window.streamingInstance = window.streamingInstance || new LiveStreamingSystem();
-            }
-            break;
+        // Página 'streaming' desativada
             
         case 'settings':
             // Inicializar página de configurações
