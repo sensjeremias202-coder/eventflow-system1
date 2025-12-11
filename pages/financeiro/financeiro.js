@@ -120,20 +120,24 @@ function loadEventFinancialData(eventIndex) {
     
     if (!event) return;
     
-    // Inicializar estrutura financeira se não existir
+    // Inicializar estrutura financeira e arrays se não existirem
     if (!event.financial) {
-        event.financial = {
-            initialValue: 0,
-            expenses: [],
-            changes: []
-        };
-        events[eventIndex] = event;
-        localStorage.setItem('events', JSON.stringify(events));
+        event.financial = { initialValue: 0, expenses: [], changes: [] };
+    } else {
+        if (!Array.isArray(event.financial.expenses)) event.financial.expenses = [];
+        if (!Array.isArray(event.financial.changes)) event.financial.changes = [];
+        if (typeof event.financial.initialValue !== 'number') {
+            const iv = parseFloat(event.financial.initialValue) || 0;
+            event.financial.initialValue = iv;
+        }
     }
+    events[eventIndex] = event;
+    localStorage.setItem('events', JSON.stringify(events));
     
     // Calcular totais
     const initialValue = event.financial.initialValue || 0;
-    const totalExpenses = event.financial.expenses.reduce((sum, exp) => sum + parseFloat(exp.value), 0);
+    const expensesArr = Array.isArray(event.financial.expenses) ? event.financial.expenses : [];
+    const totalExpenses = expensesArr.reduce((sum, exp) => sum + (parseFloat(exp.value) || 0), 0);
     const remainingValue = initialValue - totalExpenses;
     
     // Atualizar UI
@@ -152,7 +156,7 @@ function loadEventFinancialData(eventIndex) {
     }
     
     // Carregar lista de gastos
-    loadExpensesList(event.financial.expenses);
+    loadExpensesList(expensesArr);
     
     // Carregar histórico de alterações (admin)
     if (document.getElementById('changesHistory').style.display !== 'none') {
@@ -186,8 +190,12 @@ function saveInitialValue() {
     const events = JSON.parse(localStorage.getItem('events') || '[]');
     const event = events[currentEventId];
     
-    if (!event.financial) {
-        event.financial = { initialValue: 0, expenses: [], changes: [] };
+    if (!event.financial || !Array.isArray(event.financial.expenses) || !Array.isArray(event.financial.changes)) {
+        event.financial = {
+            initialValue: (event.financial && typeof event.financial.initialValue === 'number') ? event.financial.initialValue : 0,
+            expenses: Array.isArray(event.financial?.expenses) ? event.financial.expenses : [],
+            changes: Array.isArray(event.financial?.changes) ? event.financial.changes : []
+        };
     }
     
     const oldValue = event.financial.initialValue;
