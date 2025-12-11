@@ -27,72 +27,63 @@ function loadCategoriesTable() {
         return;
     }
     
-    // Verificar se há categorias
-        const activeCommunityId = (window.communities && typeof window.communities.getActiveId==='function') ? window.communities.getActiveId() : (localStorage.getItem('activeCommunityId')||null);
-        const scopedCategories = Array.isArray(categories) ? (activeCommunityId ? categories.filter(c => c.communityId === activeCommunityId) : categories) : [];
-    if (!categories || categories.length === 0) {
+    // Escopo por comunidade
+    const activeCommunityId = (window.communities && typeof window.communities.getActiveId==='function') ? window.communities.getActiveId() : (localStorage.getItem('activeCommunityId')||null);
+    const scopedCategories = Array.isArray(categories) ? (activeCommunityId ? categories.filter(c => c.communityId === activeCommunityId) : categories) : [];
+
+    if (!scopedCategories || scopedCategories.length === 0) {
         container.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 40px;">Nenhuma categoria cadastrada</p>';
-        if (!scopedCategories || scopedCategories.length === 0) {
+        console.log('[categories] ✅ Tabela de categorias carregada: 0');
+        return;
     }
-    
+
     // Renderizar tabela
+    const rows = scopedCategories.map(cat => {
+        const eventCount = Array.isArray(events) ? events.filter(e => e.category === cat.id).length : 0;
+        const canDelete = eventCount === 0;
+        return `
+            <tr>
+                <td><code>${cat.id}</code></td>
+                <td><strong>${cat.name}</strong></td>
+                <td>${cat.description || '-'}</td>
+                <td>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <div style="width:20px; height:20px; border-radius:4px; background:${cat.color || '#6c757d'};"></div>
+                        <span>${cat.color || '-'}</span>
+                    </div>
+                </td>
+                <td><span class="badge badge-primary">${eventCount} evento${eventCount !== 1 ? 's' : ''}</span></td>
+                <td>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn btn-sm btn-outline" onclick="editCategory('${cat.id}')" title="Editar"><i class="fas fa-edit"></i></button>
+                        ${canDelete ? `<button class="btn btn-sm btn-danger" onclick="deleteCategory('${cat.id}')" title="Excluir"><i class="fas fa-trash"></i></button>` : `<button class="btn btn-sm btn-outline" disabled title="Não pode excluir: categoria em uso"><i class="fas fa-trash"></i></button>`}
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+
     container.innerHTML = `
         <div class="table-responsive">
-        container.innerHTML = `
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Nome</th>
-                            <th>Descrição</th>
-                            <th>Cor</th>
-                            <th>Eventos</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${scopedCategories.map(cat => {
-                            <tr>
-                                <td><code>${category.id}</code></td>
-                                <td>
-                                    <strong>${category.name}</strong>
-                                </td>
-                                <td>${category.description || '-'}</td>
-                                <td>
-                                    <div style="display: flex; align-items: center; gap: 8px;">
-                                        <div style="width: 20px; height: 20px; border-radius: 4px; background: ${category.color || '#6c757d'};"></div>
-                                        <span>${category.color || '-'}</span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="badge badge-primary">${eventCount} evento${eventCount !== 1 ? 's' : ''}</span>
-                                </td>
-                                <td>
-                                    <div style="display: flex; gap: 8px;">
-                                        <button class="btn btn-sm btn-outline" onclick="editCategory('${category.id}')" title="Editar">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        ${eventCount === 0 ? `
-                                            <button class="btn btn-sm btn-danger" onclick="deleteCategory('${category.id}')" title="Excluir">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        ` : `
-                                            <button class="btn btn-sm btn-outline" disabled title="Não pode excluir: categoria em uso">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        `}
-                                    </div>
-                                </td>
-                            </tr>
-                        `;
-                    }).join('')}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Descrição</th>
+                        <th>Cor</th>
+                        <th>Eventos</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rows}
                 </tbody>
             </table>
         </div>
     `;
     
-    console.log('[categories] ✅ Tabela de categorias carregada:', categories.length);
+    console.log('[categories] ✅ Tabela de categorias carregada:', scopedCategories.length);
 }
 
 // Editar categoria
