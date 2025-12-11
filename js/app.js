@@ -213,35 +213,7 @@ window.showNotificationToast = showNotification;
 
 // Banner persistente de segurança do Firebase
 document.addEventListener('DOMContentLoaded', () => {
-    // Garantir que todas as barras de busca respondam ao Enter/Esc
-    try {
-        function wireGlobalSearchInputs(){
-            const inputs = document.querySelectorAll('input[id$="Search"], input[data-search]');
-            inputs.forEach(inp => {
-                if (inp.__wiredSearch) return;
-                inp.__wiredSearch = true;
-                inp.addEventListener('keydown', (e)=>{
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        // dispara evento input para handlers existentes
-                        inp.dispatchEvent(new Event('input', { bubbles: true }));
-                    } else if (e.key === 'Escape') {
-                        inp.value = '';
-                        inp.dispatchEvent(new Event('input', { bubbles: true }));
-                    }
-                });
-            });
-        }
-        wireGlobalSearchInputs();
-        // Reaplicar ao trocar de página
-        window.addEventListener('page:changed', wireGlobalSearchInputs);
-        document.addEventListener('click', (e)=>{
-            // ao navegar via sidebar, reaplicar após pequeno atraso
-            if (e.target && e.target.classList && e.target.classList.contains('sidebar-link')){
-                setTimeout(wireGlobalSearchInputs, 200);
-            }
-        });
-    } catch(e){ console.warn('[runtime] wireGlobalSearchInputs falhou:', e); }
+    // Removido gerenciamento global de barras de pesquisa conforme solicitação
     const banner = document.getElementById('firebaseSecurityBanner');
     const dismissBtn = document.getElementById('dismissSecurityBanner');
     let bannerDismissed = false;
