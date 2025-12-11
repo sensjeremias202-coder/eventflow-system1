@@ -187,25 +187,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Guardar comunidade no login: exigir seleção
     const loginForm = document.getElementById('loginForm');
     const loginCommunitySelect = document.getElementById('loginCommunitySelect');
-    const loginSubmitBtn = loginForm ? loginForm.querySelector('button[type="submit"]') : null;
-    if (loginForm) {
-        // Disable submit until community selected
-        const updateSubmitState = function(){
-            const cid = (loginCommunitySelect && loginCommunitySelect.value) || '';
-            if (loginSubmitBtn) loginSubmitBtn.disabled = !cid;
-        };
-        updateSubmitState();
-        if (loginCommunitySelect){ loginCommunitySelect.addEventListener('change', updateSubmitState); }
-        loginForm.addEventListener('submit', function(ev){
-            const cid = (loginCommunitySelect && loginCommunitySelect.value) || localStorage.getItem('activeCommunityId');
-            if (!cid){
-                ev.preventDefault();
-                showNotification('Selecione uma comunidade antes de entrar.', 'warning');
-                return false;
-            }
-            // Persist selection
-            if (loginCommunitySelect && loginCommunitySelect.value) {
-                localStorage.setItem('activeCommunityId', loginCommunitySelect.value);
+    if (loginCommunitySelect) {
+        loginCommunitySelect.addEventListener('change', function(){
+            const cid = loginCommunitySelect.value;
+            if (cid) {
+                localStorage.setItem('activeCommunityId', cid);
+                try { if (window.communities && typeof window.communities.switchTo==='function') window.communities.switchTo(cid); } catch{}
             }
         });
     }
@@ -562,6 +549,20 @@ function showApp() {
     
     // Configurar modais
     setupModals();
+
+    // Se não houver comunidade ativa, orientar o usuário imediatamente
+    try {
+        const cid = localStorage.getItem('activeCommunityId');
+        if (!cid) {
+            const guard = document.getElementById('headerCommunityGuard');
+            if (guard) guard.style.display = 'inline-flex';
+            showNotification('Selecione ou crie uma comunidade para continuar.', 'warning');
+            setTimeout(() => {
+                const modalJoin = document.getElementById('joinCommunityModal');
+                if (modalJoin) modalJoin.style.display = 'block';
+            }, 300);
+        }
+    } catch {}
 }
 
 function saveData() {
