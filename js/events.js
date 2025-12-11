@@ -44,10 +44,12 @@ function loadEvents() {
         const max = evt.maxParticipants ? parseInt(evt.maxParticipants) : null;
         const remaining = max != null ? Math.max(0, max - enrolledCount) : null;
         const full = max != null && remaining === 0;
+        const upcomingBadge = (isUpcoming && daysUntil <= 7) ? '<span class="event-badge">Faltam ' + daysUntil + ' dias</span>' : '';
+        const pastBadge = (!isUpcoming) ? '<span class="event-badge past">Encerrado</span>' : '';
         return `
             <div class="event-card ${!isUpcoming ? 'past-event' : ''}" data-event-id="${evt.id}">
-                ${isUpcoming && daysUntil <= 7 ? `<span class=\"event-badge\">Faltam ${daysUntil} dias</span>` : ''}
-                ${!isUpcoming ? '<span class=\"event-badge past\">Encerrado</span>' : ''}
+                ${upcomingBadge}
+                ${pastBadge}
                 <div class="event-content">
                     <div class="event-header">
                         <span class="event-category ${evt.category}">${getCategoryName(evt.category)}</span>
