@@ -56,6 +56,24 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Gráficos Financeiros -->
+            <div class="card" style="margin-top: 20px;">
+                <div class="card-header">
+                    <div class="card-title"><i class="fas fa-chart-line"></i> Gráficos</div>
+                </div>
+                <div class="card-body">
+                    <div style="display:grid; grid-template-columns: 1fr; gap:16px;">
+                        <div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <strong>Gastos ao longo do tempo</strong>
+                                <small id="expensesChartSummary" style="color:var(--gray);"></small>
+                            </div>
+                            <canvas id="expensesChart" height="120"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
             <!-- Formulário de Valor Inicial (Tesoureiro) -->
             <div class="card treasurer-only" id="initialValueForm" style="display: none; margin-top: 20px;">

@@ -8,6 +8,7 @@ console.log('[financeiro] 📊 Módulo financeiro carregado');
 
 // Estado atual
 let currentEventId = null;
+let expensesChartInstance = null;
 
 /**
  * Carrega a página financeira
@@ -157,6 +158,9 @@ function loadEventFinancialData(eventIndex) {
     
     // Carregar lista de gastos
     loadExpensesList(expensesArr);
+
+    // Renderizar gráficos
+    renderFinancialCharts(expensesArr);
     
     // Carregar histórico de alterações (admin)
     if (document.getElementById('changesHistory').style.display !== 'none') {
@@ -492,6 +496,68 @@ function formatCurrency(value) {
         style: 'currency',
         currency: 'BRL'
     }).format(value);
+}
+
+/**
+ * Renderiza gráficos financeiros (Chart.js)
+ */
+function renderFinancialCharts(expenses) {
+    try {
+        const canvas = document.getElementById('expensesChart');
+        const summaryEl = document.getElementById('expensesChartSummary');
+        if (!canvas) return;
+
+        if (typeof Chart === 'undefined') {
+            if (summaryEl) summaryEl.textContent = 'Biblioteca de gráficos não carregada';
+            return;
+        }
+
+        const byDate = {};
+        (expenses || []).forEach(exp => {
+            const key = new Date(exp.date).toISOString().slice(0, 10);
+            const val = parseFloat(exp.value) || 0;
+            byDate[key] = (byDate[key] || 0) + val;
+        });
+        const labels = Object.keys(byDate).sort();
+        const data = labels.map(k => byDate[k]);
+
+        if (expensesChartInstance) {
+            expensesChartInstance.destroy();
+        }
+
+        const ctx = canvas.getContext('2d');
+        expensesChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels.map(d => new Date(d).toLocaleDateString('pt-BR')),
+                datasets: [{
+                    label: 'Gastos (R$)',
+                    data,
+                    fill: false,
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239,68,68,0.15)',
+                    tension: 0.25,
+                    borderWidth: 2,
+                    pointRadius: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: true } },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+        const total = data.reduce((s, v) => s + v, 0);
+        if (summaryEl) {
+            summaryEl.textContent = `${labels.length} dia(s) • Total: ${formatCurrency(total)}`;
+        }
+    } catch (e) {
+        console.error('[financeiro] renderFinancialCharts error:', e);
+    }
 }
 
 /**
