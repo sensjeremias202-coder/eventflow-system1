@@ -9,6 +9,7 @@ function initEventsPage() {
     loadCategoryOptions();
     setupEventHandlers();
     wireEventsSearchFallback();
+    wireEventsExactButton();
     console.log('[events] ✅ Página de eventos inicializada');
 }
 
@@ -198,6 +199,30 @@ function wireEventsSearchFallback(){
             });
         });
     } catch(e){ console.warn('[events] wireEventsSearchFallback:', e); }
+}
+
+// Botão de busca com coincidência exata (mostra apenas o que casa exatamente ou nada)
+function wireEventsExactButton(){
+    try {
+        const input = document.getElementById('eventsSearch');
+        const btn = document.getElementById('eventsSearchBtn');
+        const grid = document.getElementById('eventsGrid');
+        if (!input || !btn || !grid) return;
+        btn.addEventListener('click', function(e){
+            e.preventDefault();
+            const term = (input.value||'').toLowerCase().trim();
+            const cards = Array.from(grid.querySelectorAll('.event-card'));
+            if (!term){
+                // sem termo → esconder todos para deixar claro que não há resultado
+                cards.forEach(c => c.style.display = 'none');
+                return;
+            }
+            cards.forEach(card => {
+                const txt = (card.textContent||'').toLowerCase();
+                card.style.display = (txt === term) ? 'block' : 'none';
+            });
+        });
+    } catch(e){ console.warn('[events] wireEventsExactButton:', e); }
 }
 
 function exportEnrolledCSV(eventId, filter = 'all') {
