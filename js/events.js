@@ -8,92 +8,68 @@ function initEventsPage() {
     loadEvents();
     loadCategoryOptions();
     setupEventHandlers();
+    wireEventsSearchFallback();
     console.log('[events] ✅ Página de eventos inicializada');
 }
 
 // Carregar eventos
 function loadEvents() {
     console.log('[events] 📅 Carregando eventos...');
-    
+
     const eventsGrid = document.getElementById('eventsGrid');
+    const searchInput = document.getElementById('eventsSearch');
+    const paginationEl = document.getElementById('eventsPagination');
     if (!eventsGrid) {
         console.error('[events] ❌ Elemento eventsGrid não encontrado!');
         return;
     }
-    
-    // Verificar se há eventos
-    if (!events || events.length === 0) {
-        eventsGrid.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 40px; grid-column: 1/-1;">Nenhum evento cadastrado</p>';
-        return;
-    }
-    
-    // Renderizar eventos
-    eventsGrid.innerHTML = events.map(event => {
-        const eventDate = new Date(event.date);
+
+    // Eventos locais e escopo por comunidade
+    const allEvents = getLocalEvents();
+    const activeCommunityId = (window.communities && typeof window.communities.getActiveId==='function') ? window.communities.getActiveId() : (localStorage.getItem('activeCommunityId')||null);
+    let scopedEvents = Array.isArray(allEvents) ? (activeCommunityId ? allEvents.filter(e => e.communityId === activeCommunityId) : allEvents) : [];
+
+    // Estado de paginação e termo
+    let q = '';
+    let page = 1;
+    const pageSize = 8;
+    let debounceTimer = null;
+
+    function renderEventCard(evt){
+        const eventDate = new Date(evt.date);
         const today = new Date();
         const isUpcoming = eventDate >= today;
         const daysUntil = Math.ceil((eventDate - today) / (1000 * 60 * 60 * 24));
-        const enrolledCount = Array.isArray(event.enrolled) ? event.enrolled.length : 0;
-        const max = event.maxParticipants ? parseInt(event.maxParticipants) : null;
+        const enrolledCount = Array.isArray(evt.enrolled) ? evt.enrolled.length : 0;
+        const max = evt.maxParticipants ? parseInt(evt.maxParticipants) : null;
         const remaining = max != null ? Math.max(0, max - enrolledCount) : null;
         const full = max != null && remaining === 0;
-            const allEvents = getLocalEvents();
-            const activeCommunityId = (window.communities && typeof window.communities.getActiveId==='function') ? window.communities.getActiveId() : (localStorage.getItem('activeCommunityId')||null);
-                let scopedEvents = Array.isArray(allEvents) ? (activeCommunityId ? allEvents.filter(e => e.communityId === activeCommunityId) : allEvents) : [];
         return `
-            <div class="event-card ${!isUpcoming ? 'past-event' : ''}" data-event-id="${event.id}">
-            if (!scopedEvents || scopedEvents.length === 0) {
-                    ${isUpcoming && daysUntil <= 7 ? `<span class="event-badge">Faltam ${daysUntil} dias</span>` : ''}
-                    ${!isUpcoming ? '<span class="event-badge past">Encerrado</span>' : ''}
-                </div>
+            <div class="event-card ${!isUpcoming ? 'past-event' : ''}" data-event-id="${evt.id}">
+                ${isUpcoming && daysUntil <= 7 ? `<span class=\"event-badge\">Faltam ${daysUntil} dias</span>` : ''}
+                ${!isUpcoming ? '<span class=\"event-badge past\">Encerrado</span>' : ''}
                 <div class="event-content">
                     <div class="event-header">
-            eventsGrid.innerHTML = scopedEvents.map(evt => {
-                        <span class="event-category ${event.category}">${getCategoryName(event.category)}</span>
+                        <span class="event-category ${evt.category}">${getCategoryName(evt.category)}</span>
                     </div>
-                    <p class="event-description">${event.description}</p>
+                    <p class="event-description">${evt.description||''}</p>
                     <div class="event-info">
                         <div class="event-info-item">
                             <i class="fas fa-calendar"></i>
-                            <span>${formatDate(event.date)}</span>
+                            <span>${formatDate(evt.date)}</span>
                         </div>
                         <div class="event-info-item">
                             <i class="fas fa-clock"></i>
-                            <span>${event.time}</span>
+                            <span>${evt.time||''}</span>
                         </div>
                         <div class="event-info-item">
                             <i class="fas fa-map-marker-alt"></i>
-                            // Busca com debounce + paginação
-                            const searchInput = document.getElementById('eventsSearch');
-                            const paginationEl = document.getElementById('eventsPagination');
-                            let q = '';
-                            let page = 1;
-                            const pageSize = 8;
-                            let debounceTimer = null;
-                            function filterAndPage() {
-                                const term = (q||'').toLowerCase();
-                                let data = scopedEvents;
-                                if (term) {
-                                    data = data.filter(e => (
-                                        (e.title||e.name||'').toLowerCase().includes(term) ||
-                                        (e.description||'').toLowerCase().includes(term) ||
-                                        String(e.id||'').toLowerCase().includes(term)
-                                    ));
-                                }
-                                const total = data.length;
-                                const pages = Math.max(1, Math.ceil(total / pageSize));
-                                page = Math.min(page, pages);
-                                const start = (page-1)*pageSize;
-                                const paged = data.slice(start, start+pageSize);
-                                renderEvents(paged);
-                                renderEventsPagination(total, pages);
-                            }
-                            function renderEvents(list) {
-                                eventsGrid.innerHTML = list.map(evt => {
-                        ${event.price ? `
+                            <span>${evt.location||''}</span>
+                        </div>
+                        ${evt.price ? `
                             <div class="event-info-item">
                                 <i class="fas fa-ticket-alt"></i>
-                                <span>R$ ${event.price}</span>
+                                <span>R$ ${evt.price}</span>
                             </div>
                         ` : ''}
                     </div>
@@ -111,23 +87,23 @@ function loadEvents() {
                     </div>
                     <div class="event-actions">
                         ${isUpcoming ? `
-                            <button class="btn btn-primary" ${full ? 'disabled title="Lotado"' : ''} onclick="enrollInEvent('${event.id}')">
+                            <button class="btn btn-primary" ${full ? 'disabled title=\"Lotado\"' : ''} onclick="enrollInEvent('${evt.id}')">
                                 <i class="fas fa-user-plus"></i> Inscrever-se
                             </button>
                         ` : ''}
-                        <button class="btn btn-outline" onclick="viewEventDetails('${event.id}')">
+                        <button class="btn btn-outline" onclick="viewEventDetails('${evt.id}')">
                             <i class="fas fa-eye"></i> Ver Detalhes
                         </button>
                         <div style="display:flex; gap:6px;">
-                          <button class="btn btn-sm btn-outline" onclick="exportEnrolledCSV('${event.id}','all')" title="Exportar inscritos (todos)"><i class="fas fa-file-csv"></i> CSV</button>
-                          <button class="btn btn-sm btn-outline" onclick="exportEnrolledCSV('${event.id}','confirmed')" title="Exportar confirmados"><i class="fas fa-check"></i></button>
-                          <button class="btn btn-sm btn-outline" onclick="exportEnrolledCSV('${event.id}','pending')" title="Exportar pendentes"><i class="fas fa-hourglass-half"></i></button>
+                          <button class="btn btn-sm btn-outline" onclick="exportEnrolledCSV('${evt.id}','all')" title="Exportar inscritos (todos)"><i class="fas fa-file-csv"></i> CSV</button>
+                          <button class="btn btn-sm btn-outline" onclick="exportEnrolledCSV('${evt.id}','confirmed')" title="Exportar confirmados"><i class="fas fa-check"></i></button>
+                          <button class="btn btn-sm btn-outline" onclick="exportEnrolledCSV('${evt.id}','pending')" title="Exportar pendentes"><i class="fas fa-hourglass-half"></i></button>
                         </div>
                         ${currentUser && currentUser.role === 'admin' ? `
-                            <button class="btn btn-outline" onclick="editEvent('${event.id}')">
+                            <button class="btn btn-outline" onclick="editEvent('${evt.id}')">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
-                            <button class="btn btn-danger" onclick="deleteEvent('${event.id}')">
+                            <button class="btn btn-danger" onclick="deleteEvent('${evt.id}')">
                                 <i class="fas fa-trash"></i> Excluir
                             </button>
                         ` : ''}
@@ -135,9 +111,79 @@ function loadEvents() {
                 </div>
             </div>
         `;
-    }).join('');
-    
-    console.log('[events] ✅ Eventos carregados:', events.length);
+    }
+
+    function render(list){
+        if (!list || list.length===0){
+            eventsGrid.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 40px; grid-column: 1/-1;">Nenhum evento cadastrado</p>';
+            return;
+        }
+        eventsGrid.innerHTML = list.map(renderEventCard).join('');
+    }
+
+    function renderPagination(total, pages){
+        if (!paginationEl) return;
+        const prevDisabled = page<=1 ? 'disabled' : '';
+        const nextDisabled = page>=pages ? 'disabled' : '';
+        paginationEl.innerHTML = `
+            <button class="btn btn-sm btn-outline" ${prevDisabled} id="eventsPrev">Anterior</button>
+            <span style="padding:4px 8px;">Página ${page} de ${pages} • ${total} eventos</span>
+            <button class="btn btn-sm btn-outline" ${nextDisabled} id="eventsNext">Próxima</button>
+        `;
+        const prev = document.getElementById('eventsPrev');
+        const next = document.getElementById('eventsNext');
+        if (prev) prev.onclick = ()=>{ if (page>1) { page--; filterAndPage(); } };
+        if (next) next.onclick = ()=>{ if (page<pages) { page++; filterAndPage(); } };
+    }
+
+    function filterAndPage(){
+        const term = (q||'').toLowerCase();
+        let data = scopedEvents;
+        if (term) {
+            data = data.filter(e => (
+                (e.title||e.name||'').toLowerCase().includes(term) ||
+                (e.description||'').toLowerCase().includes(term) ||
+                String(e.id||'').toLowerCase().includes(term)
+            ));
+        }
+        const total = data.length;
+        const pages = Math.max(1, Math.ceil(total / pageSize));
+        page = Math.min(page, pages);
+        const start = (page-1)*pageSize;
+        const paged = data.slice(start, start+pageSize);
+        render(paged);
+        renderPagination(total, pages);
+    }
+
+    // wire search
+    if (searchInput){
+        searchInput.addEventListener('input', (e)=>{
+            q = e.target.value || '';
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(filterAndPage, 200);
+        });
+    }
+    // primeira renderização
+    filterAndPage();
+
+    console.log('[events] ✅ Eventos carregados:', scopedEvents.length);
+}
+
+// Fallback simples de busca: filtra os cards já renderizados
+function wireEventsSearchFallback(){
+    try {
+        const input = document.getElementById('eventsSearch');
+        const grid = document.getElementById('eventsGrid');
+        if (!input || !grid) return;
+        input.addEventListener('input', function(){
+            const term = (input.value||'').toLowerCase();
+            const cards = grid.querySelectorAll('.event-card');
+            cards.forEach(card => {
+                const txt = (card.textContent||'').toLowerCase();
+                card.style.display = term ? (txt.includes(term)?'block':'none') : 'block';
+            });
+        });
+    } catch(e){ console.warn('[events] wireEventsSearchFallback:', e); }
 }
 
 function exportEnrolledCSV(eventId, filter = 'all') {
