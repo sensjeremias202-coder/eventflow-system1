@@ -162,6 +162,20 @@ function loadEvents() {
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(filterAndPage, 200);
         });
+        // Enter: aplicar busca imediatamente; Esc: limpar
+        searchInput.addEventListener('keydown', (e)=>{
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                q = searchInput.value || '';
+                clearTimeout(debounceTimer);
+                filterAndPage();
+            } else if (e.key === 'Escape') {
+                searchInput.value = '';
+                q = '';
+                clearTimeout(debounceTimer);
+                filterAndPage();
+            }
+        });
     }
     // primeira renderização
     filterAndPage();
