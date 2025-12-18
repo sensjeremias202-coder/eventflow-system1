@@ -120,6 +120,106 @@
       };
     }
     setActiveCommunityLabel();
+    // Import / show local communities UI
+    const showLocalBtn = el('showLocalCommunitiesBtn');
+    const importBtn = el('importCommunitiesBtn');
+    const importInput = el('importCommunitiesInput');
+    const localListContainer = el('localCommunitiesList');
+    function refreshCommunitySelects(){
+      const selects = [el('communitySelect'), el('loginCommunitySelect')];
+      const list = window.communities.listLocal();
+      selects.forEach(s=>{
+        if (!s) return;
+        const prev = s.value;
+        s.innerHTML = '';
+        const optPlaceholder = document.createElement('option'); optPlaceholder.value=''; optPlaceholder.textContent='Selecione...'; s.appendChild(optPlaceholder);
+        list.forEach(c=>{ const opt=document.createElement('option'); opt.value=c.id; opt.textContent=`${c.name} (${c.id})`; if(c.id===prev) opt.selected=true; s.appendChild(opt); });
+      });
+    }
+    function displayLocalCommunities(){
+      if (!localListContainer) return;
+      const list = window.communities.listLocal();
+      if (!list.length){ localListContainer.style.display='block'; localListContainer.innerHTML='<p style="color:var(--gray);">Nenhuma comunidade local encontrada.</p>'; return; }
+      const html = list.map(c=>`<div style="padding:8px;border:1px solid #eee;border-radius:6px;margin-bottom:6px;"><strong>${c.name}</strong> <small style="color:#666">(${c.id})</small><div style="font-size:0.9rem;color:#444;margin-top:6px;">${c.desc||''}</div></div>`).join('');
+      localListContainer.style.display='block'; localListContainer.innerHTML = html;
+    }
+    if (showLocalBtn){ showLocalBtn.addEventListener('click', (e)=>{ e.preventDefault(); displayLocalCommunities(); }); }
+    if (importBtn && importInput){ importBtn.addEventListener('click', (e)=>{ e.preventDefault(); importInput.click(); }); }
+    if (importInput){ importInput.addEventListener('change', function(evt){
+      const file = evt.target.files && evt.target.files[0]; if (!file) return;
+      // Basic size guard (5MB)
+      if (file.size > 5 * 1024 * 1024){ const fb = el('communitySwitchFeedback'); if (fb) fb.textContent = 'Arquivo muito grande (máx 5MB).'; setTimeout(()=>{ if (fb) fb.textContent=''; }, 3000); return; }
+      const reader = new FileReader(); reader.onload = function(){
+        try{
+          const parsed = JSON.parse(reader.result);
+          const imported = Array.isArray(parsed) ? parsed : (parsed.communities && Array.isArray(parsed.communities) ? parsed.communities : null);
+          if (!imported) throw new Error('Formato inválido. Envie um array de comunidades ou um objeto { communities: [...] }');
+          const local = JSON.parse(localStorage.getItem('communities')||'[]');
+          const map = {};
+          local.forEach(c=>{ if(c && c.id) map[c.id]=c; });
+          // Stats and tracking
+          let added=0, skipped=0, conflicts=0;
+          const addedNames = [];
+          const conflictNames = [];
+          let firstAddedId = null;
+          imported.forEach(ic=>{
+            if (!ic || !ic.id || !ic.name){ skipped++; return; }
+            const existing = map[ic.id];
+            if (!existing){
+              // normalize minimal fields
+              map[ic.id] = { id: ic.id, name: ic.name, desc: ic.desc||'', createdAt: ic.createdAt||Date.now(), creatorId: ic.creatorId||null, members: ic.members||{} };
+              added++;
+              addedNames.push(ic.name);
+              if (!firstAddedId) firstAddedId = ic.id;
+            } else {
+              // Conflict: same id exists locally
+              if (existing.name !== ic.name){
+                // create new id for imported community to preserve both
+                const newId = ic.id + '_imp_' + Date.now().toString(36);
+                map[newId] = { id: newId, name: ic.name, desc: ic.desc||'', createdAt: ic.createdAt||Date.now(), creatorId: ic.creatorId||null, members: ic.members||{} };
+                conflicts++;
+                conflictNames.push(ic.name);
+                if (!firstAddedId) firstAddedId = newId;
+              } else {
+                // Same id & name: merge non-destructive fields (members merge)
+                const merged = Object.assign({}, existing);
+                merged.desc = merged.desc || ic.desc || '';
+                merged.createdAt = merged.createdAt || ic.createdAt || Date.now();
+                merged.creatorId = merged.creatorId || ic.creatorId || merged.creatorId;
+                merged.members = Object.assign({}, ic.members || {}, existing.members || {});
+                map[ic.id] = merged;
+                // treat as updated but not added
+              }
+            }
+          });
+          const merged = Object.values(map);
+          localStorage.setItem('communities', JSON.stringify(merged));
+          // refresh selects and UI
+          refreshCommunitySelects();
+          displayLocalCommunities();
+          // Clear file input so user can re-import same file if needed
+          try{ importInput.value = ''; }catch(_){}
+          // If no active community, select first added
+          const active = localStorage.getItem('activeCommunityId');
+          if (!active && firstAddedId){
+            localStorage.setItem('activeCommunityId', firstAddedId);
+            const comm = map[firstAddedId]; if (comm) localStorage.setItem('activeCommunityName', comm.name||'');
+            window.dispatchEvent(new CustomEvent('community:changed', { detail: { id: firstAddedId } }));
+            setActiveCommunityLabel();
+          }
+          const fb = el('communitySwitchFeedback');
+          if (fb){
+            const parts = [];
+            if (added) parts.push(`Adicionadas: ${added} (${addedNames.join(', ')})`);
+            if (conflicts) parts.push(`Conflitos preservados: ${conflicts} (${conflictNames.join(', ')})`);
+            if (skipped) parts.push(`Ignoradas: ${skipped}`);
+            fb.textContent = 'Importação concluída.' + (parts.length ? ' ' + parts.join(' — ') : '');
+            setTimeout(()=>{ if (fb) fb.textContent=''; }, 5000);
+          }
+        }catch(err){ const fb = el('communitySwitchFeedback'); if (fb) fb.textContent = 'Erro ao importar: '+(err.message||err); setTimeout(()=>{ if (fb) fb.textContent=''; }, 4000); }
+      };
+      reader.readAsText(file);
+    }); }
   }
 
   // Expose helpers for sync namespace usage

@@ -1,0 +1,33 @@
+{
+  "communities": [
+    {
+      "id": "comm_abc123",
+      "name": "Comunidade Central",
+      "desc": "Comunidade principal da cidade",
+      "createdAt": 1712900000000,
+      "creatorId": "1",
+      "members": {
+        "1": { "role": "admin", "joinedAt": 1712900000000 },
+        "2": { "role": "user", "joinedAt": 1713000000000 }
+      }
+    },
+    {
+      "id": "comm_norte001",
+      "name": "Comunidade Norte",
+      "desc": "Equipe responsável pela região norte",
+      "createdAt": 1712950000000,
+      "creatorId": "3",
+      "members": {}
+    },
+    {
+      "id": "comm_sul002",
+      "name": "Comunidade Sul",
+      "desc": "Eventos e voluntariado - Sul",
+      "createdAt": 1713000000000,
+      "creatorId": "4",
+      "members": {
+        "4": { "role": "admin", "joinedAt": 1713000000000 }
+      }
+    }
+  ]
+}
