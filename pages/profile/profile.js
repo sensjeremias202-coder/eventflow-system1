@@ -485,6 +485,7 @@ function initProfilePage() {
     const editBtn = document.getElementById('editProfileBtn');
     const deleteBtn = document.getElementById('deleteAccountBtn');
     const changePassBtn = document.getElementById('changePasswordBtn');
+    const saveBtn = document.getElementById('saveProfileBtn');
     
     if (editBtn) {
         // Remover listeners antigos
@@ -503,7 +504,20 @@ function initProfilePage() {
     if (changePassBtn) {
         const newChangeBtn = changePassBtn.cloneNode(true);
         changePassBtn.parentNode.replaceChild(newChangeBtn, changePassBtn);
-        document.getElementById('changePasswordBtn').addEventListener('click', changePassword);
+        const handler = (typeof window !== 'undefined' && typeof window.changePassword === 'function') ? window.changePassword : changePassword;
+        document.getElementById('changePasswordBtn').addEventListener('click', handler);
+    }
+
+    // Suporte ao botão Salvar (existente em algumas versões do layout)
+    if (saveBtn && !saveBtn.dataset.listenerAdded) {
+        saveBtn.dataset.listenerAdded = 'true';
+        saveBtn.addEventListener('click', function () {
+            if (typeof window !== 'undefined' && typeof window.saveProfile === 'function') {
+                window.saveProfile();
+            } else if (typeof saveProfile === 'function') {
+                saveProfile();
+            }
+        });
     }
 
     // Importar/Exportar
