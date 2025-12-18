@@ -161,6 +161,8 @@ function saveProfile() {
     // Obter valores dos campos
     const name = document.getElementById('profileName')?.value?.trim();
     const email = document.getElementById('profileEmail')?.value?.trim();
+    const phone = document.getElementById('profilePhone')?.value?.trim();
+    const bio = document.getElementById('profileBio')?.value?.trim();
     
     // Validar campos obrigatórios
     if (!name || !email) {
@@ -177,6 +179,8 @@ function saveProfile() {
     // Atualizar usuário
     user.name = name;
     user.email = email;
+    if (typeof phone !== 'undefined') user.phone = phone;
+    if (typeof bio !== 'undefined') user.bio = bio;
     
     // Atualizar no array de usuários
     const usersArr = typeof window !== 'undefined' && window.users ? window.users : (typeof users !== 'undefined' ? users : []);
@@ -284,11 +288,20 @@ async function changePassword() {
 
 // Configurar event handlers
 function setupProfileHandlers() {
-    // Suporta fluxo antigo com saveProfileBtn
+    // Suporta fluxo antigo com saveProfileBtn (substitui o elemento para garantir listener)
     const saveBtn = document.getElementById('saveProfileBtn');
-    if (saveBtn && !saveBtn.dataset.profileListenerAdded) {
-        saveBtn.dataset.profileListenerAdded = 'true';
-        saveBtn.addEventListener('click', saveProfile);
+    if (saveBtn) {
+        try {
+            const newSaveBtn = saveBtn.cloneNode(true);
+            saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+            newSaveBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                saveProfile();
+            });
+        } catch (e) {
+            // fallback simples
+            saveBtn.addEventListener('click', saveProfile);
+        }
     }
     
     // Suporta fluxo atual com editProfileBtn (toggle editar/salvar)
