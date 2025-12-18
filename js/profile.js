@@ -48,6 +48,8 @@ function loadProfile() {
     const fields = {
         'profileName': user.name,
         'profileEmail': user.email,
+        'profilePhone': user.phone || '',
+        'profileBio': user.bio || '',
         'profileId': user.identificationNumber || '',
         'profileRole': (user.role === 'admin' ? 'Administrador' : (user.role === 'treasurer' ? 'Tesoureiro' : 'Jovens')),
         'profileRegistered': user.registered || ''

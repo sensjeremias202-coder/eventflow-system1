@@ -32,6 +32,8 @@ function loadProfile() {
     const profileEmail = document.getElementById('profileEmail');
     const profileRole = document.getElementById('profileRole');
     const profileRegistered = document.getElementById('profileRegistered');
+    const profilePhone = document.getElementById('profilePhone');
+    const profileBio = document.getElementById('profileBio');
     
     if (profileName) profileName.value = user.name || '';
     if (profileId) profileId.value = user.identificationNumber || 'Não disponível';
@@ -42,6 +44,8 @@ function loadProfile() {
         profileRole.value = roleText;
     }
     if (profileRegistered) profileRegistered.value = user.registered || 'Não disponível';
+    if (profilePhone) profilePhone.value = user.phone || '';
+    if (profileBio) profileBio.value = user.bio || '';
     
     // Adicionar funcionalidade ao botão de copiar ID
     const copyBtn = document.getElementById('copyIdBtn');
@@ -318,12 +322,18 @@ function editProfile() {
         
         // Atualizar usuário
         const userIdx = userList.findIndex(u => user && u.id === user.id);
+        const newPhone = document.getElementById('profilePhone') ? document.getElementById('profilePhone').value.trim() : '';
+        const newBio = document.getElementById('profileBio') ? document.getElementById('profileBio').value.trim() : '';
         if (userIdx !== -1) {
             userList[userIdx].name = newName;
             userList[userIdx].email = newEmail;
+            userList[userIdx].phone = newPhone;
+            userList[userIdx].bio = newBio;
             if (user) {
                 user.name = newName;
                 user.email = newEmail;
+                user.phone = newPhone;
+                user.bio = newBio;
                 window.currentUser = user;
             }
             
