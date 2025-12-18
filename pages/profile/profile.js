@@ -53,21 +53,23 @@ function loadProfile() {
         // Remover listener anterior para evitar duplicação
         const newCopyBtn = copyBtn.cloneNode(true);
         copyBtn.parentNode.replaceChild(newCopyBtn, copyBtn);
-        
-        document.getElementById('copyIdBtn').addEventListener('click', function() {
+        const btn = document.getElementById('copyIdBtn');
+        btn.addEventListener('click', function() {
             const idField = document.getElementById('profileId');
-            if (idField) {
-                idField.select();
-                document.execCommand('copy');
-                
-                // Feedback visual
-                this.innerHTML = '<i class="fas fa-check"></i> Copiado!';
-                this.style.background = '#10b981';
-                
-                setTimeout(() => {
-                    this.innerHTML = '<i class="fas fa-copy"></i> Copiar';
-                    this.style.background = '';
-                }, 2000);
+            const value = idField ? idField.value || '' : '';
+            if (!value) return;
+            // Use navigator.clipboard when available
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(value).then(() => {
+                    this.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+                    this.style.background = '#10b981';
+                    setTimeout(() => { this.innerHTML = '<i class="fas fa-copy"></i> Copiar'; this.style.background = ''; }, 2000);
+                }).catch(() => {
+                    // fallback to execCommand
+                    try { idField.select(); document.execCommand('copy'); } catch (e) {}
+                });
+            } else {
+                try { idField.select(); document.execCommand('copy'); this.innerHTML = '<i class="fas fa-check"></i> Copiado!'; this.style.background = '#10b981'; setTimeout(() => { this.innerHTML = '<i class="fas fa-copy"></i> Copiar'; this.style.background = ''; }, 2000); } catch(e) {}
             }
         });
     }

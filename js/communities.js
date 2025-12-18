@@ -58,6 +58,8 @@
     all.push(record);
     localStorage.setItem('communities', JSON.stringify(all));
     localStorage.setItem('activeCommunityId', id);
+    // store name for quick access
+    localStorage.setItem('activeCommunityName', record.name || '');
     window.dispatchEvent(new CustomEvent('community:changed', { detail: { id } }));
     setActiveCommunityLabel();
     return id;
@@ -71,6 +73,10 @@
       await db.ref(`communities/${id}/pending/${user?.id||'anonymous'}`).set({ requestedAt: Date.now(), email: user?.email||null });
     }
     localStorage.setItem('activeCommunityId', id);
+    // update name cache if available
+    const all = JSON.parse(localStorage.getItem('communities')||'[]');
+    const comm = all.find(c=>c.id===id);
+    if (comm) localStorage.setItem('activeCommunityName', comm.name||'');
     window.dispatchEvent(new CustomEvent('community:changed', { detail: { id } }));
     setActiveCommunityLabel();
     return true;
@@ -123,9 +129,15 @@
     switchTo: function(id){
       if (!id) return false;
       localStorage.setItem('activeCommunityId', id);
+      const all = JSON.parse(localStorage.getItem('communities')||'[]');
+      const comm = all.find(c=>c.id===id);
+      if (comm) localStorage.setItem('activeCommunityName', comm.name||'');
       window.dispatchEvent(new CustomEvent('community:changed', { detail: { id } }));
       setActiveCommunityLabel();
       return true;
+    },
+    getActiveName: function(){
+      return localStorage.getItem('activeCommunityName') || null;
     },
     fetchPending: async function(id){
       if (!db || !id) return {};
