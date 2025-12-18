@@ -65,6 +65,10 @@ body {
     --transition-smooth: all 0.3s ease;
     --transition-bounce: all 0.4s ease;
     --transition-3d: all 0.3s ease;
+    
+    /* Layout Proposta B - Arejado */
+    --header-height: 70px;
+    --spacing: clamp(12px, 2vw, 18px);
 }
 
 /* Tela fixa sem margens/padding */
@@ -724,11 +728,11 @@ header::before {
 .sidebar .sidebar-link:hover { background: #f5f7fb; }
 .sidebar .sidebar-link.active { background: #eef2ff; color: var(--primary); font-weight: 600; }
 
-.sidebar-toggle { display:none; position: fixed; top: 70px; left: 12px; z-index: 1100; }
+.sidebar-toggle { display:none; position: fixed; top: var(--header-height); left: 12px; z-index: 1100; }
 .sidebar-toggle .btn { border-radius: 999px; }
 
 @media (max-width: 768px) {
-    .sidebar { position: fixed; top: 60px; bottom: 0; left: 0; width: 260px; background: #fff; border-right: 1px solid var(--border); box-shadow: var(--shadow-md); transform: translateX(-100%); transition: transform 0.3s ease; z-index: 1050; }
+    .sidebar { position: fixed; top: var(--header-height); bottom: 0; left: 0; width: 260px; background: #fff; border-right: 1px solid var(--border); box-shadow: var(--shadow-md); transform: translateX(-100%); transition: transform 0.3s ease; z-index: 1050; }
     .sidebar.sidebar--open { transform: translateX(0); }
     .sidebar-toggle { display:block; }
     .main-content { margin-left: 0 !important; }
@@ -891,16 +895,16 @@ header::before {
 /* SIDEBAR - MENU LATERAL 3D */
 /* ============================================ */
 .sidebar {
-    width: clamp(220px, 25vw, 280px);
-    min-width: 220px;
+    width: clamp(240px, 20vw, 320px);
+    min-width: 240px;
     background: white;
     border-radius: 20px;
-    padding: clamp(15px, 3vw, 25px);
+    padding: var(--spacing);
     box-shadow: var(--shadow-3d);
-    max-height: 500px !important;
-    overflow-y: auto !important;
+    max-height: calc(100vh - var(--header-height));
+    overflow-y: auto;
     position: sticky;
-    top: clamp(70px, 10vh, 100px);
+    top: var(--header-height);
     animation: slideInLeft 0.8s ease-out 0.4s both;
     transform-style: preserve-3d;
     transform: perspective(1200px) rotateY(0deg) translateZ(0);
@@ -980,7 +984,7 @@ header::before {
 }
 
 .sidebar-menu li {
-    margin-bottom: 8px;
+    margin-bottom: var(--spacing);
     animation: slideInLeft 0.5s ease-out both;
 }
 
@@ -995,7 +999,7 @@ header::before {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 12px 15px;
+    padding: var(--spacing) calc(var(--spacing) + 3px);
     border-radius: 12px;
     text-decoration: none;
     color: var(--dark);
