@@ -79,14 +79,53 @@ function loadProfile() {
     console.log('[profile] ✅ Perfil carregado');
 }
 
-// Carregar eventos do usuário
+// Carregar eventos do usuário (função unificada)
+function loadMyEvents() {
+    const user = typeof window !== 'undefined' ? window.currentUser : (typeof currentUser !== 'undefined' ? currentUser : null);
+    const eventsList = typeof window !== 'undefined' && window.events ? window.events : (typeof events !== 'undefined' ? events : []);
+    
+    if (!user || !eventsList || eventsList.length === 0) {
+        return [];
+    }
+    
+    // Filtrar eventos onde o usuário está inscrito
+    const userEvents = eventsList.filter(e => 
+        e.enrolled && Array.isArray(e.enrolled) && e.enrolled.includes(user.id)
+    );
+    
+    return userEvents;
+}
+
+// Carregar eventos do usuário na página de perfil
+function loadMyEventsProfile() {
+    const container = document.getElementById('myEventsProfile');
+    if (!container) return;
+    
+    const userEvents = loadMyEvents();
+    
+    if (userEvents.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 20px;">Você ainda não está inscrito em nenhum evento</p>';
+        return;
+    }
+    
+    container.innerHTML = userEvents.map(event => `
+        <div class="event-card-mini" style="padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 8px;">
+            <h4 style="margin: 0 0 8px 0; font-size: 1rem;">${event.name || 'Evento sem título'}</h4>
+            <p style="margin: 4px 0; font-size: 0.9rem;"><i class="fas fa-calendar"></i> ${formatDate(event.date)}</p>
+            <p style="margin: 4px 0; font-size: 0.9rem;"><i class="fas fa-clock"></i> ${event.time || 'Horário não definido'}</p>
+            <button class="btn btn-sm btn-outline" onclick="viewEventDetails('${event.id}')" style="margin-top: 8px;">
+                <i class="fas fa-eye"></i> Ver Detalhes
+            </button>
+        </div>
+    `).join('');
+}
+
+// Carregar eventos do usuário (função antiga para compatibilidade)
 function loadUserEvents() {
     const container = document.getElementById('userEventsContainer');
-    if (!container || !events) return;
+    if (!container) return;
     
-    const userEvents = events.filter(e => 
-        e.enrolled && e.enrolled.includes(currentUser.id)
-    );
+    const userEvents = loadMyEvents();
     
     if (userEvents.length === 0) {
         container.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 20px;">Você ainda não está inscrito em nenhum evento</p>';
@@ -105,6 +144,12 @@ function loadUserEvents() {
     `).join('');
 }
 
+// Validar email com regex
+function isValidEmail(email) {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+}
+
 // Salvar perfil
 function saveProfile() {
     const user = typeof window !== 'undefined' ? window.currentUser : (typeof currentUser !== 'undefined' ? currentUser : null);
@@ -114,12 +159,18 @@ function saveProfile() {
     }
     
     // Obter valores dos campos
-    const name = document.getElementById('profileName')?.value;
-    const email = document.getElementById('profileEmail')?.value;
+    const name = document.getElementById('profileName')?.value?.trim();
+    const email = document.getElementById('profileEmail')?.value?.trim();
     
     // Validar campos obrigatórios
     if (!name || !email) {
         showNotification('Nome e email são obrigatórios', 'error');
+        return;
+    }
+    
+    // Validar email com regex real
+    if (!isValidEmail(email)) {
+        showNotification('Email inválido. Use um formato válido (ex: usuario@email.com)', 'error');
         return;
     }
     
@@ -149,8 +200,8 @@ function saveProfile() {
     }
 }
 
-// Alterar senha
-function changePassword() {
+// Alterar senha (com hash bcrypt)
+async function changePassword() {
     const currentPassword = document.getElementById('currentPassword')?.value;
     const newPassword = document.getElementById('newPassword')?.value;
     const confirmPassword = document.getElementById('confirmPassword')?.value;
@@ -167,43 +218,68 @@ function changePassword() {
         return;
     }
     
-    const idx = usersArr.findIndex(u => u.id === user.id);
-    const stored = idx > -1 ? (usersArr[idx].password || '') : '';
-    if (stored && currentPassword !== stored) {
-        showNotification('Senha atual incorreta', 'error');
-        return;
-    }
-    
     if (newPassword !== confirmPassword) {
         showNotification('As senhas não coincidem', 'error');
         return;
     }
     
-    if (newPassword.length < 6) {
-        showNotification('A nova senha deve ter pelo menos 6 caracteres', 'error');
+    if (newPassword.length < 8) {
+        showNotification('A nova senha deve ter pelo menos 8 caracteres', 'error');
         return;
     }
     
-    // Atualizar senha
-    user.password = newPassword;
+    const idx = usersArr.findIndex(u => u.id === user.id);
+    const storedUser = idx > -1 ? usersArr[idx] : null;
     
-    // Atualizar no array de usuários
-    if (idx > -1) {
-        usersArr[idx] = user;
-        if (typeof window !== 'undefined') window.users = usersArr;
-        localStorage.setItem('users', JSON.stringify(usersArr));
+    if (!storedUser || !storedUser.passwordHash) {
+        showNotification('Erro: Dados de usuário inválidos', 'error');
+        return;
     }
     
-    // Atualizar sessão
-    if (typeof window !== 'undefined') window.currentUser = user;
-    localStorage.setItem('currentUser', JSON.stringify(user));
+    // Validar senha atual com bcrypt
+    try {
+        const isCorrect = await bcrypt.compare(currentPassword, storedUser.passwordHash);
+        if (!isCorrect) {
+            showNotification('Senha atual incorreta', 'error');
+            return;
+        }
+    } catch (e) {
+        console.error('[profile] ❌ Erro ao validar senha:', e);
+        showNotification('Erro ao processar senha', 'error');
+        return;
+    }
     
-    showNotification('Senha alterada com sucesso!', 'success');
-    
-    // Limpar campos
-    document.getElementById('currentPassword').value = '';
-    document.getElementById('newPassword').value = '';
-    document.getElementById('confirmPassword').value = '';
+    // Gerar nova senha com hash
+    try {
+        const saltRounds = 10;
+        const newPasswordHash = await bcrypt.hash(newPassword, saltRounds);
+        
+        // Atualizar usuário
+        user.passwordHash = newPasswordHash;
+        // Remover campo antigo de senha em texto plano
+        delete user.password;
+        
+        // Atualizar no array
+        if (idx > -1) {
+            usersArr[idx] = user;
+            if (typeof window !== 'undefined') window.users = usersArr;
+            localStorage.setItem('users', JSON.stringify(usersArr));
+        }
+        
+        // Atualizar sessão
+        if (typeof window !== 'undefined') window.currentUser = user;
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        
+        showNotification('Senha alterada com sucesso!', 'success');
+        
+        // Limpar campos
+        document.getElementById('currentPassword').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmPassword').value = '';
+    } catch (e) {
+        console.error('[profile] ❌ Erro ao fazer hash da senha:', e);
+        showNotification('Erro ao processar nova senha', 'error');
+    }
 }
 
 // Configurar event handlers
@@ -288,5 +364,8 @@ window.initProfilePage = initProfilePage;
 window.loadProfile = loadProfile;
 window.saveProfile = saveProfile;
 window.changePassword = changePassword;
+window.loadMyEvents = loadMyEvents;
+window.loadMyEventsProfile = loadMyEventsProfile;
+window.loadUserEvents = loadUserEvents;
 
 console.log('[profile] ✅ Módulo de perfil carregado');
