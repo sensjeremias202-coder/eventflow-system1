@@ -1873,6 +1873,12 @@
                     <div class="form-group">
                         <label for="newPassword">Nova senha</label>
                         <input type="password" id="newPassword" class="form-control" placeholder="Nova senha">
+                        <div id="passwordStrength" style="margin-top:8px; display:flex; align-items:center; gap:8px;">
+                            <div id="passwordStrengthBar" style="flex:1; height:8px; background:#e6e6e6; border-radius:6px; overflow:hidden;">
+                                <div id="passwordStrengthFill" style="height:100%; width:0%; background:#ddd; transition:width 180ms ease;"></div>
+                            </div>
+                            <div id="passwordStrengthText" style="min-width:110px; font-size:0.9rem; color:#666; text-align:right;">Força: —</div>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="confirmPassword">Confirmar nova senha</label>

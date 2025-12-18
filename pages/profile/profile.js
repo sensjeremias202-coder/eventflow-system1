@@ -544,6 +544,42 @@ function initProfilePage() {
         modalClose.addEventListener('click', closeModal);
     }
 
+    // Password strength visual helper
+    const strengthFill = document.getElementById('passwordStrengthFill');
+    const strengthText = document.getElementById('passwordStrengthText');
+    const newPwdInput = document.getElementById('newPassword');
+    function scorePassword(p) {
+        if (!p) return 0;
+        let score = 0;
+        if (p.length >= 8) score += 1;
+        if (/[A-Z]/.test(p)) score += 1;
+        if (/[0-9]/.test(p)) score += 1;
+        if (/[^A-Za-z0-9]/.test(p)) score += 1;
+        return score; // 0..4
+    }
+    function updateStrengthVisual() {
+        if (!strengthFill || !strengthText || !newPwdInput) return;
+        const p = newPwdInput.value || '';
+        const s = scorePassword(p);
+        const percent = (s / 4) * 100;
+        strengthFill.style.width = percent + '%';
+        let color = '#ddd';
+        let label = 'Muito fraca';
+        if (s === 0) { color = '#ddd'; label = '—'; }
+        else if (s === 1) { color = '#e74c3c'; label = 'Fraca'; }
+        else if (s === 2) { color = '#f39c12'; label = 'Razoável'; }
+        else if (s === 3) { color = '#2ecc71'; label = 'Boa'; }
+        else if (s === 4) { color = '#007bff'; label = 'Ótima'; }
+        strengthFill.style.background = color;
+        strengthText.textContent = 'Força: ' + label;
+    }
+    if (newPwdInput && !newPwdInput.dataset.strengthAttached) {
+        newPwdInput.dataset.strengthAttached = 'true';
+        newPwdInput.addEventListener('input', updateStrengthVisual);
+        // initial
+        setTimeout(updateStrengthVisual, 50);
+    }
+
     // Suporte ao botão Salvar (existente em algumas versões do layout)
     if (saveBtn && !saveBtn.dataset.listenerAdded) {
         saveBtn.dataset.listenerAdded = 'true';
