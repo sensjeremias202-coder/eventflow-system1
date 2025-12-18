@@ -240,17 +240,23 @@ async function changePassword() {
         return;
     }
     
-    // Validar senha atual com bcrypt
+    // Validar senha atual com bcrypt ou fallback para senha em texto plano
+    let isCorrect = false;
     try {
-        const isCorrect = await bcrypt.compare(currentPassword, storedUser.passwordHash);
+        if (storedUser.passwordHash) {
+            isCorrect = await bcrypt.compare(currentPassword, storedUser.passwordHash);
+        } else if (storedUser.password) {
+            // fallback: comparar senha em texto plano (migração)
+            isCorrect = currentPassword === storedUser.password;
+        }
         if (!isCorrect) {
             showNotification('Senha atual incorreta', 'error');
-            return;
+            return false;
         }
     } catch (e) {
         console.error('[profile] ❌ Erro ao validar senha:', e);
         showNotification('Erro ao processar senha', 'error');
-        return;
+        return false;
     }
     
     // Gerar nova senha com hash
@@ -280,9 +286,11 @@ async function changePassword() {
         document.getElementById('currentPassword').value = '';
         document.getElementById('newPassword').value = '';
         document.getElementById('confirmPassword').value = '';
+        return true;
     } catch (e) {
         console.error('[profile] ❌ Erro ao fazer hash da senha:', e);
         showNotification('Erro ao processar nova senha', 'error');
+        return false;
     }
 }
 

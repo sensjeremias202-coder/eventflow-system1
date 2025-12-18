@@ -504,8 +504,44 @@ function initProfilePage() {
     if (changePassBtn) {
         const newChangeBtn = changePassBtn.cloneNode(true);
         changePassBtn.parentNode.replaceChild(newChangeBtn, changePassBtn);
-        const handler = (typeof window !== 'undefined' && typeof window.changePassword === 'function') ? window.changePassword : changePassword;
-        document.getElementById('changePasswordBtn').addEventListener('click', handler);
+        document.getElementById('changePasswordBtn').addEventListener('click', () => {
+            const modal = document.getElementById('changePasswordModal');
+            if (modal) modal.style.display = 'block';
+        });
+    }
+
+    // Modal: salvar/fechar handlers
+    const modalSave = document.getElementById('changePassModalSave');
+    const modalCancel = document.getElementById('changePassModalCancel');
+    const modalClose = document.getElementById('changePassModalClose');
+    if (modalSave && !modalSave.dataset.listenerAdded) {
+        modalSave.dataset.listenerAdded = 'true';
+        modalSave.addEventListener('click', async () => {
+            // Chama a implementação segura de changePassword
+            if (typeof window !== 'undefined' && typeof window.changePassword === 'function') {
+                await window.changePassword();
+            } else if (typeof changePassword === 'function') {
+                await changePassword();
+            }
+            // Fechar modal somente se campos limpos (sucesso)
+            const cur = document.getElementById('currentPassword');
+            if (cur && cur.value === '') {
+                const modal = document.getElementById('changePasswordModal');
+                if (modal) modal.style.display = 'none';
+            }
+        });
+    }
+    const closeModal = () => {
+        const modal = document.getElementById('changePasswordModal');
+        if (modal) modal.style.display = 'none';
+    };
+    if (modalCancel && !modalCancel.dataset.listenerAdded) {
+        modalCancel.dataset.listenerAdded = 'true';
+        modalCancel.addEventListener('click', closeModal);
+    }
+    if (modalClose && !modalClose.dataset.listenerAdded) {
+        modalClose.dataset.listenerAdded = 'true';
+        modalClose.addEventListener('click', closeModal);
     }
 
     // Suporte ao botão Salvar (existente em algumas versões do layout)
