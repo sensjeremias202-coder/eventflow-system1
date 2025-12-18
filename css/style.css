@@ -1134,7 +1134,7 @@ header::before {
 /* Events Grid */
 .events-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(clamp(250px, 40vw, 320px), 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(clamp(280px, 45vw, 380px), 1fr));
     gap: clamp(15px, 3vw, 25px);
     perspective: 1500px;
 }
@@ -1424,7 +1424,7 @@ header::before {
 /* Grid de Estatísticas */
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(clamp(250px, 28vw, 320px), 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(clamp(300px, 35vw, 380px), 1fr));
     gap: clamp(24px, 4vw, 36px);
     margin-bottom: clamp(25px, 4vh, 40px);
     padding: 0; /* ocupar 100% da largura */
