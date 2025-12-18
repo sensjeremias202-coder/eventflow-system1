@@ -251,11 +251,7 @@
             </div>
             <div class="cta-bar" style="justify-content:flex-end;">
                 <button id="createCommunityBtn" class="btn btn-outline"><i class="fas fa-users"></i> Criar Comunidade</button>
-                                    <button id="showLocalCommunitiesBtn" class="btn small">Mostrar comunidades locais</button>
-                                    <button id="importCommunitiesBtn" class="btn small">Importar comunidades (JSON)</button>
-                                    <input id="importCommunitiesInput" type="file" accept="application/json" style="display:none" />
                 <button class="btn btn-primary" onclick="document.getElementById('loginScreen').style.display='block'; document.getElementById('publicHome').style.display='none';">Entrar</button>
-                                <div id="localCommunitiesList" style="display:none;margin-top:8px"></div>
                                 <div id="communitySwitchFeedback" style="min-height:20px;color:var(--accent);margin-top:6px"></div>
         </header>
                 <section class="section">
@@ -773,9 +769,6 @@
                             <select id="communitySelect" class="form-control" style="max-width:280px;"></select>
                             <button class="btn btn-outline" id="switchCommunityBtn"><i class="fas fa-exchange-alt"></i> Trocar Comunidade</button>
                             <button class="btn btn-outline" id="copyCommunityIdBtn" title="Copiar ID da Comunidade"><i class="fas fa-copy"></i> Copiar ID</button>
-                            <button class="btn btn-outline" id="showLocalCommunitiesBtn"><i class="fas fa-list"></i> Mostrar Comunidades</button>
-                            <button class="btn btn-outline" id="importCommunitiesBtn"><i class="fas fa-file-import"></i> Importar Comunidades</button>
-                            <input type="file" id="importCommunitiesInput" accept="application/json" style="display:none;" />
                             <span id="communitySwitchFeedback" style="color: var(--gray);"></span>
                         </div>
                         <div style="margin-top:8px; color: var(--gray);">
@@ -789,9 +782,7 @@
                                 <p style="color: var(--gray);">Nenhuma solicitação.</p>
                             </div>
                         </div>
-                        <div id="localCommunitiesList" style="margin-top:12px; display:none;">
-                            <!-- Lista de comunidades locais importadas/armazenadas aparecerá aqui -->
-                        </div>
+                        
                     </div>
 
                     <!-- Sincronização online removida -->
