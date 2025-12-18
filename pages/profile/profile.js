@@ -614,55 +614,7 @@ function initProfilePage() {
         importInput.addEventListener('change', importAppData);
     }
 
-    // Online Sync (Firebase)
-    const enableOnlineBtn = document.getElementById('enableOnlineSyncBtn');
-    const disableOnlineBtn = document.getElementById('disableOnlineSyncBtn');
-    const saveFirebaseBtn = document.getElementById('saveFirebaseConfigBtn');
-    const firebaseModal = document.getElementById('firebaseConfigModal');
-    const firebaseTextarea = document.getElementById('firebaseConfigTextarea');
-    if (enableOnlineBtn && !enableOnlineBtn.dataset.listenerAdded) {
-        enableOnlineBtn.dataset.listenerAdded = 'true';
-        enableOnlineBtn.addEventListener('click', () => {
-            // Abrir modal de configuração se não houver config
-            const cfg = localStorage.getItem('FIREBASE_CONFIG');
-            if (!cfg && firebaseModal) {
-                firebaseModal.style.display = 'block';
-            } else {
-                localStorage.setItem('ONLINE_SYNC', 'true');
-                window.FORCE_LOCAL_MODE = false;
-                if (typeof window.initFirebaseFromConfig === 'function') {
-                    window.initFirebaseFromConfig();
-                }
-                showNotification && showNotification('Sincronização online ativada', 'success');
-            }
-        });
-    }
-    if (disableOnlineBtn && !disableOnlineBtn.dataset.listenerAdded) {
-        disableOnlineBtn.dataset.listenerAdded = 'true';
-        disableOnlineBtn.addEventListener('click', () => {
-            localStorage.setItem('ONLINE_SYNC', 'false');
-            window.FORCE_LOCAL_MODE = true;
-            showNotification && showNotification('Sincronização online desativada (modo local)', 'info');
-        });
-    }
-    if (saveFirebaseBtn && !saveFirebaseBtn.dataset.listenerAdded) {
-        saveFirebaseBtn.dataset.listenerAdded = 'true';
-        saveFirebaseBtn.addEventListener('click', () => {
-            try {
-                const txt = firebaseTextarea ? firebaseTextarea.value.trim() : '';
-                const cfg = JSON.parse(txt);
-                if (!cfg || !cfg.apiKey) throw new Error('Configuração inválida');
-                localStorage.setItem('FIREBASE_CONFIG', JSON.stringify(cfg));
-                localStorage.setItem('ONLINE_SYNC', 'true');
-                if (firebaseModal) firebaseModal.style.display = 'none';
-                window.FORCE_LOCAL_MODE = false;
-                if (typeof window.initFirebaseFromConfig === 'function') window.initFirebaseFromConfig();
-                showNotification && showNotification('Configuração salva. Sync online ativado.', 'success');
-            } catch(e){
-                showNotification && showNotification('JSON inválido. Verifique a configuração.', 'error');
-            }
-        });
-    }
+    // Online sync removed: buttons and automatic handlers were removed per request
     
     // Carregar dados do perfil
     loadProfile();
