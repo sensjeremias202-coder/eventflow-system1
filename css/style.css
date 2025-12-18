@@ -24,7 +24,7 @@ body {
 /* Conteúdo genérico sem margens exteriores que criem bordas brancas */
 .content {
     margin: 0;
-    padding: 0 16px; /* espaçamento lateral padrão */
+    padding: 0; /* remover espaçamento lateral para preencher 100% */
 }
 /* ============================================ */
 /* TEMA PROFISSIONAL CORPORATIVO - CORES E VARIÁVEIS */
@@ -1427,7 +1427,7 @@ header::before {
     grid-template-columns: repeat(auto-fit, minmax(clamp(250px, 28vw, 320px), 1fr));
     gap: clamp(24px, 4vw, 36px);
     margin-bottom: clamp(25px, 4vh, 40px);
-    padding: 0 10px;
+    padding: 0; /* ocupar 100% da largura */
 }
 
 /* Cards de Estatísticas */
